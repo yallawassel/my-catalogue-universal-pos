@@ -20,7 +20,7 @@
 
 If any identifier produces multiple matches, synchronization stops for that row and requires manual review. Product name is never used as an automatic matching key.
 
-**Important:** the current catalogue schema stores one main barcode per product. Some POS systems, including the AntiSoft data examined during planning, may store different barcodes for different packaging units. Before the AntiSoft automatic connector is enabled, the connector must map product IDs and unit IDs and support multiple unit barcodes safely. Do not treat a box barcode and a packet barcode as interchangeable.
+**Important:** the current spreadsheet importer still matches at product level using the legacy main barcode field. The new hybrid stock schema stores multiple unit-level barcodes, but the spreadsheet matching flow is not yet unit-aware. Some POS systems, including AntiSoft, may store different barcodes for different packaging units. Before enabling an automatic connector or unit-aware import, map product IDs and unit IDs safely. Do not treat a box barcode and a packet barcode as interchangeable.
 
 ## Product names and catalogue content
 
@@ -62,15 +62,20 @@ For reliable barcode matching, format barcode columns as text in Excel so leadin
 - This release implements file-based synchronization. No POS API or direct AntiSoft connection is claimed to be active.
 - Change history is audit data in this release; automated one-click rollback is a later enhancement.
 
+## Hybrid stock management
+
+See `HYBRID_STOCK_GUIDE.md` and `HYBRID_STOCK_MIGRATION.sql` for the additive hybrid-stock upgrade. The migration adds per-unit barcodes and conversion factors, base-unit physical stock, online reservations, stock movement history, POS unit mappings and idempotent stock-sync events. Reservation enforcement is disabled by default. Do not enable it until each unit conversion and physical stock balance has been checked. This does not activate the AntiSoft connector.
+
 ## First-time setup
 
 1. Back up the intended **My Catalogue** Supabase project.
 2. Open Supabase → SQL Editor.
-3. Run `POS_SYNC_MIGRATION.sql` once before first synchronization.
-4. Deploy the updated `admin.html` and the other project files together.
-5. Sign in as a business owner and open **Product & Price Synchronization**.
-6. Download the POS template or upload an Excel/CSV exported from the POS.
-7. Review the automatically selected barcode rows. Manually select any additional rows you intend to import.
-8. Choose Price-only or Full product mode, review the preview, and authorize the sync.
+3. The existing project already contains the POS sync columns/tables. Do not rerun `POS_SYNC_MIGRATION.sql` unless a schema check proves it is missing.
+4. For hybrid stock, review and run `HYBRID_STOCK_MIGRATION.sql` only after taking a backup.
+5. Deploy the updated `admin.html` and the other project files together.
+6. Sign in as a business owner and open **Product & Price Synchronization**.
+7. Download the POS template or upload an Excel/CSV exported from the POS.
+8. Review the automatically selected barcode rows. Manually select any additional rows you intend to import.
+9. Choose Price-only or Full product mode, review the preview, and authorize the sync.
 
 Do not run these migrations in the WhitePack live-store Supabase project. This My Catalogue project is separate.

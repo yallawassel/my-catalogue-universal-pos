@@ -60,7 +60,9 @@
         <button type="button" data-admin-open="5">🖼️ Category photos</button>
         <button type="button" data-admin-open="6">↕️ Category ordering</button>
         <button type="button" data-admin-open="7">🗂️ Products</button>
-        <button type="button" data-admin-open="8">🧰 Business tools</button>\n    <button type="button" data-admin-open="9">🔌 POS Connections</button>\n        <button type="button" data-admin-open="9">🔌 POS Connections</button>
+        <button type="button" data-admin-open="8">🧰 Business tools</button>
+        <button type="button" data-admin-open="9">🔌 POS Connections</button>
+        <button type="button" data-admin-open="10">📦 Stock Management</button>
       </div>
     </details>
   </div>
@@ -75,7 +77,9 @@
     <button class="admin-tile" type="button" data-admin-open="5"><span class="tile-icon">🖼️</span><strong>Category photos</strong><small>Upload a dedicated image for each category</small></button>
     <button class="admin-tile" type="button" data-admin-open="6"><span class="tile-icon">↕️</span><strong>Category ordering</strong><small>Arrange the order of catalogue categories</small></button>
     <button class="admin-tile" type="button" data-admin-open="7"><span class="tile-icon">🗂️</span><strong>Products</strong><small>View, search and manage all products</small></button>
-    <button class="admin-tile" type="button" data-admin-open="8"><span class="tile-icon">🧰</span><strong>Business tools</strong><small>Orders and other business utilities</small></button>\n    <button class="admin-tile" type="button" data-admin-open="9"><span class="tile-icon">🔌</span><strong>POS Connections</strong><small>Connect a POS, import files and manage sync safely</small></button>
+    <button class="admin-tile" type="button" data-admin-open="8"><span class="tile-icon">🧰</span><strong>Business tools</strong><small>Orders and other business utilities</small></button>
+    <button class="admin-tile" type="button" data-admin-open="9"><span class="tile-icon">🔌</span><strong>POS Connections</strong><small>Connect a POS, import files and manage sync safely</small></button>
+    <button class="admin-tile" type="button" data-admin-open="10"><span class="tile-icon">📦</span><strong>Stock Management</strong><small>Units, barcodes, conversions and hybrid stock</small></button>
   </div>
 </div>
 <div id="adminPageToolbar" class="admin-topbar hidden">
@@ -92,6 +96,8 @@
     <button type="button" data-admin-open="6">↕️ Category ordering</button>
     <button type="button" data-admin-open="7">🗂️ Products</button>
     <button type="button" data-admin-open="8">🧰 Business tools</button>
+    <button type="button" data-admin-open="9">🔌 POS Connections</button>
+    <button type="button" data-admin-open="10">📦 Stock Management</button>
   </div></details>
 </div>
 <section class="panel"><div class="row" style="align-items:center"><div><h2 id="businessHeading">Business settings</h2><div id="publishStatus" class="pill">Awaiting approval</div></div><button class="btn" id="signOut">Sign out</button></div><div class="grid"><div><label>Brand name</label><input id="editCompany"></div><div><label>Catalogue slug</label><input id="editSlug" disabled></div><div><label>WhatsApp number</label><input id="editWhatsapp" placeholder="961XXXXXXXX"></div><div><label>Currency</label><select id="editCurrency"><option>USD</option><option>LBP</option><option>EUR</option></select></div><div><label>Brand colour</label><input id="brandColor" type="color" value="#173f35"></div><div><label>Logo image</label><input id="logoFile" type="file" accept="image/*"></div></div><label>Description</label><textarea id="editDescription"></textarea><div class="row"><button class="btn primary" id="saveSettings">Save business settings</button><button class="btn" id="copyLink">Copy catalogue link</button><a class="btn" id="openCatalogue" target="_blank" rel="noopener">Preview catalogue</a><button class="btn" id="installBusinessAdmin" type="button">Install Business Admin</button></div><div class="hint" style="margin-top:8px">Public catalogue link: <span id="catalogueLink"></span></div></section>
@@ -172,6 +178,47 @@
     <b>Connection status</b>
     <p class="hint">No direct POS connection is active in this staging build. Start with the spreadsheet import to test your product mapping. The AntiSoft Windows connector must be developed and security-tested separately before it is enabled.</p>
   </div>
+</section>
+<section class="panel" id="stockManagementPanel">
+  <div class="row" style="align-items:center"><h2 style="flex:2">Hybrid Stock Management</h2><button class="btn" id="refreshStock" type="button">Refresh stock</button></div>
+  <p class="hint">Stock is stored in the product's base unit. Additional units convert into that base unit. POS physical stock is the source of truth; online orders create reservations. Reservations are disabled by default until you configure units and opening/POS stock.</p>
+  <div class="domain" style="margin-bottom:12px">
+    <b>Business reservation setting</b>
+    <label style="display:flex;align-items:center;gap:8px"><input id="stockReservationsEnabled" type="checkbox" style="width:auto"> Enable automatic online stock reservations</label>
+    <p class="hint">When enabled, new orders reserve stock only if the order unit has a configured conversion and physical stock has been initialized. Unconfigured or insufficient lines are flagged for review, not silently deducted.</p>
+  </div>
+  <label for="stockProductSelect">Choose product</label>
+  <select id="stockProductSelect"><option value="">Select a product</option></select>
+  <div id="stockSummary" class="domain"><span class="hint">Choose a product to inspect its units and stock.</span></div>
+  <h3>Product units and barcodes</h3>
+  <p class="hint">The first unit is the base unit (factor 1). For every other unit, enter how many base units it contains. Example: 1 Box = 12 Rolls means conversion factor 12. Never guess a conversion. Unit-level barcodes are stored here; the current spreadsheet matching screen still matches at product level and will need a later unit-aware import enhancement.</p>
+  <div id="stockUnitRows"></div>
+  <h3>Add another selling unit</h3>
+  <div class="grid">
+    <div><label for="newStockUnitName">Unit name</label><input id="newStockUnitName" placeholder="e.g. Carton"></div>
+    <div><label for="newStockUnitFactor">Base units per unit</label><input id="newStockUnitFactor" type="number" min="0.000001" step="0.000001" placeholder="e.g. 12"></div>
+    <div><label for="newStockUnitBarcode">Barcode</label><input id="newStockUnitBarcode" placeholder="Optional unit barcode"></div>
+    <div><label for="newStockUnitPrice">Selling price</label><input id="newStockUnitPrice" type="number" min="0" step="0.01" placeholder="Optional"></div>
+  </div>
+  <button class="btn primary" id="addStockUnit" type="button">Add unit</button>
+  <h3>Initial physical stock</h3>
+  <p class="hint">Enter the opening count in the base unit only. This can be set once per product. Later quantities should arrive from a POS stock snapshot.</p>
+  <div class="grid">
+    <div><label for="openingStockQty">Opening quantity (base unit)</label><input id="openingStockQty" type="number" min="0" step="0.000001" placeholder="Quantity"></div>
+    <div><label for="openingStockNote">Note</label><input id="openingStockNote" placeholder="Initial count / stocktake date"></div>
+  </div>
+  <button class="btn primary" id="saveOpeningStock" type="button">Save opening stock</button>
+  <h3>Apply a POS stock snapshot (staging test)</h3>
+  <p class="hint">Use this only when you have an authoritative current POS count. Reusing the same event ID is ignored, so use a new unique ID for every new snapshot.</p>
+  <div class="grid">
+    <div><label for="stockSnapshotUnit">POS/catalogue unit</label><select id="stockSnapshotUnit"><option value="">Choose unit</option></select></div>
+    <div><label for="stockSnapshotQty">Quantity in selected unit</label><input id="stockSnapshotQty" type="number" min="0" step="0.000001" placeholder="POS count"></div>
+    <div style="grid-column:1/-1"><label for="stockSnapshotEvent">Unique POS event ID</label><input id="stockSnapshotEvent" placeholder="e.g. stocktake-2026-11-09-001"></div>
+  </div>
+  <button class="btn" id="applyStockSnapshot" type="button">Apply stock snapshot</button>
+  <h3>Retry a pending order reservation</h3>
+  <p class="hint">Use this after stock and unit conversions are configured. Enter the order UUID from the Orders dashboard.</p>
+  <div class="row"><input id="retryReservationOrderId" placeholder="Order UUID"><button class="btn" id="retryReservation" type="button">Retry reservation</button></div>
 </section></div></main>
 <script>
 
@@ -221,7 +268,7 @@ async function loadCategoryImages(){
  box.innerHTML=names.map((name,i)=>{const c=saved.get(name);return `<div style="display:grid;grid-template-columns:90px minmax(0,1fr);gap:12px;align-items:center;border:1px solid #e1e8e2;border-radius:12px;padding:10px;margin:8px 0"><div>${c?.image_url?`<img src="${esc(c.image_url)}" alt="" style="width:90px;height:80px;object-fit:cover;border-radius:9px">`:'<div style="width:90px;height:80px;background:#edf3ee;border-radius:9px;display:grid;place-items:center;font-size:26px">▦</div>'}</div><div><b>${esc(name)}</b><div class="hint">${c?.image_url?'Photo saved':'No category photo yet'}</div><input type="file" accept="image/*" data-category-photo="${esc(name)}" style="max-width:100%;margin-top:6px"><button class="btn primary" type="button" data-save-category-photo="${esc(name)}" style="margin-top:6px">Save category photo</button></div></div>`}).join('')||'<p class="hint">Add products with a category first. Categories will appear here.</p>';
  box.querySelectorAll('[data-save-category-photo]').forEach(btn=>btn.onclick=async()=>{try{const name=btn.dataset.saveCategoryPhoto,input=box.querySelector(`[data-category-photo="${CSS.escape(name)}"]`),file=input?.files?.[0];if(!file)throw Error('Choose an image first.');if(!file.type.startsWith('image/'))throw Error('Please choose an image file.');const optimized=await optimizeImage(file),ext=optimized.type==='image/webp'?'webp':'jpg',path=biz.id+'/categories/'+encodeURIComponent(name)+'-'+crypto.randomUUID()+'.'+ext;const up=await sb.storage.from('mc-saas-images').upload(path,optimized,{upsert:false,contentType:optimized.type});if(up.error)throw up.error;const image_url=sb.storage.from('mc-saas-images').getPublicUrl(path).data.publicUrl;const save=await sb.from('mc_saas_categories').upsert({business_id:biz.id,name,image_url,sort_order:names.indexOf(name)},{onConflict:'business_id,name'});if(save.error)throw save.error;setStatus('Category photo saved for '+name+'.');await loadCategoryImages();}catch(e){setStatus('Could not save category photo: '+e.message,true)}});
 }
-async function sessionLoad(){const {data}=await sb.auth.getSession();user=data.session?.user||null;if(!user){show('authPanel');show('createPanel',false);show('app',false);setStatus('Sign in to manage your catalogue.');return}show('authPanel',false);const r=await sb.from('mc_saas_members').select('business_id,role').eq('user_id',user.id).limit(1).maybeSingle();if(r.error){setStatus('Could not check business membership: '+r.error.message,true);return}if(!r.data){show('createPanel');show('app',false);setStatus('Signed in. Create your business profile to continue.');return}const b=await sb.from('mc_saas_businesses').select('*').eq('id',r.data.business_id).maybeSingle();if(b.error||!b.data){setStatus('Could not load your business: '+(b.error?.message||'not found'),true);return}biz=b.data;show('createPanel',false);show('app');fillSettings();await Promise.all([loadProducts(),loadDomains()]);await loadCategoryImages();setStatus(biz.is_published?'Business loaded. Your catalogue is published.':'Business loaded. It is private until platform approval.');}
+async function sessionLoad(){const {data}=await sb.auth.getSession();user=data.session?.user||null;if(!user){show('authPanel');show('createPanel',false);show('app',false);setStatus('Sign in to manage your catalogue.');return}show('authPanel',false);const r=await sb.from('mc_saas_members').select('business_id,role').eq('user_id',user.id).limit(1).maybeSingle();if(r.error){setStatus('Could not check business membership: '+r.error.message,true);return}if(!r.data){show('createPanel');show('app',false);setStatus('Signed in. Create your business profile to continue.');return}const b=await sb.from('mc_saas_businesses').select('*').eq('id',r.data.business_id).maybeSingle();if(b.error||!b.data){setStatus('Could not load your business: '+(b.error?.message||'not found'),true);return}biz=b.data;show('createPanel',false);show('app');fillSettings();await Promise.all([loadProducts(),loadDomains()]);await loadCategoryImages();await loadStockPanel().catch(e=>setStatus('Stock Management is awaiting the hybrid stock migration: '+e.message,true));setStatus(biz.is_published?'Business loaded. Your catalogue is published.':'Business loaded. It is private until platform approval.');}
 function fillSettings(){setupBusinessInstall(biz,'admin');$('businessHeading').textContent=biz.company_name+' · Settings';$('publishStatus').textContent=biz.is_published?'Published':'Awaiting platform approval';$('editCompany').value=biz.company_name||'';$('editSlug').value=biz.slug;$('editWhatsapp').value=biz.whatsapp||'';$('editCurrency').value=biz.currency||'USD';$('brandColor').value=biz.primary_color||'#173f35';$('editDescription').value=biz.description||'';$('catalogueTemplate').value=['classic','premium','fresh','shopify','editorial','compact','list','showcase'].includes(biz.catalogue_template)?biz.catalogue_template:'classic';$('catalogueLink').textContent=businessUrl();$('openCatalogue').href=businessUrl();}
 async function oauth(provider){try{const redirectTo=location.origin+location.pathname;const {error}=await sb.auth.signInWithOAuth({provider,options:{redirectTo,scopes:provider==='azure'?'email':undefined,queryParams:provider==='google'?{access_type:'offline',prompt:'select_account'}:undefined}});if(error)throw error}catch(e){setStatus('Sign-in could not start: '+e.message,true)}};$('googleSignIn').onclick=()=>oauth('google');$('microsoftSignIn').onclick=()=>oauth('azure');
 $('saveNewPassword').onclick=async()=>{try{const a=$('newPassword').value,b=$('confirmPassword').value;if(a.length<8)throw Error('Use at least 8 characters.');if(a!==b)throw Error('The passwords do not match.');const {error}=await sb.auth.updateUser({password:a});if(error)throw error;recoveryMode=false;$('newPassword').value='';$('confirmPassword').value='';show('resetPanel',false);setStatus('Password changed successfully. You can now manage your catalogue.');await sessionLoad()}catch(e){setStatus('Could not change password: '+e.message,true)}};
@@ -309,7 +356,7 @@ $('saveCategoryOrder').onclick=async()=>{
  try{const ordered=categoryOrderDraft.slice();for(let i=0;i<ordered.length;i++){const name=ordered[i],existing=savedCategoryRows.find(c=>String(c.name)===name);const r=await sb.from('mc_saas_categories').upsert({business_id:biz.id,name,sort_order:i,image_url:existing?.image_url||null},{onConflict:'business_id,name'});if(r.error)throw new Error('Could not save category order for '+name+': '+r.error.message);}await loadCategoryImages();categoryOrderDraft=ordered;renderCategoryOrder();setStatus('Category order saved. Product numbering inside every category remains independent.');}catch(err){setStatus('Could not save category order: '+err.message,true)}
 };
 $('productSearch').oninput=()=>{productsShown=PRODUCT_BATCH_SIZE;renderProducts()};$('productCategoryFilter').onchange=()=>{productsShown=PRODUCT_BATCH_SIZE;renderProducts()};$('refreshProducts').onclick=()=>loadProducts().then(()=>setStatus('Products refreshed.')).catch(e=>setStatus(e.message,true));
-$('saveProduct').onclick=async()=>{try{const id=$('productId').value,name=$('pName').value.trim(),category=$('pCategory').value.trim(),sku=$('pSku').value.trim();if(!name||!category)throw Error('Product name and category are required.');if(!sku)throw Error('SKU is required. SKU is the main product reference.');if(products.some(x=>String(x.sku||'').trim().toLowerCase()===sku.toLowerCase()&&x.id!==id))throw Error('This SKU already exists in your catalogue. Each product must have a unique SKU.');const p={business_id:biz.id,name,category,barcode:$('pBarcode').value.trim(),sku,pos_product_id:$('pPosId').value.trim(),description:$('pDescription').value.trim(),label1:$('pLabel1').value.trim()||'Box',price1:parsePrice($('pPrice1').value),label2:$('pLabel2').value.trim()||'Packet',price2:parsePrice($('pPrice2').value),sort_order:Math.max(0,(Number($('pSortOrder').value)||1)-1),updated_at:new Date().toISOString()};if([p.price1,p.price2].some(v=>v!==null&&(!Number.isFinite(v)||v<0)))throw Error('Prices must be zero or greater.');const file=$('pPhoto').files[0];if(file){const optimized=await optimizeImage(file);const ext=optimized.type==='image/webp'?'webp':'jpg';const path=biz.id+'/'+crypto.randomUUID()+'.'+ext;const up=await sb.storage.from('mc-saas-images').upload(path,optimized,{upsert:false,contentType:optimized.type});if(up.error)throw up.error;p.image=sb.storage.from('mc-saas-images').getPublicUrl(path).data.publicUrl}if(id){const old=products.find(x=>x.id===id);if(!p.image)p.image=old?.image||'';const requested=Math.max(1,Math.floor(Number($('pSortOrder').value)||1));await saveProductAtOrder(id,requested,p)}else{const nextOrder=products.filter(x=>(String(x.category||'Products').trim()||'Products')===category).reduce((m,x)=>Math.max(m,Number(x.sort_order)||-1),-1)+1;p.sort_order=nextOrder;const r=await sb.from('mc_saas_products').insert(p);if(r.error)throw r.error}resetProduct();await loadProducts();await loadCategoryImages();setStatus('Product saved to your business catalogue.')}catch(e){setStatus(e.message,true)}};
+$('saveProduct').onclick=async()=>{try{const id=$('productId').value,name=$('pName').value.trim(),category=$('pCategory').value.trim(),sku=$('pSku').value.trim();if(!name||!category)throw Error('Product name and category are required.');if(!sku)throw Error('SKU is required. SKU is the main product reference.');if(products.some(x=>String(x.sku||'').trim().toLowerCase()===sku.toLowerCase()&&x.id!==id))throw Error('This SKU already exists in your catalogue. Each product must have a unique SKU.');const p={business_id:biz.id,name,category,barcode:$('pBarcode').value.trim(),sku,pos_product_id:$('pPosId').value.trim(),description:$('pDescription').value.trim(),label1:$('pLabel1').value.trim()||'Box',price1:parsePrice($('pPrice1').value),label2:$('pLabel2').value.trim()||'Packet',price2:parsePrice($('pPrice2').value),sort_order:Math.max(0,(Number($('pSortOrder').value)||1)-1),updated_at:new Date().toISOString()};if([p.price1,p.price2].some(v=>v!==null&&(!Number.isFinite(v)||v<0)))throw Error('Prices must be zero or greater.');const file=$('pPhoto').files[0];if(file){const optimized=await optimizeImage(file);const ext=optimized.type==='image/webp'?'webp':'jpg';const path=biz.id+'/'+crypto.randomUUID()+'.'+ext;const up=await sb.storage.from('mc-saas-images').upload(path,optimized,{upsert:false,contentType:optimized.type});if(up.error)throw up.error;p.image=sb.storage.from('mc-saas-images').getPublicUrl(path).data.publicUrl}if(id){const old=products.find(x=>x.id===id);if(!p.image)p.image=old?.image||'';const requested=Math.max(1,Math.floor(Number($('pSortOrder').value)||1));await saveProductAtOrder(id,requested,p)}else{const nextOrder=products.filter(x=>(String(x.category||'Products').trim()||'Products')===category).reduce((m,x)=>Math.max(m,Number(x.sort_order)||-1),-1)+1;p.sort_order=nextOrder;const r=await sb.from('mc_saas_products').insert(p);if(r.error)throw r.error}resetProduct();await loadProducts();await loadCategoryImages();await loadStockPanel().catch(()=>{});setStatus('Product saved to your business catalogue.')}catch(e){setStatus(e.message,true)}};
 $('productList').onchange=async e=>{const input=e.target.closest('[data-inline-photo]');if(!input||!input.files?.[0])return;const id=input.dataset.inlinePhoto;try{setStatus('Uploading product photo…');const optimized=await optimizeImage(input.files[0]);const path=biz.id+'/'+crypto.randomUUID()+'.webp';const up=await sb.storage.from('mc-saas-images').upload(path,optimized,{upsert:false,contentType:optimized.type});if(up.error)throw up.error;const image=sb.storage.from('mc-saas-images').getPublicUrl(path).data.publicUrl;const r=await sb.from('mc_saas_products').update({image,updated_at:new Date().toISOString()}).eq('id',id).eq('business_id',biz.id);if(r.error)throw r.error;await loadProducts();setStatus('Product photo updated.')}catch(err){setStatus('Photo update failed: '+err.message,true)}};
 $('productList').onclick=async e=>{if(e.target.closest('#showMoreProducts')){productsShown+=PRODUCT_BATCH_SIZE;renderProducts();return}const inline=e.target.closest('[data-inline-save]');if(inline){const id=inline.dataset.inlineSave,row=inline.closest('[data-product-row]');try{const value=k=>row.querySelector(`[data-field="${k}"]`)?.value??'';const name=value('name').trim(),category=value('category').trim();if(!name||!category)throw Error('Product name and category are required.');const parse=v=>String(v).trim()===''?null:Number(v);const price1=parse(value('price1')),price2=parse(value('price2')),sort=Number(value('sort_order'));if([price1,price2].some(v=>v!==null&&(!Number.isFinite(v)||v<0)))throw Error('Prices must be zero or greater.');if(!Number.isFinite(sort)||sort<0)throw Error('Display order must be zero or greater.');const payload={name,category,barcode:value('barcode').trim(),label1:value('label1').trim()||'Box',price1,label2:value('label2').trim()||'Packet',price2,description:value('description').trim(),sort_order:Math.max(0,Math.floor(sort)-1),updated_at:new Date().toISOString()};await saveProductAtOrder(id,Math.max(1,Math.floor(sort)||1),payload);await loadProducts();setStatus('Product updated. Products in this category have been renumbered from 1; other categories keep their own numbering.')}catch(err){setStatus('Could not save this product: '+err.message,true)}return;}const eb=e.target.closest('[data-edit]'),db=e.target.closest('[data-delete]');try{if(eb){const p=products.find(x=>x.id===eb.dataset.edit);if(!p)return;$('productId').value=p.id;$('pName').value=p.name;$('pCategory').value=p.category;$('pBarcode').value=p.barcode||'';$('pSku').value=p.sku||'';$('pPosId').value=p.pos_product_id||'';$('pLabel1').value=p.label1||'Box';$('pPrice1').value=p.price1??'';$('pLabel2').value=p.label2||'Packet';$('pPrice2').value=p.price2??'';$('pDescription').value=p.description||'';$('pSortOrder').value=String((Number(p.sort_order)||0)+1);$('pPhoto').value='';$('productTitle').textContent='Edit product';$('saveProduct').textContent='Update product';window.scrollTo({top:0,behavior:'smooth'})}if(db&&confirm('Delete this product?')){const r=await sb.from('mc_saas_products').delete().eq('id',db.dataset.delete).eq('business_id',biz.id);if(r.error)throw r.error;await loadProducts();setStatus('Product deleted.')}}catch(e){setStatus(e.message,true)}};
 function normalizedProductKey(v){return String(v??'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,' ').trim().replace(/\s+/g,' ')}
@@ -567,6 +614,97 @@ $('runBulkImport').onclick=async()=>{
 async function loadDomains(){const r=await sb.from('mc_saas_custom_domains').select('*').eq('business_id',biz.id).order('created_at',{ascending:false});if(r.error){$('domainList').textContent='Could not load domains: '+r.error.message;return}$('domainList').innerHTML=(r.data||[]).map(d=>`<div class="domain"><b>${esc(d.domain)}</b> · ${d.verified&&d.active?'Active': 'Pending approval'}<br><span class="hint">DNS verification token: <code>${esc(d.verification_token)}</code></span>${!d.verified?`<br><button class="btn danger" data-domain-delete="${d.id}">Cancel request</button>`:''}</div>`).join('')||'<p class="hint">No custom domains requested.</p>'}
 $('requestDomain').onclick=async()=>{try{const domain=$('domainInput').value.trim().toLowerCase().replace(/^https?:\/\//,'').replace(/\/$/,'').replace(/^www\./,'');if(!/^(?=.{4,253}$)([a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,63}$/.test(domain))throw Error('Enter a valid domain such as shop.example.com.');const r=await sb.from('mc_saas_custom_domains').insert({business_id:biz.id,domain});if(r.error)throw r.error;$('domainInput').value='';await loadDomains();setStatus('Domain request saved. Give the displayed verification token to your platform administrator for DNS review and activation.')}catch(e){setStatus(e.message,true)}};
 $('domainList').onclick=async e=>{const b=e.target.closest('[data-domain-delete]');if(!b||!confirm('Cancel this pending domain request?'))return;const r=await sb.from('mc_saas_custom_domains').delete().eq('id',b.dataset.domainDelete).eq('business_id',biz.id);if(r.error)setStatus(r.error.message,true);else{await loadDomains();setStatus('Domain request removed.')}};
+
+let stockUnitsCache=[],stockRowsCache=[];
+function stockProduct(){return products.find(p=>p.id===$('stockProductSelect').value)||null;}
+function renderStockProduct(){
+ const p=stockProduct(); if(!p){$('stockSummary').innerHTML='<span class="hint">Choose a product to inspect its units and stock.</span>';$('stockUnitRows').innerHTML='';return;}
+ const units=stockUnitsCache.filter(u=>u.product_id===p.id);
+ const st=stockRowsCache.find(x=>x.product_id===p.id);
+ const base=units.find(u=>u.is_base_unit);
+ $('stockSummary').innerHTML=`<b>${esc(p.name)}</b><p class="hint">Base unit: ${esc(base?.unit_name||'Not configured')} · Physical: ${st?.stock_initialized?Number(st.physical_qty_base).toLocaleString()+' '+esc(base?.unit_name||'base units'):'Not initialized'} · Reserved: ${Number(st?.reserved_qty_base||0).toLocaleString()} · Available: ${st?.stock_initialized?Number(st.available_qty_base||0).toLocaleString():'Unknown'} · Status: ${esc(st?.availability_status||'unknown')}</p>`;
+ $('stockSnapshotUnit').innerHTML='<option value="">Choose unit</option>'+units.filter(u=>u.is_active).map(u=>`<option value="${u.id}">${esc(u.unit_name)} · factor ${Number(u.conversion_to_base)}</option>`).join('');
+ $('stockUnitRows').innerHTML=units.map(u=>`<div class="domain" data-stock-unit-row="${u.id}"><b>${esc(u.unit_name)} ${u.is_base_unit?'<span class="pill">Base unit</span>':''}</b><div class="grid"><div><label>Conversion to base unit</label><input data-stock-field="factor" type="number" min="0.000001" step="0.000001" value="${Number(u.conversion_to_base)}" ${u.is_base_unit?'disabled':''}></div><div><label>Barcode</label><input data-stock-field="barcode" value="${esc(u.barcode||'')}"></div><div><label>Selling price</label><input data-stock-field="price" type="number" min="0" step="0.01" value="${u.selling_price??''}"></div><div style="display:flex;align-items:end"><label style="display:flex;gap:8px;align-items:center"><input data-stock-field="configured" type="checkbox" style="width:auto" ${u.conversion_configured?'checked':''} ${u.is_base_unit?'disabled':''}> Conversion verified</label></div></div><button class="btn" data-save-stock-unit="${u.id}" type="button">Save unit settings</button></div>`).join('')||'<p class="hint">No units found. Run HYBRID_STOCK_MIGRATION.sql first.</p>';
+ $('openingStockQty').value='';$('openingStockNote').value='';
+}
+async function loadStockPanel(){
+ if(!biz)return;
+ const [u,s,settings]=await Promise.all([
+  sb.from('mc_saas_product_units').select('*').eq('business_id',biz.id).order('product_id').order('is_base_unit',{ascending:false}).order('unit_name'),
+  sb.from('mc_saas_stock_availability').select('*').eq('business_id',biz.id),
+  sb.from('mc_saas_stock_settings').select('reservations_enabled').eq('business_id',biz.id).maybeSingle()
+ ]);
+ if(u.error)throw u.error;if(s.error)throw s.error;if(settings.error)throw settings.error;
+ stockUnitsCache=u.data||[];stockRowsCache=s.data||[];
+ const selected=$('stockProductSelect').value;
+ $('stockProductSelect').innerHTML='<option value="">Select a product</option>'+products.map(p=>`<option value="${p.id}">${esc(p.name)}</option>`).join('');
+ $('stockProductSelect').value=products.some(p=>p.id===selected)?selected:(products[0]?.id||'');
+ $('stockReservationsEnabled').checked=!!settings.data?.reservations_enabled;
+ renderStockProduct();
+}
+$('stockProductSelect').addEventListener('change',renderStockProduct);
+$('stockUnitRows').addEventListener('click',async e=>{
+ const btn=e.target.closest('[data-save-stock-unit]');if(!btn)return;
+ const row=btn.closest('[data-stock-unit-row]'),id=btn.dataset.saveStockUnit,unit=stockUnitsCache.find(x=>x.id===id);if(!row||!unit)return;
+ try{
+  const val=k=>row.querySelector(`[data-stock-field="${k}"]`);
+  const factor=unit.is_base_unit?1:Number(val('factor').value),price=val('price').value.trim()===''?null:Number(val('price').value),barcode=val('barcode').value.trim(),configured=unit.is_base_unit?true:val('configured').checked;
+  if(!Number.isFinite(factor)||factor<=0)throw Error('Conversion factor must be greater than zero.');
+  if(price!==null&&(!Number.isFinite(price)||price<0))throw Error('Selling price must be zero or greater.');
+  if(!configured&&!unit.is_base_unit) { /* Explicitly allowed: keep the unit pending until verified. */ }
+  let r;
+  const product=products.find(x=>x.id===unit.product_id);
+  if(unit.is_base_unit){
+   r=await sb.from('mc_saas_products').update({barcode,price1:price,updated_at:new Date().toISOString()}).eq('id',unit.product_id).eq('business_id',biz.id);
+   if(r.error)throw r.error;
+  }else{
+   if(product&&String(product.label2||'').trim().toLowerCase()===String(unit.unit_name||'').trim().toLowerCase()){
+    const priceSync=await sb.from('mc_saas_products').update({price2:price,updated_at:new Date().toISOString()}).eq('id',unit.product_id).eq('business_id',biz.id);
+    if(priceSync.error)throw priceSync.error;
+   }
+   r=await sb.from('mc_saas_product_units').update({conversion_to_base:factor,conversion_configured:configured,barcode,selling_price:price,updated_at:new Date().toISOString()}).eq('id',id).eq('business_id',biz.id);
+   if(r.error)throw r.error;
+  }
+  await loadProducts();await loadStockPanel();setStatus('Unit settings saved.');
+ }catch(err){setStatus('Could not save unit: '+err.message,true)}
+});
+$('addStockUnit').onclick=async()=>{
+ try{
+  const p=stockProduct();if(!p)throw Error('Choose a product first.');
+  const name=$('newStockUnitName').value.trim(),factor=Number($('newStockUnitFactor').value),barcode=$('newStockUnitBarcode').value.trim(),price=$('newStockUnitPrice').value.trim()===''?null:Number($('newStockUnitPrice').value);
+  if(!name)throw Error('Enter a unit name.');if(!Number.isFinite(factor)||factor<=0)throw Error('Enter a valid base-unit conversion factor.');if(price!==null&&(!Number.isFinite(price)||price<0))throw Error('Enter a valid selling price.');
+  const r=await sb.from('mc_saas_product_units').insert({business_id:biz.id,product_id:p.id,unit_name:name,conversion_to_base:factor,is_base_unit:false,conversion_configured:true,barcode,selling_price:price});if(r.error)throw r.error;
+  $('newStockUnitName').value='';$('newStockUnitFactor').value='';$('newStockUnitBarcode').value='';$('newStockUnitPrice').value='';await loadStockPanel();setStatus('New selling unit added.');
+ }catch(err){setStatus('Could not add unit: '+err.message,true)}
+};
+$('saveOpeningStock').onclick=async()=>{
+ try{
+  const p=stockProduct();if(!p)throw Error('Choose a product first.');const qty=$('openingStockQty').value.trim();if(qty==='')throw Error('Enter the opening quantity in the base unit.');
+  const base=stockUnitsCache.find(u=>u.product_id===p.id&&u.is_base_unit);if(!base)throw Error('The product has no base unit.');
+  const r=await sb.rpc('mc_saas_set_opening_stock',{p_business_id:biz.id,p_product_id:p.id,p_quantity_base:Number(qty),p_note:$('openingStockNote').value.trim()});if(r.error)throw r.error;
+  await loadStockPanel();setStatus('Opening stock saved in '+base.unit_name+'.');
+ }catch(err){setStatus('Could not save opening stock: '+err.message,true)}
+};
+$('stockReservationsEnabled').addEventListener('change',async()=>{
+ try{
+  if($('stockReservationsEnabled').checked&&!confirm('Enable automatic reservations? Only orders with verified unit conversions and initialized physical stock will reserve successfully. Unconfigured lines will be flagged for review.')){ $('stockReservationsEnabled').checked=false;return; }
+  const r=await sb.from('mc_saas_stock_settings').update({reservations_enabled:$('stockReservationsEnabled').checked,updated_at:new Date().toISOString()}).eq('business_id',biz.id);if(r.error)throw r.error;setStatus('Automatic reservation setting updated.');
+ }catch(err){$('stockReservationsEnabled').checked=false;setStatus('Could not update reservation setting: '+err.message,true)}
+});
+$('applyStockSnapshot').onclick=async()=>{
+ try{
+  const unitId=$('stockSnapshotUnit').value,qty=$('stockSnapshotQty').value.trim(),eventId=$('stockSnapshotEvent').value.trim();
+  if(!unitId)throw Error('Choose a product unit.');if(qty==='')throw Error('Enter the authoritative POS quantity.');if(!eventId)throw Error('Enter a unique POS event ID.');
+  const r=await sb.rpc('mc_saas_apply_pos_stock_snapshot',{p_business_id:biz.id,p_product_unit_id:unitId,p_quantity:Number(qty),p_source_type:'manual',p_external_event_id:eventId});if(r.error)throw r.error;
+  $('stockSnapshotQty').value='';await loadStockPanel();setStatus('POS snapshot result: '+JSON.stringify(r.data));
+ }catch(err){setStatus('Could not apply stock snapshot: '+err.message,true)}
+};
+$('retryReservation').onclick=async()=>{
+ try{const id=$('retryReservationOrderId').value.trim();if(!id)throw Error('Enter an order UUID.');const r=await sb.rpc('mc_saas_reserve_order',{p_order_id:id});if(r.error)throw r.error;setStatus('Reservation review result: '+JSON.stringify(r.data));}
+ catch(err){setStatus('Could not retry reservation: '+err.message,true)}
+};
+$('refreshStock').onclick=()=>loadStockPanel().then(()=>setStatus('Stock information refreshed.')).catch(e=>setStatus(e.message,true));
+
 sb.auth.onAuthStateChange(()=>setTimeout(()=>sessionLoad().catch(e=>setStatus(e.message,true)),0));sessionLoad().catch(e=>setStatus(e.message,true));
 })();
 </script>
@@ -574,7 +712,7 @@ sb.auth.onAuthStateChange(()=>setTimeout(()=>sessionLoad().catch(e=>setStatus(e.
 (function(){
  const app=document.getElementById('app'); if(!app) return;
  const sections=Array.from(app.children).filter(el=>el.tagName==='SECTION');
- const names=['Business settings','Catalogue design','Custom domain','Add product','Product & Price Synchronization','Category photos','Category ordering','Products','Business tools','POS Connections'];
+ const names=['Business settings','Catalogue design','Custom domain','Add product','Product & Price Synchronization','Category photos','Category ordering','Products','Business tools','POS Connections','Stock Management'];
  const board=document.getElementById('adminDashboard'), toolbar=document.getElementById('adminPageToolbar');
  const title=document.getElementById('adminCurrentTitle');
  function home(){sections.forEach(s=>s.classList.add('hidden'));board.classList.remove('hidden');toolbar.classList.add('hidden');}

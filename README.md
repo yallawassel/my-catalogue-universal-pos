@@ -12,7 +12,10 @@ This package turns the White Pack feature set into a separate multi-business cat
 - `saas.js` — shared Supabase client, domain/slug resolver, image optimizer.
 - `SAAS_MIGRATION.sql` — isolated `mc_saas_*` schema and RLS policies.
 - `POS_SYNC_MIGRATION.sql` — additive POS identifiers, synchronization jobs and audit history.
-- `POS_SYNC_GUIDE.md` — universal POS file-import behavior, barcode-first matching, and connector roadmap.
+- `POS_SYNC_GUIDE.md` — universal POS file-import behavior, barcode-first product matching, and connector roadmap.
+- `HYBRID_STOCK_MIGRATION.sql` — additive unit/barcode, conversion, hybrid stock, reservation and POS stock-event schema.
+- `HYBRID_STOCK_GUIDE.md` — migration, configuration, safety and testing steps.
+- `HYBRID_STOCK_RELEASE_NOTES.md` — staging release scope and validation notes.
 - `ANTISOFT_CONNECTOR_STATUS.md` — AntiSoft connector requirements and strict one-way/read-only safety gates.
 - `SAAS_HARDENING_MIGRATION.sql` — completes missing settings/template/platform RPCs, adds subscription fields, and protects platform-only fields with an email allowlist.
 - `PLATFORM_ADMIN_GUIDE.sql` — platform administrator allowlist, domain approval and driver assignment instructions.
@@ -23,8 +26,11 @@ Keep these files in a **new repository** such as `my-catalogue-saas`. They are n
 
 ## Setup order
 
-1. Back up the intended My Catalogue Supabase project.
-2. Open Supabase → SQL Editor and run these files in order: `SAAS_MIGRATION.sql`, `POS_SYNC_MIGRATION.sql`, then `SAAS_HARDENING_MIGRATION.sql`. Do not run them in the White Pack Supabase project. The migrations are additive; back up the database first.
+**Important for the current existing My Catalogue staging project:** its SaaS tables, POS sync tables/columns and hardening fields have already been installed and inspected. Do not rerun `SAAS_MIGRATION.sql`, `POS_SYNC_MIGRATION.sql`, or `SAAS_HARDENING_MIGRATION.sql` on that existing database. After taking a fresh backup, the new stock upgrade is the only new migration to review: `HYBRID_STOCK_MIGRATION.sql`. Run it only in the existing My Catalogue project, never in White Pack. See `HYBRID_STOCK_GUIDE.md`.
+
+For a completely new Supabase project, use the original initial setup sequence below after a backup:
+1. Back up the new Supabase project.
+2. Run `SAAS_MIGRATION.sql`, `POS_SYNC_MIGRATION.sql`, and `SAAS_HARDENING_MIGRATION.sql` in that order.
 3. In Supabase SQL Editor, open `PLATFORM_ADMIN_GUIDE.sql`, replace the example email with the platform owner's exact sign-in email, and run the allowlist INSERT statement. Do not skip this step: platform-admin.html must deny all other accounts.
 4. In Supabase → Authentication, configure Site URL and Redirect URLs for the deployed app. Keep email confirmation enabled for production.
 5. Upload the HTML files and `saas.js` together to a new repository/deployment. All files must share the same directory so relative links work. Use the exact lowercase filenames in this ZIP.
@@ -67,3 +73,8 @@ The AntiSoft Windows connector and connectors for external POS APIs are roadmap 
 - Billing/subscription collection is not included; plan/payment status and expiry are tracked manually by the platform administrator.
 - Team member invitation/role management and automated password-recovery UX need further polish.
 - This package is a functional starter; complete end-to-end tests and RLS review in a staging Supabase project before production use.
+
+
+## Hybrid stock upgrade (staging)
+
+The repository now includes `HYBRID_STOCK_MIGRATION.sql` and `HYBRID_STOCK_GUIDE.md` for unit-level barcodes, explicit conversion factors, physical stock, online reservations and idempotent POS stock snapshots. Run this additive migration only in the existing My Catalogue Supabase project after a backup. Reservation enforcement is disabled by default. This does not connect to AntiSoft or modify the separate White Pack Supabase project.

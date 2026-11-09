@@ -29,7 +29,7 @@ Before automatic sync is enabled, verify:
 - Whether a product is active/available for online sale.
 - How stock quantities are represented and whether they are safe to publish.
 
-A product may have multiple packaging barcodes. The current catalogue import schema stores one primary barcode per product and two price/unit labels. A separate product-unit barcode mapping is required before mapping multiple AntiSoft unit barcodes to one catalogue product. Never create duplicate catalogue products just because one AntiSoft product has multiple unit barcodes.
+A product may have multiple packaging barcodes. The current catalogue import schema stores one primary barcode per product and two price/unit labels. The hybrid stock migration now provides product-unit rows and POS unit mapping tables. However, the spreadsheet importer is not yet unit-aware and the AntiSoft connector is not implemented. The connector must populate and validate these mappings before mapping multiple AntiSoft unit barcodes to one catalogue product. Never create duplicate catalogue products just because one AntiSoft product has multiple unit barcodes.
 
 ## Product selection
 
@@ -59,3 +59,7 @@ Do not enable the AntiSoft connector until:
 4. Product selection and preview are verified.
 5. One-way network behavior is tested.
 6. Recovery and audit logging are tested.
+
+## Hybrid stock database foundation added in staging
+
+The repository now includes `HYBRID_STOCK_MIGRATION.sql`, which adds unit-level barcodes/conversion factors, physical stock, online reservations, stock movements, POS unit mappings, idempotent stock events, and per-business reservation settings. This is a database foundation only. It does not implement the local Windows connector or connect to AntiSoft. Reservation enforcement starts disabled. The migration guide explains the required conversion and test steps.
