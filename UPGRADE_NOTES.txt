@@ -1,0 +1,32 @@
+MY CATALOGUE — POS SYNCHRONIZATION UPGRADE
+
+This package includes the first release of Universal POS / Excel synchronization.
+
+IMPLEMENTED IN THIS PACKAGE
+- Price-only synchronization of matched products.
+- Full product synchronization and creation of new products.
+- Match priority: POS Product ID, barcode, SKU.
+- Legacy compatibility: a spreadsheet SKU can also match an existing catalogue barcode field.
+- Optional online markup/discount percentage; 0 mirrors POS, positive adds markup, negative discounts.
+- Review screen and explicit confirmation before changes.
+- Preserve photos during price-only updates and preserve existing photos during full updates unless a replacement is selected.
+- Do not delete catalogue products that are absent from a spreadsheet.
+- Per-job and per-product change logging.
+- Downloadable POS Excel template.
+- Excel export now includes POS Product ID and SKU.
+- Manual product editor includes SKU and POS Product ID.
+
+REQUIRED BEFORE USING SYNC
+1. Back up your Supabase project.
+2. Run POS_SYNC_MIGRATION.sql in Supabase SQL Editor.
+3. Deploy the updated project files together.
+
+AUTOMATIC POS API CONNECTIONS
+Not activated in this package. Different POS vendors require different API credentials, endpoints and data formats. The new sync job/history structure provides the base for future secure Supabase Edge Function connectors and scheduled sync. Excel/CSV works as the universal first option.
+
+VALIDATION PERFORMED
+- Inline admin JavaScript passed Node.js syntax validation.
+- HTML structure checked for duplicate element IDs; none found.
+- ZIP integrity checked after packaging.
+
+This is a code/package validation, not a live Supabase integration test. Apply the SQL migration and test with a sample POS export in a staging business before production rollout.

@@ -1,0 +1,23 @@
+MY CATALOGUE SAAS — UPDATED FILES
+
+Changes included:
+- Admin login UI now offers Google OAuth, Microsoft OAuth (Supabase provider key: azure), email/password sign-in and registration.
+- Password reset emails now return to admin.html?type=recovery and a new-password form handles the PASSWORD_RECOVERY event.
+- Bulk Excel import checks duplicates against existing products and duplicate rows inside the same spreadsheet (when skip-duplicates is enabled).
+- New product saves now respect the entered display order instead of always overwriting it with the product count.
+- Public category order now follows the earliest product sort_order rather than alphabetical order.
+- Product images are lazy-loaded with async decoding and dimensions to reduce layout shift and initial network work.
+- Image optimization falls back to JPEG if the browser cannot encode WebP; upload MIME type and extension follow the actual optimized file.
+- The public catalogue updates the Apple touch icon to the business logo when one is configured.
+
+REQUIRED SUPABASE DASHBOARD CONFIGURATION (not possible to enable from HTML alone):
+1. Authentication > Providers: enable Google and configure Google OAuth client ID/secret.
+2. Authentication > Providers: enable Azure (Microsoft) and configure Microsoft application client ID/secret. Ensure the requested email scope is allowed.
+3. Authentication > URL Configuration: add the exact deployed admin.html URL to Redirect URLs, including the GitHub Pages path. Also add your local development URL if used.
+4. Configure SMTP/email delivery in Supabase for reliable password recovery. In email templates, ensure the reset link uses the Supabase recovery URL flow.
+5. Test registration, Google sign-in, Microsoft sign-in, sign-out, and password reset before offering accounts to customers.
+
+NOTES / LIMITATIONS:
+- OAuth buttons will show an error until the providers are enabled and credentials configured in Supabase.
+- A truly business-specific Android install icon needs a business-specific manifest/icon URL served from hosting. This static package retains the generic Android manifest icons; the page updates the Apple touch icon when a business logo is available. Do not promise per-business Android icons until dynamic manifest hosting is implemented.
+- The app remains connected to the existing Supabase project and schema. No SQL migration was included because these changes use existing columns and auth features.

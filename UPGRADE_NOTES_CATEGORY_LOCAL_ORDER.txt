@@ -1,0 +1,8 @@
+CATEGORY-LOCAL PRODUCT ORDERING UPDATE
+
+- Product display numbering starts at 1 independently in each category.
+- Moving a product reorders only its destination category; moving between categories compacts both source and destination.
+- Category order is saved separately in mc_saas_categories.sort_order.
+- Public catalogue category cards use the saved category order.
+- Use Admin > Category ordering > Renumber products in all categories once to convert existing business-wide numbering to category-local numbering.
+- No database schema migration is required. Existing products and images are not deleted.

@@ -1,0 +1,22 @@
+CATEGORY PHOTO FIX — NOVEMBER 2026
+
+This patch fixes the category-photo transfer and display path.
+
+CHANGES
+1. JSON imports now copy embedded images AND remote image URLs into the destination business's own mc-saas-images Supabase bucket. Previously, remote URLs from another catalogue were saved unchanged; those links could point to a different/private/removed storage bucket and display as broken images.
+2. If a remote image host blocks browser copying (CORS) or the source URL is unavailable, the import reports a clear error and asks for that image to be re-uploaded, instead of silently saving a broken link.
+3. The public catalogue matches category names case/accent/spacing-insensitively when loading category photos.
+4. Admin category photo list also matches saved names consistently and visibly marks broken saved image links.
+5. JSON export now includes categoryImages and categories, so dedicated category photos are preserved in future exports/imports.
+
+DEPLOY
+1. Back up the current GitHub repository.
+2. Replace the repository files with the files in this ZIP and commit/push.
+3. No new SQL migration is needed if CATEGORY_IMAGES_MIGRATION.sql was already run and the Category photos panel currently loads. If not, run that SQL once in Supabase SQL Editor.
+4. Open Admin > Category photos. If a saved image shows "Image link broken", choose the image again from your phone and press Save category photo.
+5. Open the public catalogue and refresh it. On Android Chrome, use the menu > Reload; if an old page persists, close that tab and open the catalogue link again.
+6. For future JSON imports, the image files will be copied into the destination catalogue's own storage. If an external host blocks copying, manually upload those particular images from your device.
+
+This patch does not delete or modify existing product rows, category rows, ordering, or Supabase business settings.
+
+7. New category uploads use UUID-only storage filenames; category names are not inserted into storage paths, avoiding URL-encoding ambiguity.
