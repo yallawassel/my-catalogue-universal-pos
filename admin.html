@@ -204,6 +204,22 @@
   <h3>Product units and barcodes</h3>
   <p class="hint">The first unit is the base unit (factor 1). For every other unit, enter how many base units it contains. Example: 1 Box = 12 Rolls means conversion factor 12. Never guess a conversion. Unit-level barcodes are stored here; the current spreadsheet matching screen still matches at product level and will need a later unit-aware import enhancement.</p>
   <div id="stockUnitRows"></div>
+  <div class="domain" style="margin:14px 0">
+    <h3 style="margin-top:0">Unit conversion tools — manual + Excel</h3>
+    <p class="hint">You can edit a product's units manually above, or export the current unit list to Excel, fill in verified conversion factors, then import it for review. Excel updates existing units only; it never matches by product name and never creates or deletes products or units.</p>
+    <div class="row">
+      <button class="btn" id="exportUnitConversions" type="button">Export units to Excel</button>
+      <button class="btn" id="downloadUnitTemplate" type="button">Download conversion template</button>
+    </div>
+    <label for="unitConversionFile">Import completed Excel / CSV file</label>
+    <input id="unitConversionFile" type="file" accept=".xlsx,.xls,.csv,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet">
+    <div id="unitConversionPreview" class="hidden" style="margin-top:10px"></div>
+    <div class="row" style="margin-top:8px">
+      <button class="btn primary" id="confirmUnitConversionImport" type="button" disabled>Apply reviewed unit updates</button>
+      <button class="btn" id="cancelUnitConversionImport" type="button">Clear preview</button>
+    </div>
+    <p class="hint">Required columns: Unit ID, Product ID, Conversion to Base, Conversion Configured. Optional: Barcode, Selling Price. For a non-base unit, set Conversion Configured to TRUE only after verifying the exact number of base units it contains. Base units are always kept at factor 1.</p>
+  </div>
   <h3>Add another selling unit</h3>
   <div class="grid">
     <div><label for="newStockUnitName">Unit name</label><input id="newStockUnitName" placeholder="e.g. Carton"></div>
@@ -639,6 +655,82 @@ function renderStockProduct(){
  $('stockUnitRows').innerHTML=units.map(u=>`<div class="domain" data-stock-unit-row="${u.id}"><b>${esc(u.unit_name)} ${u.is_base_unit?'<span class="pill">Base unit</span>':''}</b><div class="grid"><div><label>Conversion to base unit</label><input data-stock-field="factor" type="number" min="0.000001" step="0.000001" value="${Number(u.conversion_to_base)}" ${u.is_base_unit?'disabled':''}></div><div><label>Barcode</label><input data-stock-field="barcode" value="${esc(u.barcode||'')}"></div><div><label>Selling price</label><input data-stock-field="price" type="number" min="0" step="0.01" value="${u.selling_price??''}"></div><div style="display:flex;align-items:end"><label style="display:flex;gap:8px;align-items:center"><input data-stock-field="configured" type="checkbox" style="width:auto" ${u.conversion_configured?'checked':''} ${u.is_base_unit?'disabled':''}> Conversion verified</label></div></div><button class="btn" data-save-stock-unit="${u.id}" type="button">Save unit settings</button></div>`).join('')||'<p class="hint">No units found. Run HYBRID_STOCK_MIGRATION.sql first.</p>';
  $('openingStockQty').value='';$('openingStockNote').value='';
 }
+let pendingUnitImport=[];
+function unitConversionRows(){
+ return stockUnitsCache.map(u=>{const p=products.find(x=>x.id===u.product_id);return {'Unit ID':u.id,'Product ID':u.product_id,'Product Name':p?.name||'','Unit Name':u.unit_name||'','Is Base Unit':!!u.is_base_unit,'Conversion to Base':u.is_base_unit?1:(u.conversion_configured?Number(u.conversion_to_base):''),'Conversion Configured':!!u.conversion_configured,'Barcode':u.barcode||'','Selling Price':u.selling_price??''}});
+}
+async function writeUnitWorkbook(template=false){
+ const XLSX=await loadXlsxReader();const rows=unitConversionRows();
+ if(template)rows.forEach(r=>{if(!r['Is Base Unit']){r['Conversion to Base']='';r['Conversion Configured']=false;}});
+ const wb=XLSX.utils.book_new();const ws=XLSX.utils.json_to_sheet(rows,{header:['Unit ID','Product ID','Product Name','Unit Name','Is Base Unit','Conversion to Base','Conversion Configured','Barcode','Selling Price']});
+ ws['!cols']=[{wch:38},{wch:38},{wch:34},{wch:20},{wch:14},{wch:20},{wch:22},{wch:22},{wch:16}];
+ XLSX.utils.book_append_sheet(wb,ws,'UnitConversions');
+ const guide=XLSX.utils.aoa_to_sheet([
+  ['MY CATALOGUE — UNIT CONVERSION WORKBOOK'],
+  ['Purpose','Configure verified conversion factors for existing product units.'],
+  ['Important','Do not guess. Conversion to Base is the number of base units contained in one selected unit.'],
+  ['Example','If the base unit is Piece and one Box contains 12 Pieces, enter 12 for the Box row and TRUE for Conversion Configured.'],
+  ['Base units','Base units are fixed at factor 1 and cannot be changed by this import.'],
+  ['Identity','Keep Unit ID and Product ID unchanged. Rows are matched by these IDs, never by product name.'],
+  ['Unconfigured','For an unknown conversion, leave Conversion to Base blank and set Conversion Configured to FALSE.'],
+  ['Optional fields','Barcode and Selling Price may be updated per unit. Leave Selling Price blank to clear the unit selling price.'],
+  ['Scope','This workbook updates existing unit settings only. It does not add/delete products or units, set stock quantities, or enable reservations.']
+ ]);
+ guide['!cols']=[{wch:24},{wch:110}];XLSX.utils.book_append_sheet(wb,guide,'Instructions');
+ XLSX.writeFile(wb,(biz.slug||'my-catalogue')+(template?'-unit-conversion-template.xlsx':'-unit-conversions.xlsx'));
+}
+$('exportUnitConversions').onclick=async()=>{try{await writeUnitWorkbook(false);setStatus('Unit conversion export created.')}catch(e){setStatus('Could not export unit conversions: '+e.message,true)}};
+$('downloadUnitTemplate').onclick=async()=>{try{await writeUnitWorkbook(true);setStatus('Unit conversion template created. Fill only verified factors, then import it for review.')}catch(e){setStatus('Could not create unit template: '+e.message,true)}};
+function clearUnitImport(){pendingUnitImport=[];$('unitConversionPreview').classList.add('hidden');$('unitConversionPreview').innerHTML='';$('confirmUnitConversionImport').disabled=true;$('unitConversionFile').value='';}
+$('cancelUnitConversionImport').onclick=clearUnitImport;
+$('unitConversionFile').addEventListener('change',async()=>{
+ try{
+  const file=$('unitConversionFile').files?.[0];if(!file)return;const XLSX=await loadXlsxReader();const wb=XLSX.read(await file.arrayBuffer(),{type:'array'});const sheetName=wb.SheetNames.includes('UnitConversions')?'UnitConversions':wb.SheetNames[0];const rows=XLSX.utils.sheet_to_json(wb.Sheets[sheetName],{defval:'',raw:false});
+  if(!rows.length)throw Error('The selected file has no unit rows.');
+  const local=new Map(stockUnitsCache.map(u=>[String(u.id),u]));const seen=new Set();const valid=[],issues=[];
+  for(let i=0;i<rows.length;i++){
+   const row=rows[i],unitId=String(row['Unit ID']||row.unit_id||'').trim(),productId=String(row['Product ID']||row.product_id||'').trim();
+   if(!unitId&&!productId)continue;
+   if(!unitId||!productId){issues.push('Row '+(i+2)+': Unit ID and Product ID are required.');continue;}
+   if(seen.has(unitId)){issues.push('Row '+(i+2)+': duplicate Unit ID '+unitId+'.');continue;}seen.add(unitId);
+   const unit=local.get(unitId);if(!unit||unit.product_id!==productId){issues.push('Row '+(i+2)+': Unit ID / Product ID does not belong to this business.');continue;}
+   const configuredRaw=row['Conversion Configured']??row.conversion_configured??false;
+   const configured=['true','1','yes','y'].includes(String(configuredRaw).trim().toLowerCase());
+   const factorRaw=String(row['Conversion to Base']??row.conversion_to_base??'').trim();
+   let factor=unit.is_base_unit?1:(factorRaw===''?null:Number(factorRaw));
+   if(unit.is_base_unit){if(configuredRaw!==''&&!['true','1','yes','y'].includes(String(configuredRaw).trim().toLowerCase()))issues.push('Row '+(i+2)+': base unit must remain configured.');}
+   else if(configured&&(!Number.isFinite(factor)||factor<=0)){issues.push('Row '+(i+2)+': configured conversion requires a factor greater than zero.');continue;}
+   else if(!configured&&factor!==null&&(!Number.isFinite(factor)||factor<=0)){issues.push('Row '+(i+2)+': conversion factor must be blank or greater than zero.');continue;}
+   const priceRaw=String(row['Selling Price']??row.selling_price??'').trim();const price=priceRaw===''?null:Number(priceRaw);
+   if(price!==null&&(!Number.isFinite(price)||price<0)){issues.push('Row '+(i+2)+': selling price must be blank or zero or greater.');continue;}
+   valid.push({id:unit.id,product_id:unit.product_id,unit_name:unit.unit_name,is_base_unit:unit.is_base_unit,factor:factor??1,configured:unit.is_base_unit?true:configured,barcode:String(row.Barcode??row.barcode??'').trim(),price});
+  }
+  if(!valid.length)throw Error('No valid unit rows were found. '+issues.slice(0,5).join(' '));
+  pendingUnitImport=valid;
+  const preview=$('unitConversionPreview');preview.classList.remove('hidden');preview.innerHTML='<b>Import preview</b><p class="hint">'+valid.length+' unit row(s) ready. '+issues.length+' issue(s) found. Rows with issues will not be applied.</p>'+issues.slice(0,8).map(x=>'<div class="hint" style="color:#a32d20">'+esc(x)+'</div>').join('')+'<div style="max-height:260px;overflow:auto;margin-top:8px">'+valid.slice(0,30).map(x=>'<div class="domain"><b>'+esc(products.find(p=>p.id===x.product_id)?.name||'Product')+'</b> · '+esc(x.unit_name)+'<div class="hint">Factor: '+(x.configured?x.factor:'Not configured')+' · Barcode: '+esc(x.barcode||'—')+' · Price: '+(x.price===null?'—':x.price)+'</div></div>').join('')+(valid.length>30?'<p class="hint">Showing first 30 of '+valid.length+' valid rows.</p>':'')+'</div>';
+  $('confirmUnitConversionImport').disabled=false;setStatus('Unit conversion file parsed. Review the preview before applying.');
+ }catch(err){clearUnitImport();setStatus('Unit conversion import could not be prepared: '+err.message,true)}
+});
+$('confirmUnitConversionImport').onclick=async()=>{
+ try{
+  if(!pendingUnitImport.length)throw Error('Choose and review a conversion file first.');
+  if(!confirm('Apply '+pendingUnitImport.length+' reviewed unit update(s) to this business? This will not change stock quantities or reservation settings.'))return;
+  let done=0;
+  for(const u of pendingUnitImport){
+   const product=products.find(p=>p.id===u.product_id);
+   if(product&&u.is_base_unit){
+    const legacy=await sb.from('mc_saas_products').update({barcode:u.barcode,price1:u.price,updated_at:new Date().toISOString()}).eq('id',u.product_id).eq('business_id',biz.id);
+    if(legacy.error)throw new Error('Failed syncing base-unit price for '+product.name+': '+legacy.error.message);
+   }else if(product&&String(product.label2||'').trim().toLowerCase()===String(u.unit_name||'').trim().toLowerCase()){
+    const legacy=await sb.from('mc_saas_products').update({price2:u.price,updated_at:new Date().toISOString()}).eq('id',u.product_id).eq('business_id',biz.id);
+    if(legacy.error)throw new Error('Failed syncing second-unit price for '+product.name+': '+legacy.error.message);
+   }
+   const r=await sb.from('mc_saas_product_units').update({conversion_to_base:u.is_base_unit?1:u.factor,conversion_configured:u.configured,barcode:u.barcode,selling_price:u.price,updated_at:new Date().toISOString()}).eq('id',u.id).eq('business_id',biz.id).eq('product_id',u.product_id);
+   if(r.error)throw new Error('Failed updating '+u.unit_name+': '+r.error.message);done++;
+  }
+  clearUnitImport();await loadProducts();await loadStockPanel();setStatus('Applied '+done+' unit update(s). Stock quantities and reservation settings were not changed.');
+ }catch(err){setStatus('Unit conversion import stopped: '+err.message,true)}
+};
 async function loadStockPanel(){
  if(!biz)return;
  const [u,s,settings]=await Promise.all([

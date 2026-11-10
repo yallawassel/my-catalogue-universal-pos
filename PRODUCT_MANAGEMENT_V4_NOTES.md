@@ -16,3 +16,11 @@
 
 
 This v4 update is UI and import workflow only. It does not execute SQL or activate reservations.
+
+## Unit conversion management follow-up
+- Added manual per-unit conversion editing and a reviewed Excel/CSV bulk-import workflow in Stock Management.
+- Added Excel export and a conversion template generated from the current business's unit IDs.
+- Imports match strictly by Unit ID + Product ID; product names are display-only and never used for matching.
+- Base units remain fixed at factor 1. Unknown secondary conversions remain unconfigured.
+- Unit-level barcode and price fields are supported. Existing product-level Label1/Label2 prices are synchronized when the imported unit corresponds to those legacy fields.
+- This update does not set physical stock, enable reservations, modify stock source, or connect AntiSoft.
