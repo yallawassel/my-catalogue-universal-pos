@@ -78,3 +78,7 @@ The AntiSoft Windows connector and connectors for external POS APIs are roadmap 
 ## Hybrid stock upgrade (staging)
 
 The repository now includes `HYBRID_STOCK_MIGRATION.sql` and `HYBRID_STOCK_GUIDE.md` for unit-level barcodes, explicit conversion factors, physical stock, online reservations and idempotent POS stock snapshots. Run this additive migration only in the existing My Catalogue Supabase project after a backup. Reservation enforcement is disabled by default. This does not connect to AntiSoft or modify the separate White Pack Supabase project.
+
+
+## Product onboarding v4
+New businesses see a first-product onboarding panel with two paths: add products manually or import a spreadsheet. Manual product entry does not require a SKU or barcode; SKU is optional and, when provided, must be unique within the business. Use `product-import-template.csv` or the in-admin **Download simple product template** workbook. Review all imported rows before confirming. The simple template does not import stock; configure units, conversion factors and opening stock separately after the hybrid stock migration is installed.
