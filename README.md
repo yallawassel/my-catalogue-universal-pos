@@ -82,3 +82,9 @@ The repository now includes `HYBRID_STOCK_MIGRATION.sql` and `HYBRID_STOCK_GUIDE
 
 ## Product onboarding v4
 New businesses see a first-product onboarding panel with two paths: add products manually or import a spreadsheet. Manual product entry does not require a SKU or barcode; SKU is optional and, when provided, must be unique within the business. Use `product-import-template.csv` or the in-admin **Download simple product template** workbook. Review all imported rows before confirming. The simple template does not import stock; configure units, conversion factors and opening stock separately after the hybrid stock migration is installed.
+
+## Universal POS connections (v7)
+
+The v7 package adds a business-scoped POS compatibility checker and setup-profile screen. Run `UNIVERSAL_POS_CONNECTIONS_V7_MIGRATION.sql` in the **My Catalogue staging Supabase project only** before saving profiles. See `UNIVERSAL_POS_ARCHITECTURE_V7.md` and `UNIVERSAL_POS_COMPATIBILITY_CHECKER_GUIDE.md`.
+
+Saving a profile is not a live connection. Excel/CSV remains the currently available sync method. Vendor API, local Windows agent, and custom adapters require separate implementation. AntiSoft is not connected. Do not store credentials in the profile table or browser code. Stock and reservations remain unchanged by this upgrade.

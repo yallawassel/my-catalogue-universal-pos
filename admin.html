@@ -156,39 +156,44 @@
 <section class="panel" id="categoryImagesPanel"><h2>Category photos</h2><p class="hint">Upload a dedicated image for each category. These photos are independent of product photos and appear on the public catalogue category cards.</p><div id="categoryImageManager"></div><p class="hint">Images are stored in your business Supabase storage. Run the category image migration once before saving.</p></section><section class="panel" id="categoryOrderingPanel"><h2>Category ordering</h2><p class="hint">Move categories up or down, then save. Products stay grouped by category and their relative order within each category is preserved.</p><div id="categoryOrderList"></div><div class="row" style="margin-top:10px"><button class="btn primary" id="saveCategoryOrder" type="button">Save category order</button><button class="btn" id="normalizeCategoryProducts" type="button">Renumber products in all categories</button><button class="btn" id="resetCategoryOrder" type="button">Reset category order</button></div><p class="hint">Category order is saved separately. Product numbering starts at 1 inside every category.</p></section><section class="panel"><div class="row"><h2 style="flex:2">Products</h2><button class="btn" id="refreshProducts">Refresh</button><button class="btn" id="exportJson">Export JSON</button><button class="btn" id="exportExcel">Export Excel</button><button class="btn" id="reviewDuplicates" type="button">Review duplicates</button></div><div id="duplicateReview" class="hidden"></div><label>Search products</label><input id="productSearch" placeholder="Search name, category, barcode..."><label for="productCategoryFilter" style="margin-top:10px">Filter by category</label><select id="productCategoryFilter"><option value="">All categories</option></select><label class="btn" style="display:block;text-align:center;cursor:pointer">Import catalogue JSON<input id="importJson" type="file" accept=".json,application/json" style="display:none"></label><div id="productList"></div></section>
 <section class="panel"><h2>Business tools</h2><div class="row"><a class="btn" href="orders.html">Orders dashboard</a><a class="btn" href="quotation.html">Quotation builder & client archive</a><a class="btn" href="driver-tracking.html">Driver tracking</a></div><p class="hint">All tools use the signed-in account and selected business ID. They do not use White Pack's Supabase project.</p></section>
 <section class="panel" id="posConnectionsPanel">
-  <h2>POS Connections</h2>
-  <p class="hint">Connect your catalogue to a supported point-of-sale or inventory system. Each business has its own isolated connection settings and product data.</p>
+  <h2>Universal POS Connections</h2>
+  <p class="hint">Connect almost any POS system: local Lebanese software, cloud POS, custom software, or systems that export Excel/CSV. This checker recommends a connection method; it does not claim that a direct connector is already installed.</p>
   <div class="grid">
-    <div class="domain">
-      <h3>Spreadsheet import</h3>
-      <span class="pill">Available now</span>
-      <p class="hint">Import Excel or CSV exports from almost any POS using Product &amp; Price Synchronization. Review selected rows and approve every sync.</p>
-    </div>
-    <div class="domain">
-      <h3>AntiSoft — Windows connector</h3>
-      <span class="pill">Connector planned · not connected</span>
-      <p class="hint">The planned local Windows service will read approved product and unit data from AntiSoft using a dedicated read-only SQL login. It will send selected data one way to this business catalogue.</p>
-    </div>
-    <div class="domain">
-      <h3>Other POS systems</h3>
-      <span class="pill">Connector framework</span>
-      <p class="hint">Additional systems can be added through vendor APIs, scheduled exports or their own local connector. No connection is active until its setup and test are completed.</p>
-    </div>
+    <div class="domain"><h3>📄 Excel / CSV</h3><span class="pill">Available now</span><p class="hint">Use a POS export file, preview its rows, and approve the import. This is the currently working universal fallback.</p></div>
+    <div class="domain"><h3>☁️ Vendor API</h3><span class="pill">Adapter required</span><p class="hint">For POS providers that offer a documented API. Credentials must be stored securely server-side, never in this page.</p></div>
+    <div class="domain"><h3>🖥️ Local Windows agent</h3><span class="pill">Agent required</span><p class="hint">For POS software installed on a business PC or local server. A separate local agent reads approved data with a dedicated read-only account.</p></div>
+    <div class="domain"><h3>🧩 Custom integration</h3><span class="pill">Assessment required</span><p class="hint">For specialized or locally developed POS software that needs a custom adapter or field mapping.</p></div>
   </div>
-  <h3>Synchronization safety rules</h3>
+  <div class="domain" style="background:#f7fbf8;border-color:#cbded0">
+    <h3 style="margin-top:0">Step 1 — POS compatibility checker</h3>
+    <p class="hint">Tell us a little about your POS. Do not enter passwords, API keys, or database credentials here.</p>
+    <label for="posName">POS software name *</label><input id="posName" maxlength="120" placeholder="Example: AntiSoft, Local POS, My Store System">
+    <div class="grid">
+      <div><label for="posEnvironment">Where does it run?</label><select id="posEnvironment"><option value="unknown">I'm not sure</option><option value="local">On a Windows PC / local server</option><option value="cloud">Online / cloud website</option><option value="mixed">Both local and cloud</option></select></div>
+      <div><label for="posApiAvailable">Does the provider offer an API?</label><select id="posApiAvailable"><option value="unknown">I don't know</option><option value="yes">Yes</option><option value="no">No</option></select></div>
+      <div><label for="posFileExport">Can it export Excel or CSV?</label><select id="posFileExport"><option value="unknown">I don't know</option><option value="yes">Yes</option><option value="no">No</option></select></div>
+      <div><label for="posLocalDatabase">Is there a local database that the provider permits read-only access to?</label><select id="posLocalDatabase"><option value="unknown">I don't know</option><option value="yes">Yes</option><option value="no">No</option></select></div>
+    </div>
+    <div class="domain" id="posRecommendation" aria-live="polite"><b>Recommended method:</b> Answer the questions above to receive a recommendation.</div>
+    <label for="posMethod">Connection method to save</label><select id="posMethod"><option value="file">Excel / CSV import</option><option value="api">Vendor API adapter</option><option value="local_agent">Local Windows agent</option><option value="custom">Custom integration</option></select>
+    <label for="posSetupNotes">Notes (optional)</label><textarea id="posSetupNotes" maxlength="1500" placeholder="POS version, vendor contact, available export format, or questions for setup. Do not include passwords or secrets."></textarea>
+    <div class="row" style="margin-top:10px"><button class="btn primary" id="savePosProfile" type="button">Save POS setup profile</button><button class="btn" id="refreshPosProfiles" type="button">Refresh saved profiles</button></div>
+    <p class="hint">Saving creates a setup profile only. It does not connect to the POS, start synchronization, or change products or stock.</p>
+  </div>
+  <div class="domain"><div class="row" style="align-items:center"><h3 style="flex:2;margin:0">Step 2 — Your saved POS profiles</h3><span class="pill">Business private</span></div><div id="posProfilesList" class="hint" style="margin-top:10px">Loading connection profiles…</div></div>
+  <div class="row" style="margin-top:10px"><button class="btn primary" type="button" data-admin-open="4">Continue with Excel / CSV import</button></div>
+  <h3>Universal synchronization safety rules</h3>
   <ul>
-    <li>Barcode is the primary product matching key; POS Product ID and SKU are fallbacks.</li>
+    <li>Unit barcode is the primary match key where available; POS Product ID plus POS Unit ID and then unique SKU are fallbacks.</li>
     <li>Product names are never used as automatic matching keys.</li>
-    <li>Existing catalogue display names, photos and customer-facing content are preserved when a product matches.</li>
-    <li>Only selected and approved products are sent to the online catalogue.</li>
-    <li>Ambiguous or duplicate identifiers are stopped for manual review.</li>
-    <li>No online system writes back to a connected POS database.</li>
-    <li>Products missing from an import are never automatically deleted.</li>
+    <li>Existing catalogue display names, photos, descriptions and categories are preserved unless explicitly approved.</li>
+    <li>Duplicate or ambiguous identifiers stop for manual review.</li>
+    <li>Missing products are never automatically deleted.</li>
+    <li>Purchase cost is never exposed in the public catalogue.</li>
+    <li>Connectors are one-way read-only from the source POS; no writes are sent back to POS software.</li>
+    <li>Stock remains optional. The public catalogue will show In stock / Out of stock, not remaining quantities, once stock is configured.</li>
   </ul>
-  <div class="domain">
-    <b>Connection status</b>
-    <p class="hint">No direct POS connection is active in this staging build. Start with the spreadsheet import to test your product mapping. The AntiSoft Windows connector must be developed and security-tested separately before it is enabled.</p>
-  </div>
+  <div class="domain"><b>Current integration status</b><p class="hint">Excel/CSV import is available. API adapters and Windows local agents are not implemented yet. AntiSoft is a planned first local-agent adapter only; it is not connected. All saved profiles remain Setup required until a real adapter is developed, security-tested and explicitly enabled.</p></div>
 </section>
 <section class="panel" id="stockManagementPanel">
   <div class="row" style="align-items:center"><h2 style="flex:2">Hybrid Stock Management</h2><button class="btn" id="refreshStock" type="button">Refresh stock</button></div>
@@ -296,7 +301,38 @@ async function loadCategoryImages(){
  box.innerHTML=names.map((name,i)=>{const c=saved.get(name);return `<div style="display:grid;grid-template-columns:90px minmax(0,1fr);gap:12px;align-items:center;border:1px solid #e1e8e2;border-radius:12px;padding:10px;margin:8px 0"><div>${c?.image_url?`<img src="${esc(c.image_url)}" alt="" style="width:90px;height:80px;object-fit:cover;border-radius:9px">`:'<div style="width:90px;height:80px;background:#edf3ee;border-radius:9px;display:grid;place-items:center;font-size:26px">▦</div>'}</div><div><b>${esc(name)}</b><div class="hint">${c?.image_url?'Photo saved':'No category photo yet'}</div><input type="file" accept="image/*" data-category-photo="${esc(name)}" style="max-width:100%;margin-top:6px"><button class="btn primary" type="button" data-save-category-photo="${esc(name)}" style="margin-top:6px">Save category photo</button></div></div>`}).join('')||'<p class="hint">Add products with a category first. Categories will appear here.</p>';
  box.querySelectorAll('[data-save-category-photo]').forEach(btn=>btn.onclick=async()=>{try{const name=btn.dataset.saveCategoryPhoto,input=box.querySelector(`[data-category-photo="${CSS.escape(name)}"]`),file=input?.files?.[0];if(!file)throw Error('Choose an image first.');if(!file.type.startsWith('image/'))throw Error('Please choose an image file.');const optimized=await optimizeImage(file),ext=optimized.type==='image/webp'?'webp':'jpg',path=biz.id+'/categories/'+encodeURIComponent(name)+'-'+crypto.randomUUID()+'.'+ext;const up=await sb.storage.from('mc-saas-images').upload(path,optimized,{upsert:false,contentType:optimized.type});if(up.error)throw up.error;const image_url=sb.storage.from('mc-saas-images').getPublicUrl(path).data.publicUrl;const save=await sb.from('mc_saas_categories').upsert({business_id:biz.id,name,image_url,sort_order:names.indexOf(name)},{onConflict:'business_id,name'});if(save.error)throw save.error;setStatus('Category photo saved for '+name+'.');await loadCategoryImages();}catch(e){setStatus('Could not save category photo: '+e.message,true)}});
 }
-async function sessionLoad(){const {data}=await sb.auth.getSession();user=data.session?.user||null;if(!user){show('authPanel');show('createPanel',false);show('app',false);setStatus('Sign in to manage your catalogue.');return}show('authPanel',false);const r=await sb.from('mc_saas_members').select('business_id,role').eq('user_id',user.id).limit(1).maybeSingle();if(r.error){setStatus('Could not check business membership: '+r.error.message,true);return}if(!r.data){show('createPanel');show('app',false);setStatus('Signed in. Create your business profile to continue.');return}const b=await sb.from('mc_saas_businesses').select('*').eq('id',r.data.business_id).maybeSingle();if(b.error||!b.data){setStatus('Could not load your business: '+(b.error?.message||'not found'),true);return}biz=b.data;show('createPanel',false);show('app');fillSettings();await Promise.all([loadProducts(),loadDomains()]);await loadCategoryImages();await loadStockPanel().catch(e=>setStatus('Stock Management is awaiting the hybrid stock migration: '+e.message,true));setStatus(biz.is_published?'Business loaded. Your catalogue is published.':'Business loaded. It is private until platform approval.');}
+function posCompatibility(){
+ const env=$('posEnvironment').value,api=$('posApiAvailable').value,file=$('posFileExport').value,db=$('posLocalDatabase').value;
+ let method='custom',reason='The answers do not yet identify a standard connection. A custom assessment is recommended.';
+ if(api==='yes'){method='api';reason='The POS provider reports an API. A vendor API adapter and secure server-side credential setup are required.';}
+ else if((env==='local'||env==='mixed')&&db==='yes'){method='local_agent';reason='The POS runs locally and a read-only database route may be available. A Windows local agent and permission test are required.';}
+ else if(file==='yes'){method='file';reason='An Excel/CSV export is available. You can use the existing file-import workflow now.';}
+ else if(api==='unknown'||file==='unknown'||db==='unknown'){method='custom';reason='Some technical details are unknown. Ask the POS provider whether it offers an API, Excel/CSV export, or approved read-only database access.';}
+ $('posMethod').value=method;
+ const labels={file:'Excel / CSV import',api:'Vendor API adapter',local_agent:'Local Windows agent',custom:'Custom integration'};
+ $('posRecommendation').innerHTML='<b>Recommended method: '+esc(labels[method])+'</b><p class="hint" style="margin:6px 0 0">'+esc(reason)+'</p><p class="hint" style="margin:6px 0 0">Recommendation only — no connection has been tested or activated.</p>';
+ return {method,reason,answers:{environment:env,api_available:api,file_export_available:file,local_readonly_database_available:db}};
+}
+async function loadPosConnections(){
+ const box=$('posProfilesList');if(!box||!biz)return;
+ box.textContent='Loading connection profiles…';
+ const r=await sb.from('mc_saas_pos_connections').select('id,pos_name,connection_method,connection_status,sync_frequency,setup_notes,last_tested_at,last_sync_at,created_at').eq('business_id',biz.id).order('created_at',{ascending:false});
+ if(r.error){box.innerHTML='<p class="hint">Connection-profile storage is not installed yet. In the My Catalogue Supabase project only, run <b>UNIVERSAL_POS_CONNECTIONS_V7_MIGRATION.sql</b>, then press Refresh saved profiles. Details: '+esc(r.error.message)+'</p>';return;}
+ const methods={file:'Excel / CSV',api:'Vendor API',local_agent:'Local Windows agent',custom:'Custom integration'};
+ box.innerHTML=(r.data||[]).map(x=>`<div class="domain"><b>${esc(x.pos_name)}</b> <span class="pill">Setup required</span><div class="hint">Method: ${esc(methods[x.connection_method]||x.connection_method)} · Sync: ${esc(x.sync_frequency||'manual')} · Created: ${new Date(x.created_at).toLocaleDateString()}</div>${x.setup_notes?`<div class="hint">Notes: ${esc(x.setup_notes)}</div>`:''}<div class="hint">No credentials stored · No sync started</div></div>`).join('')||'<p class="hint">No POS profiles saved for this business yet.</p>';
+}
+['posEnvironment','posApiAvailable','posFileExport','posLocalDatabase'].forEach(id=>$(id).addEventListener('change',posCompatibility));
+$('savePosProfile').addEventListener('click',async()=>{
+ try{
+  const name=$('posName').value.trim();if(!name)throw Error('Enter the POS software name first.');
+  const recommendation=posCompatibility(),method=$('posMethod').value;
+  const payload={business_id:biz.id,pos_name:name,connection_method:method,connection_status:'setup_required',sync_frequency:'manual',compatibility_answers:recommendation.answers,safe_profile:{recommended_method:recommendation.method,recommendation_reason:recommendation.reason},setup_notes:$('posSetupNotes').value.trim()};
+  const r=await sb.from('mc_saas_pos_connections').insert(payload).select('id').single();if(r.error)throw r.error;
+  $('posName').value='';$('posSetupNotes').value='';await loadPosConnections();setStatus('POS setup profile saved. No POS connection or synchronization was started.');
+ }catch(e){setStatus('Could not save POS profile: '+e.message,true)}
+});
+$('refreshPosProfiles').addEventListener('click',()=>loadPosConnections().then(()=>setStatus('POS profiles refreshed.')).catch(e=>setStatus('Could not refresh POS profiles: '+e.message,true)));
+async function sessionLoad(){const {data}=await sb.auth.getSession();user=data.session?.user||null;if(!user){show('authPanel');show('createPanel',false);show('app',false);setStatus('Sign in to manage your catalogue.');return}show('authPanel',false);const r=await sb.from('mc_saas_members').select('business_id,role').eq('user_id',user.id).limit(1).maybeSingle();if(r.error){setStatus('Could not check business membership: '+r.error.message,true);return}if(!r.data){show('createPanel');show('app',false);setStatus('Signed in. Create your business profile to continue.');return}const b=await sb.from('mc_saas_businesses').select('*').eq('id',r.data.business_id).maybeSingle();if(b.error||!b.data){setStatus('Could not load your business: '+(b.error?.message||'not found'),true);return}biz=b.data;show('createPanel',false);show('app');fillSettings();await Promise.all([loadProducts(),loadDomains()]);await loadCategoryImages();await loadStockPanel().catch(e=>setStatus('Stock Management is awaiting the hybrid stock migration: '+e.message,true));await loadPosConnections();posCompatibility();setStatus(biz.is_published?'Business loaded. Your catalogue is published.':'Business loaded. It is private until platform approval.');}
 function fillSettings(){setupBusinessInstall(biz,'admin');$('businessHeading').textContent=biz.company_name+' · Settings';$('publishStatus').textContent=biz.is_published?'Published':'Awaiting platform approval';$('editCompany').value=biz.company_name||'';$('editSlug').value=biz.slug;$('editWhatsapp').value=biz.whatsapp||'';$('editCurrency').value=biz.currency||'USD';$('brandColor').value=biz.primary_color||'#173f35';$('editDescription').value=biz.description||'';$('catalogueTemplate').value=['classic','premium','fresh','shopify','editorial','compact','list','showcase'].includes(biz.catalogue_template)?biz.catalogue_template:'classic';$('catalogueLink').textContent=businessUrl();$('openCatalogue').href=businessUrl();}
 async function oauth(provider){try{const redirectTo=location.origin+location.pathname;const {error}=await sb.auth.signInWithOAuth({provider,options:{redirectTo,scopes:provider==='azure'?'email':undefined,queryParams:provider==='google'?{access_type:'offline',prompt:'select_account'}:undefined}});if(error)throw error}catch(e){setStatus('Sign-in could not start: '+e.message,true)}};$('googleSignIn').onclick=()=>oauth('google');$('microsoftSignIn').onclick=()=>oauth('azure');
 $('saveNewPassword').onclick=async()=>{try{const a=$('newPassword').value,b=$('confirmPassword').value;if(a.length<8)throw Error('Use at least 8 characters.');if(a!==b)throw Error('The passwords do not match.');const {error}=await sb.auth.updateUser({password:a});if(error)throw error;recoveryMode=false;$('newPassword').value='';$('confirmPassword').value='';show('resetPanel',false);setStatus('Password changed successfully. You can now manage your catalogue.');await sessionLoad()}catch(e){setStatus('Could not change password: '+e.message,true)}};
