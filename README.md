@@ -88,3 +88,13 @@ New businesses see a first-product onboarding panel with two paths: add products
 The v7 package adds a business-scoped POS compatibility checker and setup-profile screen. Run `UNIVERSAL_POS_CONNECTIONS_V7_MIGRATION.sql` in the **My Catalogue staging Supabase project only** before saving profiles. See `UNIVERSAL_POS_ARCHITECTURE_V7.md` and `UNIVERSAL_POS_COMPATIBILITY_CHECKER_GUIDE.md`.
 
 Saving a profile is not a live connection. Excel/CSV remains the currently available sync method. Vendor API, local Windows agent, and custom adapters require separate implementation. AntiSoft is not connected. Do not store credentials in the profile table or browser code. Stock and reservations remain unchanged by this upgrade.
+
+
+## AI Studio (Phase 1)
+
+The additive AI Studio upgrade adds ChatGPT-style catalogue assistance, GPT Image generation/editing, a business-scoped credit wallet and usage ledger, and an admin UI entry. See `AI_STUDIO_INSTALLATION_GUIDE.md`. Run `AI_STUDIO_MIGRATION.sql` only in the existing My Catalogue Supabase project, then deploy `supabase/functions/mc-ai-studio` and configure the OpenAI API key as an Edge Function secret. Subscription checkout, recurring credit allowances and paid top-ups are intentionally deferred to Phase 2.
+
+
+## AI Studio — Phase 1
+
+See `AI_STUDIO_INSTALLATION_GUIDE.md`, `AI_STUDIO_PHASE1_RELEASE_NOTES.md`, and `AI_STUDIO_MIGRATION.sql` for the additive AI assistant and product-photo feature. Deploy to staging first. The AI API key belongs only in Supabase Edge Function secrets. Subscription checkout and recurring credit renewals are not part of Phase 1.

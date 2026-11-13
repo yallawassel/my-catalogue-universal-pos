@@ -63,6 +63,7 @@
         <button type="button" data-admin-open="8">🧰 Business tools</button>
         <button type="button" data-admin-open="9">🔌 POS Connections</button>
         <button type="button" data-admin-open="10">📦 Stock Management</button>
+        <button type="button" data-admin-open="11">✨ AI Studio</button>
       </div>
     </details>
   </div>
@@ -90,6 +91,7 @@
     <button class="admin-tile" type="button" data-admin-open="8"><span class="tile-icon">🧰</span><strong>Business tools</strong><small>Orders and other business utilities</small></button>
     <button class="admin-tile" type="button" data-admin-open="9"><span class="tile-icon">🔌</span><strong>POS Connections</strong><small>Connect a POS, import files and manage sync safely</small></button>
     <button class="admin-tile" type="button" data-admin-open="10"><span class="tile-icon">📦</span><strong>Stock Management</strong><small>Units, barcodes, conversions and hybrid stock</small></button>
+    <button class="admin-tile" type="button" data-admin-open="11"><span class="tile-icon">✨</span><strong>AI Studio</strong><small>ChatGPT assistant, professional product photos and creative tools</small></button>
   </div>
 </div>
 <div id="adminPageToolbar" class="admin-topbar hidden">
@@ -108,6 +110,7 @@
     <button type="button" data-admin-open="8">🧰 Business tools</button>
     <button type="button" data-admin-open="9">🔌 POS Connections</button>
     <button type="button" data-admin-open="10">📦 Stock Management</button>
+    <button type="button" data-admin-open="11">✨ AI Studio</button>
   </div></details>
 </div>
 <section class="panel"><div class="row" style="align-items:center"><div><h2 id="businessHeading">Business settings</h2><div id="publishStatus" class="pill">Awaiting approval</div></div><button class="btn" id="signOut">Sign out</button></div><div class="grid"><div><label>Brand name</label><input id="editCompany"></div><div><label>Catalogue slug</label><input id="editSlug" disabled></div><div><label>WhatsApp number</label><input id="editWhatsapp" placeholder="961XXXXXXXX"></div><div><label>Currency</label><select id="editCurrency"><option>USD</option><option>LBP</option><option>EUR</option></select></div><div><label>Brand colour</label><input id="brandColor" type="color" value="#173f35"></div><div><label>Logo image</label><input id="logoFile" type="file" accept="image/*"></div></div><label>Description</label><textarea id="editDescription"></textarea><div class="row"><button class="btn primary" id="saveSettings">Save business settings</button><button class="btn" id="copyLink">Copy catalogue link</button><a class="btn" id="openCatalogue" target="_blank" rel="noopener">Preview catalogue</a><button class="btn" id="installBusinessAdmin" type="button">Install Business Admin</button></div><div class="hint" style="margin-top:8px">Public catalogue link: <span id="catalogueLink"></span></div></section>
@@ -252,6 +255,40 @@
   <h3>Retry a pending order reservation</h3>
   <p class="hint">Use this after stock and unit conversions are configured. Enter the order UUID from the Orders dashboard.</p>
   <div class="row"><input id="retryReservationOrderId" placeholder="Order UUID"><button class="btn" id="retryReservation" type="button">Retry reservation</button></div>
+</section>
+<section class="panel" id="aiStudioPanel">
+  <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
+    <div><h2 style="margin-bottom:4px">✨ AI Studio</h2><p class="hint" style="margin:0">Your catalogue creative assistant, powered by OpenAI. AI suggestions never change your live catalogue automatically.</p></div>
+    <div class="pill" id="aiCreditBadge">Credits: loading…</div>
+  </div>
+  <div class="domain" style="margin:14px 0;background:#f7fbf8">
+    <b>AI usage</b><p class="hint" id="aiCreditHelp" style="margin:5px 0 0">Chat uses 1 credit. Image generation uses 10 credits. Editing an uploaded image uses 12 credits. Your balance and every transaction are recorded securely.</p>
+  </div>
+  <div class="grid">
+    <div class="domain">
+      <h3 style="margin:0 0 8px">💬 ChatGPT catalogue assistant</h3>
+      <p class="hint">Ask for product descriptions, category ideas, translations, merchandising advice or catalogue improvements.</p>
+      <div id="aiChatLog" role="log" aria-live="polite" style="height:260px;overflow:auto;background:#fff;border:1px solid #e1e7e2;border-radius:10px;padding:10px;margin:10px 0"><p class="hint">Hello! I can help improve your catalogue. What would you like to work on?</p></div>
+      <label for="aiChatPrompt">Your message</label><textarea id="aiChatPrompt" placeholder="Example: Write a premium product description for our 750cc kraft salad bowl." style="min-height:90px"></textarea>
+      <button class="btn primary" id="aiSendChat" type="button">Send to AI assistant · 1 credit</button>
+    </div>
+    <div class="domain">
+      <h3 style="margin:0 0 8px">📸 Professional product photography</h3>
+      <p class="hint">Generate a new product image or upload an existing image for AI editing. Review the result before using it in your catalogue.</p>
+      <label for="aiPhotoMode">Photo action</label><select id="aiPhotoMode"><option value="generate">Create a new professional product image · 10 credits</option><option value="edit">Improve / edit an uploaded photo · 12 credits</option></select>
+      <label for="aiPhotoPrompt">Describe the result</label><textarea id="aiPhotoPrompt" placeholder="Example: Premium studio product photo, pure white background, soft natural shadow, square composition. Preserve the exact product shape, packaging and label." style="min-height:105px"></textarea>
+      <label for="aiPhotoInput">Original product photo (required for editing)</label><input id="aiPhotoInput" type="file" accept="image/*">
+      <button class="btn primary" id="aiGeneratePhoto" type="button">Generate professional photo</button>
+      <div id="aiPhotoResult" style="margin-top:12px"></div>
+    </div>
+  </div>
+  <div class="domain" style="margin-top:14px">
+    <h3 style="margin:0 0 8px">🎨 Catalogue templates</h3>
+    <p class="hint">Your existing eight catalogue designs remain available. Choose a design below and preview it before applying it.</p>
+    <div class="grid"><div><label for="aiTemplateSelect">Choose a template</label><select id="aiTemplateSelect"><option value="classic">Classic — clean product grid</option><option value="premium">Premium — dark luxury storefront</option><option value="fresh">Fresh — bright rounded cards</option><option value="shopify">Shopify-style — modern store grid</option><option value="editorial">Editorial — large visual product cards</option><option value="compact">Compact — more products per screen</option><option value="list">List — horizontal product rows</option><option value="showcase">Showcase — large product images</option></select></div><div style="display:flex;align-items:end"><button class="btn primary" id="aiApplyTemplate" type="button">Apply selected template</button></div></div>
+    <p class="hint">Applying a template updates only your catalogue design setting. Your products, prices, images and orders are not changed.</p>
+  </div>
+  <div class="domain" style="margin-top:14px"><b>Important before launch</b><p class="hint" style="margin:5px 0 0">AI Studio requires the SQL migration and the Supabase Edge Function included in this package. Configure the OpenAI API key as an Edge Function secret. Never add it to admin.html or saas.js. Subscription billing and paid credit top-ups are the next phase; this release uses an introductory credit balance only.</p></div>
 </section></div></main>
 <script>
 
@@ -332,7 +369,44 @@ $('savePosProfile').addEventListener('click',async()=>{
  }catch(e){setStatus('Could not save POS profile: '+e.message,true)}
 });
 $('refreshPosProfiles').addEventListener('click',()=>loadPosConnections().then(()=>setStatus('POS profiles refreshed.')).catch(e=>setStatus('Could not refresh POS profiles: '+e.message,true)));
-async function sessionLoad(){const {data}=await sb.auth.getSession();user=data.session?.user||null;if(!user){show('authPanel');show('createPanel',false);show('app',false);setStatus('Sign in to manage your catalogue.');return}show('authPanel',false);const r=await sb.from('mc_saas_members').select('business_id,role').eq('user_id',user.id).limit(1).maybeSingle();if(r.error){setStatus('Could not check business membership: '+r.error.message,true);return}if(!r.data){show('createPanel');show('app',false);setStatus('Signed in. Create your business profile to continue.');return}const b=await sb.from('mc_saas_businesses').select('*').eq('id',r.data.business_id).maybeSingle();if(b.error||!b.data){setStatus('Could not load your business: '+(b.error?.message||'not found'),true);return}biz=b.data;show('createPanel',false);show('app');fillSettings();await Promise.all([loadProducts(),loadDomains()]);await loadCategoryImages();await loadStockPanel().catch(e=>setStatus('Stock Management is awaiting the hybrid stock migration: '+e.message,true));await loadPosConnections();posCompatibility();setStatus(biz.is_published?'Business loaded. Your catalogue is published.':'Business loaded. It is private until platform approval.');}
+async function loadAiWallet(){
+ const badge=$('aiCreditBadge');if(!badge||!biz)return;
+ badge.textContent='Credits: loading…';
+ const r=await sb.rpc('mc_saas_ai_get_wallet',{p_business_id:biz.id});
+ if(r.error){badge.textContent='AI setup required';$('aiCreditHelp').textContent='Run AI_STUDIO_MIGRATION.sql in the My Catalogue Supabase project, deploy the mc-ai-studio Edge Function, and configure its secrets. Details: '+r.error.message;return;}
+ const row=Array.isArray(r.data)?r.data[0]:r.data;const balance=Number(row?.credits_balance??row?.balance??0);
+ badge.textContent='Credits available: '+balance.toLocaleString();
+ $('aiCreditHelp').textContent='Chat uses 1 credit. New image generation uses 10 credits. Image editing uses 12 credits. Introductory credits are limited; subscription allowances and paid top-ups will be added in the billing phase.';
+}
+function addAiChatLine(role,text){const log=$('aiChatLog'),p=document.createElement('div');p.style.cssText='margin:8px 0;padding:9px 11px;border-radius:9px;white-space:pre-wrap;overflow-wrap:anywhere;'+(role==='user'?'background:#eaf3ec;margin-left:12%':'background:#f3f5f3;margin-right:8%');const strong=document.createElement('b');strong.textContent=role==='user'?'You':'AI Assistant';const body=document.createElement('div');body.textContent=text;p.append(strong,body);log.appendChild(p);log.scrollTop=log.scrollHeight;}
+const aiHistory=[];
+$('aiSendChat').addEventListener('click',async()=>{
+ const prompt=$('aiChatPrompt').value.trim();if(!prompt)return setStatus('Write a message for the AI assistant first.',true);
+ const btn=$('aiSendChat');btn.disabled=true;btn.textContent='AI is thinking…';addAiChatLine('user',prompt);$('aiChatPrompt').value='';
+ try{const {data,error}=await sb.functions.invoke('mc-ai-studio',{body:{action:'chat',business_id:biz.id,prompt,history:aiHistory.slice(-10)}});if(error)throw error;const answer=String(data?.answer||'No response was returned.');aiHistory.push({role:'user',content:prompt},{role:'assistant',content:answer});addAiChatLine('assistant',answer);await loadAiWallet();setStatus('AI assistant replied.');}
+ catch(e){addAiChatLine('assistant','I could not complete that request: '+(e.message||String(e)));setStatus('AI assistant error: '+(e.message||String(e)),true);}
+ finally{btn.disabled=false;btn.textContent='Send to AI assistant · 1 credit';}
+});
+$('aiGeneratePhoto').addEventListener('click',async()=>{
+ const mode=$('aiPhotoMode').value,prompt=$('aiPhotoPrompt').value.trim(),file=$('aiPhotoInput').files[0];
+ if(!prompt)return setStatus('Describe the product photo you want first.',true);
+ if(mode==='edit'&&!file)return setStatus('Choose an original product photo to edit.',true);
+ const btn=$('aiGeneratePhoto'),result=$('aiPhotoResult');btn.disabled=true;btn.textContent='Creating your photo…';result.textContent='The AI image service is working. This may take a little while.';
+ try{
+  let image_base64=null,image_mime=null;
+  if(file){if(file.size>12*1024*1024)throw Error('Choose an image smaller than 12 MB.');image_mime=file.type||'image/jpeg';image_base64=await new Promise((resolve,reject)=>{const fr=new FileReader();fr.onload=()=>resolve(String(fr.result).split(',')[1]);fr.onerror=()=>reject(Error('Could not read the selected image.'));fr.readAsDataURL(file);});}
+  const {data,error}=await sb.functions.invoke('mc-ai-studio',{body:{action:mode==='edit'?'edit_image':'generate_image',business_id:biz.id,prompt,image_base64,image_mime}});if(error)throw error;if(!data?.image_url)throw Error('The AI service did not return an image.');
+  result.innerHTML='';const img=document.createElement('img');img.src=data.image_url;img.alt='AI-generated product photo';img.style.cssText='display:block;width:100%;max-width:420px;border-radius:12px;border:1px solid #dfe7df;background:#fff';result.appendChild(img);
+  const note=document.createElement('p');note.className='hint';note.textContent='Saved to your business image library. Review the image carefully before replacing any live product photo.';result.appendChild(note);
+  const link=document.createElement('a');link.href=data.image_url;link.target='_blank';link.rel='noopener';link.className='btn';link.textContent='Open generated image';link.style.display='inline-block';link.style.textDecoration='none';result.appendChild(link);
+  const copy=document.createElement('button');copy.type='button';copy.className='btn';copy.textContent='Copy image URL';copy.style.marginLeft='8px';copy.onclick=async()=>{await navigator.clipboard.writeText(data.image_url);copy.textContent='Copied';};result.appendChild(copy);
+  await loadAiWallet();setStatus('Professional photo created and saved.');
+ }catch(e){result.textContent='Photo generation failed: '+(e.message||String(e));setStatus('Photo generation failed: '+(e.message||String(e)),true);}
+ finally{btn.disabled=false;btn.textContent='Generate professional photo';}
+});
+$('aiApplyTemplate').addEventListener('click',async()=>{try{const template=$('aiTemplateSelect').value;const r=await sb.rpc('mc_saas_update_catalogue_template',{p_business_id:biz.id,p_template:template});if(r.error)throw r.error;biz.catalogue_template=template;$('catalogueTemplate').value=template;setStatus('Template applied. Your products and prices were not changed.');}catch(e){setStatus('Could not apply template: '+e.message,true)}});
+$('aiPhotoMode').addEventListener('change',()=>{const editing=$('aiPhotoMode').value==='edit';$('aiPhotoInput').required=editing;$('aiPhotoInput').disabled=!editing;});$('aiPhotoInput').disabled=true;
+async function sessionLoad(){const {data}=await sb.auth.getSession();user=data.session?.user||null;if(!user){show('authPanel');show('createPanel',false);show('app',false);setStatus('Sign in to manage your catalogue.');return}show('authPanel',false);const r=await sb.from('mc_saas_members').select('business_id,role').eq('user_id',user.id).limit(1).maybeSingle();if(r.error){setStatus('Could not check business membership: '+r.error.message,true);return}if(!r.data){show('createPanel');show('app',false);setStatus('Signed in. Create your business profile to continue.');return}const b=await sb.from('mc_saas_businesses').select('*').eq('id',r.data.business_id).maybeSingle();if(b.error||!b.data){setStatus('Could not load your business: '+(b.error?.message||'not found'),true);return}biz=b.data;show('createPanel',false);show('app');fillSettings();await Promise.all([loadProducts(),loadDomains()]);await loadCategoryImages();await loadStockPanel().catch(e=>setStatus('Stock Management is awaiting the hybrid stock migration: '+e.message,true));await loadPosConnections();posCompatibility();await loadAiWallet();$('aiTemplateSelect').value=biz.catalogue_template||'classic';setStatus(biz.is_published?'Business loaded. Your catalogue is published.':'Business loaded. It is private until platform approval.');}
 function fillSettings(){setupBusinessInstall(biz,'admin');$('businessHeading').textContent=biz.company_name+' · Settings';$('publishStatus').textContent=biz.is_published?'Published':'Awaiting platform approval';$('editCompany').value=biz.company_name||'';$('editSlug').value=biz.slug;$('editWhatsapp').value=biz.whatsapp||'';$('editCurrency').value=biz.currency||'USD';$('brandColor').value=biz.primary_color||'#173f35';$('editDescription').value=biz.description||'';$('catalogueTemplate').value=['classic','premium','fresh','shopify','editorial','compact','list','showcase'].includes(biz.catalogue_template)?biz.catalogue_template:'classic';$('catalogueLink').textContent=businessUrl();$('openCatalogue').href=businessUrl();}
 async function oauth(provider){try{const redirectTo=location.origin+location.pathname;const {error}=await sb.auth.signInWithOAuth({provider,options:{redirectTo,scopes:provider==='azure'?'email':undefined,queryParams:provider==='google'?{access_type:'offline',prompt:'select_account'}:undefined}});if(error)throw error}catch(e){setStatus('Sign-in could not start: '+e.message,true)}};$('googleSignIn').onclick=()=>oauth('google');$('microsoftSignIn').onclick=()=>oauth('azure');
 $('saveNewPassword').onclick=async()=>{try{const a=$('newPassword').value,b=$('confirmPassword').value;if(a.length<8)throw Error('Use at least 8 characters.');if(a!==b)throw Error('The passwords do not match.');const {error}=await sb.auth.updateUser({password:a});if(error)throw error;recoveryMode=false;$('newPassword').value='';$('confirmPassword').value='';show('resetPanel',false);setStatus('Password changed successfully. You can now manage your catalogue.');await sessionLoad()}catch(e){setStatus('Could not change password: '+e.message,true)}};
@@ -857,7 +931,7 @@ sb.auth.onAuthStateChange(()=>setTimeout(()=>sessionLoad().catch(e=>setStatus(e.
 (function(){
  const app=document.getElementById('app'); if(!app) return;
  const sections=Array.from(app.children).filter(el=>el.tagName==='SECTION');
- const names=['Business settings','Catalogue design','Custom domain','Add product','Product & Price Synchronization','Category photos','Category ordering','Products','Business tools','POS Connections','Stock Management'];
+ const names=['Business settings','Catalogue design','Custom domain','Add product','Product & Price Synchronization','Category photos','Category ordering','Products','Business tools','POS Connections','Stock Management','AI Studio'];
  const board=document.getElementById('adminDashboard'), toolbar=document.getElementById('adminPageToolbar');
  const title=document.getElementById('adminCurrentTitle');
  function home(){sections.forEach(s=>s.classList.add('hidden'));board.classList.remove('hidden');toolbar.classList.add('hidden');}
