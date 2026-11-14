@@ -30,7 +30,16 @@ Deno.serve(async (req) => {
   const { data: business, error: businessError } = await admin.from("mc_saas_businesses").select("company_name,description,currency").eq("id", businessId).maybeSingle();
   if (businessError || !business) return json({ error: "Business not found." }, 404);
 
-  const credits = action === "chat" ? 1 : action === "generate_image" ? 10 : 12;
+  // Image generation/editing is disabled by default to prevent accidental OpenAI spend.
+  // Enable only after reviewing real provider costs and setting the Supabase secret
+  // AI_IMAGE_GENERATION_ENABLED=true. This check runs before job creation or credit deduction.
+  const imageAction = action === "generate_image" || action === "edit_image";
+  if (imageAction && Deno.env.get("AI_IMAGE_GENERATION_ENABLED") !== "true") {
+    return json({ error: "AI image generation and editing are temporarily paused to protect your API balance. No credits were deducted. Chat remains available." }, 503);
+  }
+  const generateCredits = Math.max(1, Number(Deno.env.get("AI_IMAGE_GENERATE_CREDITS") || 2));
+  const editCredits = Math.max(1, Number(Deno.env.get("AI_IMAGE_EDIT_CREDITS") || 3));
+  const credits = action === "chat" ? 1 : action === "generate_image" ? generateCredits : editCredits;
   const { data: job, error: jobError } = await admin.from("mc_saas_ai_jobs").insert({ business_id: businessId, user_id: userData.user.id, job_type: action, status: "processing", prompt: prompt.slice(0, 5000), credits_charged: credits }).select("id").single();
   if (jobError || !job) return json({ error: "Could not create the AI job record." }, 500);
   const { error: consumeError } = await userClient.rpc("mc_saas_ai_consume_credits", { p_business_id: businessId, p_credits: credits, p_action: action, p_reference_id: job.id });
