@@ -1,0 +1,44 @@
+/* My Catalogue PRO — storefront polish (v8). Loaded after the page's own styles.
+   Template-specific rules (body.template-*) keep priority, so all 8 designs still work. */
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap');
+:root{--brand2:color-mix(in srgb,var(--brand,#7c3aed) 55%,#ec4899)}
+body{font-family:'Plus Jakarta Sans',system-ui,-apple-system,'Segoe UI',Roboto,Arial,sans-serif;background:#f7f6fb}
+header{background:linear-gradient(135deg,var(--brand,#7c3aed) 0%,var(--brand2) 100%);padding:14px 16px 18px;box-shadow:0 10px 30px color-mix(in srgb,var(--brand,#7c3aed) 30%,transparent)}
+header .logo{box-shadow:0 0 0 3px rgba(255,255,255,.55),0 6px 16px rgba(0,0,0,.18)}
+header h1{font-weight:800;letter-spacing:-.02em}
+#installCatalogue{border-radius:999px!important;box-shadow:0 4px 12px rgba(0,0,0,.15)}
+.toolbar{background:transparent;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+.search{border:0;border-radius:999px;padding:14px 18px 14px 46px;background:#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' fill='none' stroke='%239a96b8' stroke-width='2.2' stroke-linecap='round' viewBox='0 0 24 24'%3E%3Ccircle cx='11' cy='11' r='7'/%3E%3Cpath d='m20 20-3.5-3.5'/%3E%3C/svg%3E") no-repeat 17px center;box-shadow:0 6px 20px rgba(27,23,64,.08);font-family:inherit}
+.search:focus{outline:none;box-shadow:0 0 0 4px color-mix(in srgb,var(--brand,#7c3aed) 22%,transparent),0 6px 20px rgba(27,23,64,.08)}
+.title{font-weight:800;letter-spacing:-.02em}
+.category-chip{border:0;background:#fff;color:var(--brand,#7c3aed);box-shadow:0 3px 10px rgba(27,23,64,.07);transition:transform .15s}
+.category-chip:before{content:'';display:inline-block;width:8px;height:8px;border-radius:50%;background:linear-gradient(135deg,var(--brand,#7c3aed),var(--brand2));margin-right:8px;letter-spacing:0;vertical-align:middle}
+.category-chip:hover{transform:translateY(-2px)}
+.category,.product{border-radius:20px;box-shadow:0 2px 6px rgba(27,23,64,.04),0 10px 26px rgba(27,23,64,.07);transition:transform .18s,box-shadow .18s}
+.category:hover,.product:hover{transform:translateY(-3px);box-shadow:0 16px 36px rgba(27,23,64,.12)}
+.category .info{padding:12px 14px 14px}
+.name{font-weight:800;letter-spacing:-.01em}
+.count{color:#8a86a8}
+.priceChoice{border-radius:12px;border-color:#e7e4f5;transition:all .15s}
+.priceChoice.active{background:linear-gradient(135deg,var(--brand,#7c3aed),var(--brand2));border-color:transparent;box-shadow:0 6px 14px color-mix(in srgb,var(--brand,#7c3aed) 30%,transparent)}
+.qtybtn{border-radius:12px;background:#f1eff9;color:#1b1740}
+.addbtn,.back{border-radius:14px;background:linear-gradient(135deg,var(--brand,#7c3aed),var(--brand2));box-shadow:0 8px 18px color-mix(in srgb,var(--brand,#7c3aed) 28%,transparent);font-family:inherit}
+.addbtn:active{transform:scale(.98)}
+.cartbar{background:linear-gradient(135deg,var(--brand,#7c3aed),var(--brand2));padding:14px 20px;box-shadow:0 12px 30px color-mix(in srgb,var(--brand,#7c3aed) 40%,transparent);font-family:inherit}
+.cartbar.bump{animation:mcBump .45s}
+@keyframes mcBump{30%{transform:scale(1.12)}60%{transform:scale(.96)}}
+.cartbar .mc-cart-total{background:transparent;color:#fff;padding:0;margin-left:8px;font-weight:800;opacity:.95}
+.modal .box{border-radius:24px 24px 18px 18px;box-shadow:0 -10px 40px rgba(0,0,0,.2)}
+.checkout input,.checkout textarea{border-radius:12px;border:1.5px solid #e7e4f5;font-family:inherit}
+.checkout input:focus,.checkout textarea:focus{outline:none;border-color:var(--brand,#7c3aed)}
+.send{border-radius:14px;background:linear-gradient(135deg,#22c55e,#16a34a);box-shadow:0 8px 20px rgba(22,163,74,.3);font-family:inherit}
+.empty{border-radius:18px}
+.toast{border-radius:999px;font-weight:700}
+.mc-search-note{font-size:13px;color:#8a86a8;margin:-4px 0 10px}
+footer{color:#9a96b8}
+.mc-success{text-align:center;padding:18px 6px}
+.mc-success .big{font-size:52px}
+.category{border:0}
+.category-art{background:linear-gradient(135deg,color-mix(in srgb,var(--brand,#7c3aed) 14%,#fff),color-mix(in srgb,var(--brand2) 8%,#fff));color:var(--brand,#7c3aed)}
+.category .info:after{color:var(--brand,#7c3aed)}
+.product>.placeholder,.placeholder{background:linear-gradient(135deg,color-mix(in srgb,var(--brand,#7c3aed) 12%,#fff),color-mix(in srgb,var(--brand2) 6%,#fff));color:var(--brand,#7c3aed);font-weight:800}

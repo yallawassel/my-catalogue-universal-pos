@@ -1,4 +1,4 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#173f35"><title>My Catalogue — Business Admin</title><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script><script src="saas.js"></script><style>
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#7c3aed"><title>My Catalogue — Business Admin</title><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script><script src="saas.js"></script><style>
 *{box-sizing:border-box}body{margin:0;background:#f3f6f3;color:#17231f;font:15px Arial,sans-serif}.oauth-row{margin:12px 0}.oauth{background:#fff;border:1px solid #ccd7ce}header{background:#173f35;color:#fff;padding:20px 16px}header h1{margin:0 0 5px}.wrap{max-width:1000px;margin:auto;padding:14px}.panel{background:#fff;border:1px solid #dfe7df;border-radius:15px;padding:16px;margin-bottom:14px}h2{margin:0 0 12px;font-size:19px}label{display:block;font-weight:700;font-size:13px;margin:10px 0 5px}input,textarea,select{width:100%;padding:12px;border:1px solid #ccd7ce;border-radius:9px;font:inherit;background:#fff}textarea{min-height:72px}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.row{display:flex;gap:8px;flex-wrap:wrap}.row>*{flex:1}.btn{border:0;border-radius:9px;padding:12px 14px;font-weight:800;cursor:pointer;background:#e8eee9;color:#173f35}.primary{background:#236653;color:#fff}.danger{background:#fee2e2;color:#991b1b}.hint{font-size:13px;line-height:1.5;color:#637269}.status{margin:10px 0;padding:10px;border-radius:9px;background:#e8f3eb;white-space:pre-wrap;overflow-wrap:anywhere}.error{background:#fff0ed;color:#a32d20}.hidden{display:none!important}.item{display:grid;grid-template-columns:72px 1fr auto;gap:10px;align-items:center;border:1px solid #e1e7e2;padding:9px;border-radius:11px;margin-top:8px}.item img{width:88px;height:88px;object-fit:contain;background:#fff;border:1px solid #e1e7e2;border-radius:8px}.inlineFields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}.inlineFields input,.inlineFields textarea{min-width:0;padding:8px;font-size:13px}.inlineFields .wide{grid-column:1/-1}.inlineActions{display:flex;gap:5px;flex-wrap:wrap;margin-top:7px}.item{grid-template-columns:92px minmax(0,1fr)}.item .itemActions{grid-column:1/-1;display:flex;gap:6px;flex-wrap:wrap}.item .itemActions button{flex:1}.item .itemPhoto{display:flex;flex-direction:column;gap:6px}.item .itemPhoto input{width:100%;font-size:11px}.duplicateGroup{border:1px solid #f1c7a8;border-radius:10px;padding:10px;margin-top:8px;background:#fffaf5}.duplicateRow{display:grid;grid-template-columns:56px 1fr auto;gap:8px;align-items:center;padding:7px 0;border-top:1px solid #f3e2d5}.duplicateRow img{width:56px;height:56px;object-fit:contain;background:#fff;border-radius:6px}.item small{display:block;color:#68756e;margin-top:5px}.item button{margin:2px}.pill{display:inline-block;background:#e8eee9;border-radius:20px;padding:5px 8px;font-size:12px}.domain{background:#f8faf8;border:1px solid #e1e7e2;padding:10px;border-radius:10px;margin-top:8px;overflow-wrap:anywhere}@media(max-width:560px){.grid{grid-template-columns:1fr}.item{grid-template-columns:64px minmax(0,1fr);gap:8px}.item img{width:64px;height:64px}.inlineFields{grid-template-columns:1fr}.inlineFields .wide{grid-column:auto}.item .itemActions{grid-column:1/-1}.duplicateRow{grid-template-columns:44px 1fr}.duplicateRow img{width:44px;height:44px}.duplicateRow button{grid-column:2}}
 
 /* Shopify-style admin navigation */
@@ -20,9 +20,9 @@
 #adminDashboard .dashboard-intro{margin:0 0 15px;color:#637269;line-height:1.5}
 @media(max-width:700px){.admin-board{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.admin-tile{min-height:120px;padding:13px}}
 @media(max-width:390px){.admin-board{grid-template-columns:1fr}.admin-tile{min-height:unset}}
-</style><link rel="manifest" href="./manifest.webmanifest">
+</style><link rel="stylesheet" href="theme.css"><link rel="manifest" href="./manifest.webmanifest">
 <link rel="apple-touch-icon" href="./icon-192.png">
-</head><body><header><div style="max-width:1000px;margin:auto"><h1>My Catalogue · Business Admin</h1><div>Manage your brand, products, custom domain and catalogue.</div></div></header><main class="wrap"><div id="status" class="status" role="status">Connecting…</div>
+</head><body class="mc-admin"><main class="wrap"><div id="status" class="status" role="status">Connecting…</div>
 <script>
 // Startup watchdog: turn a silent/stalled startup into a useful diagnostic.
 (function(){
@@ -43,78 +43,144 @@
   },10000);
 })();
 </script>
-<section class="panel" id="authPanel"><h2>Sign in or create your account</h2><p class="hint">Create an account with your business email. If email confirmation is enabled in Supabase, confirm your email and then sign in. A business stays unpublished until the platform owner approves it.</p><div class="row oauth-row"><button class="btn oauth" id="googleSignIn" type="button">🌐 Continue with Google</button><button class="btn oauth" id="microsoftSignIn" type="button">✉️ Continue with Microsoft (Outlook / Hotmail)</button></div><p class="hint">Or use your email address</p><div class="grid"><div><label>Email</label><input id="email" type="email" autocomplete="username" placeholder="you@company.com"></div><div><label>Password</label><input id="password" type="password" autocomplete="current-password" placeholder="At least 8 characters"></div></div><div class="row"><button class="btn primary" id="signIn">Sign in</button><button class="btn" id="signUp">Create account</button></div><button class="btn" id="forgot">Forgot password? Send reset email</button></section><section class="panel hidden" id="resetPanel"><h2>Choose a new password</h2><p class="hint">Enter a new password for your account. Use at least 8 characters.</p><label for="newPassword">New password</label><input id="newPassword" type="password" autocomplete="new-password" minlength="8"><label for="confirmPassword">Confirm new password</label><input id="confirmPassword" type="password" autocomplete="new-password" minlength="8"><button class="btn primary" id="saveNewPassword" type="button">Save new password</button></section>
-<section class="panel hidden" id="createPanel"><h2>Create your business profile</h2><p class="hint">Your business receives a unique catalogue link. You can request a custom domain below.</p><label>Business / brand name</label><input id="company" placeholder="Example: Cedar Bakery"><label>Catalogue link name</label><input id="slug" placeholder="cedar-bakery"><div class="grid"><div><label>WhatsApp number with country code</label><input id="whatsapp" placeholder="961XXXXXXXX"></div><div><label>Currency</label><select id="currency"><option>USD</option><option>LBP</option><option>EUR</option></select></div></div><label>Short description</label><textarea id="description" placeholder="What your business offers"></textarea><button class="btn primary" id="createBusiness">Create business</button></section>
-<div id="app" class="hidden">
-<div id="adminDashboard">
-  <div class="admin-topbar">
-    <strong>Business Admin · Dashboard</strong>
-    <details class="admin-menu">
-      <summary aria-label="Open admin navigation">⋮</summary>
-      <div class="admin-menu-items">
-        <button type="button" data-admin-open="0">⚙️ Business settings</button>
-        <button type="button" data-admin-open="1">🎨 Catalogue design</button>
-        <button type="button" data-admin-open="2">🌐 Custom domain</button>
-        <button type="button" data-admin-open="3">📦 Add product</button>
-        <button type="button" data-admin-open="4">📊 Product import & sync</button>
-        <button type="button" data-admin-open="5">🖼️ Category photos</button>
-        <button type="button" data-admin-open="6">↕️ Category ordering</button>
-        <button type="button" data-admin-open="7">🗂️ Products</button>
-        <button type="button" data-admin-open="8">🧰 Business tools</button>
-        <button type="button" data-admin-open="9">🔌 POS Connections</button>
-        <button type="button" data-admin-open="10">📦 Stock Management</button>
+<section class="mc-auth" id="authPanel">
+  <div class="mc-auth-art">
+    <div style="position:relative;z-index:1">
+      <div class="mc-logo" style="padding:0 0 30px"><div class="mc-logo-mark">M</div><div><b>My Catalogue</b><small style="color:#fde7f3">PRO · Universal POS</small></div></div>
+      <h1>Your products, beautifully online — in minutes.</h1>
+      <p>Build a colourful branded catalogue, take WhatsApp orders, sync prices straight from your POS and turn everyday phone photos into studio-quality product shots.</p>
+      <div class="mc-feats">
+        <div class="mc-feat"><span>🔌</span>Live POS connector — AntiSoft, cloud POS or any Excel export</div>
+        <div class="mc-feat"><span>📸</span>Auto pro photos — white background, shadow, perfect framing</div>
+        <div class="mc-feat"><span>📊</span>One-click import &amp; export — Excel, CSV, full backups</div>
+        <div class="mc-feat"><span>💬</span>WhatsApp ordering, quotations &amp; delivery tracking</div>
       </div>
-    </details>
+    </div>
+    <small style="position:relative;z-index:1;opacity:.8">Secure sign-in powered by Supabase Auth · your data stays private to your business</small>
   </div>
-  <h2>Manage your catalogue</h2>
-  <p class="dashboard-intro">Choose a section below. Your settings are now organized into separate pages.</p>
-  <section class="domain" id="productGettingStarted" style="margin:0 0 16px;padding:16px;background:#f8fcf8;border-color:#cbded0">
+  <div class="mc-auth-form">
+    <div class="mc-auth-card">
+      <h2 id="authTitle">Welcome back 👋</h2>
+      <p class="hint" id="authSubtitle" style="margin:0">Sign in to manage your catalogue.</p>
+      <div class="mc-tabs" role="tablist">
+        <button type="button" class="on" id="tabSignIn" role="tab">Sign in</button>
+        <button type="button" id="tabSignUp" role="tab">Create account</button>
+      </div>
+      <div class="mc-oauth">
+        <button class="btn oauth" id="googleSignIn" type="button"><svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.2-.1-2.3-.4-3.5z"/><path fill="#FF3D00" d="m6.3 14.7 6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2c-2 1.5-4.5 2.4-7.2 2.4-5.2 0-9.6-3.3-11.3-8l-6.5 5C9.5 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.2-4.1 5.6l6.2 5.2C37 39.2 44 34 44 24c0-1.2-.1-2.3-.4-3.5z"/></svg>Continue with Google</button>
+        <button class="btn oauth" id="microsoftSignIn" type="button"><svg width="17" height="17" viewBox="0 0 23 23" aria-hidden="true"><path fill="#f35325" d="M1 1h10v10H1z"/><path fill="#81bc06" d="M12 1h10v10H12z"/><path fill="#05a6f0" d="M1 12h10v10H1z"/><path fill="#ffba08" d="M12 12h10v10H12z"/></svg>Continue with Microsoft</button>
+      </div>
+      <div class="mc-or">or with your email</div>
+      <label for="email">Email address</label>
+      <input id="email" type="email" autocomplete="username" placeholder="you@company.com" inputmode="email">
+      <div id="passwordBlock">
+        <label for="password">Password</label>
+        <div class="mc-pw"><input id="password" type="password" autocomplete="current-password" placeholder="At least 8 characters"><button type="button" id="togglePassword" aria-label="Show password">Show</button></div>
+        <div id="signUpExtras" class="hidden">
+          <div class="mc-meter"><i id="pwMeter"></i></div><div class="mc-meter-label" id="pwMeterLabel">Use 8+ characters with letters and numbers.</div>
+          <label for="password2">Confirm password</label>
+          <input id="password2" type="password" autocomplete="new-password" placeholder="Repeat your password">
+        </div>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;margin:8px 0 12px">
+        <button class="mc-link" id="forgot" type="button">Forgot password?</button>
+        <button class="mc-link" id="magicLink" type="button">✨ Email me a sign-in link</button>
+      </div>
+      <button class="btn primary" id="signIn" type="button">Sign in</button>
+      <button class="btn primary hidden" id="signUp" type="button">Create my account</button>
+      <div id="authMsg" class="mc-auth-msg hidden" role="alert"></div>
+      <p class="hint" style="font-size:12.5px;margin-top:16px">New businesses stay private until the platform owner approves them. By continuing you agree to keep your login private.</p>
+    </div>
+  </div>
+</section>
+<section class="panel hidden" id="resetPanel"><h2>🔐 Choose a new password</h2><p class="hint">Enter a new password for your account. Use at least 8 characters with letters and numbers.</p><label for="newPassword">New password</label><input id="newPassword" type="password" autocomplete="new-password" minlength="8"><label for="confirmPassword">Confirm new password</label><input id="confirmPassword" type="password" autocomplete="new-password" minlength="8"><button class="btn primary" id="saveNewPassword" type="button" style="width:100%;margin-top:14px">Save new password</button></section>
+<section class="panel hidden" id="createPanel"><div style="text-align:center;margin-bottom:8px"><div class="mc-logo-mark" style="margin:0 auto 12px;width:56px;height:56px;font-size:26px">🏪</div><h2>Create your business profile</h2><p class="hint">Your business receives its own catalogue link. You can add a logo, colours and a custom domain later.</p></div><label>Business / brand name</label><input id="company" placeholder="Example: Cedar Bakery"><label>Catalogue link name</label><input id="slug" placeholder="cedar-bakery"><div class="hint" id="slugPreview" style="font-size:12.5px;margin-top:4px"></div><div class="grid"><div><label>WhatsApp number with country code</label><input id="whatsapp" placeholder="961XXXXXXXX" inputmode="tel"></div><div><label>Currency</label><select id="currency"><option>USD</option><option>LBP</option><option>EUR</option></select></div></div><label>Short description</label><textarea id="description" placeholder="What your business offers"></textarea><button class="btn primary" id="createBusiness" style="width:100%;margin-top:14px">Create my business 🚀</button><button class="mc-link" type="button" onclick="document.getElementById('signOut').click()" style="display:block;margin:12px auto 0">Use a different account</button></section>
+
+<div id="app" class="hidden">
+<div class="mc-shell">
+ <aside class="mc-side" id="mcSide" aria-label="Admin navigation">
+  <div class="mc-logo"><div class="mc-logo-mark" id="mcLogoMark">M</div><div><b id="mcBizName">My Catalogue</b><small id="mcBizState">Business admin</small></div></div>
+  <div class="mc-nav-group">Overview</div>
+  <button class="mc-nav" data-page="dashboard" style="--c:#7c3aed"><span class="ic">🏠</span>Dashboard</button>
+  <div class="mc-nav-group">Catalogue</div>
+  <button class="mc-nav" data-page="products" style="--c:#ec4899"><span class="ic">🗂️</span>Products<span class="badge hidden" id="mcNavProducts"></span></button>
+  <button class="mc-nav" data-page="product" style="--c:#f97316"><span class="ic">➕</span>Add product</button>
+  <button class="mc-nav" data-page="studio" style="--c:#0ea5e9"><span class="ic">📸</span>Photo Studio<span class="badge hidden" id="mcNavPhotos"></span></button>
+  <button class="mc-nav" data-page="catphotos" style="--c:#14b8a6"><span class="ic">🖼️</span>Category photos</button>
+  <button class="mc-nav" data-page="catorder" style="--c:#84cc16"><span class="ic">↕️</span>Category order</button>
+  <div class="mc-nav-group">Data &amp; POS</div>
+  <button class="mc-nav" data-page="data" style="--c:#10b981"><span class="ic">📊</span>Import &amp; Export</button>
+  <button class="mc-nav" data-page="sync" style="--c:#f59e0b"><span class="ic">🔄</span>Excel / CSV sync</button>
+  <button class="mc-nav" data-page="connector" style="--c:#f43f5e"><span class="ic">🔌</span>Live POS connector</button>
+  <button class="mc-nav" data-page="pos" style="--c:#a855f7"><span class="ic">🧭</span>POS setup checker</button>
+  <button class="mc-nav" data-page="stock" style="--c:#4f46e5"><span class="ic">📦</span>Stock &amp; units</button>
+  <div class="mc-nav-group">Grow</div>
+  <button class="mc-nav" data-page="ai" style="--c:#db2777"><span class="ic">✨</span>AI Studio</button>
+  <button class="mc-nav" data-page="design" style="--c:#8b5cf6"><span class="ic">🎨</span>Storefront design</button>
+  <button class="mc-nav" data-page="tools" style="--c:#06b6d4"><span class="ic">🧾</span>Orders &amp; tools</button>
+  <button class="mc-nav" data-page="domain" style="--c:#22c55e"><span class="ic">🌐</span>Custom domain</button>
+  <div class="mc-nav-group">Account</div>
+  <button class="mc-nav" data-page="settings" style="--c:#64748b"><span class="ic">⚙️</span>Business settings</button>
+  <div class="mc-side-foot">
+   <div class="mc-user"><div class="mc-avatar" id="mcAvatar">?</div><div style="min-width:0"><b style="color:#fff;font-size:13px">Signed in</b><small id="mcUserEmail"></small></div></div>
+   <button class="mc-nav" type="button" id="mcSignOut" style="--c:#f43f5e"><span class="ic">⎋</span>Sign out</button>
+  </div>
+ </aside>
+ <div class="mc-main">
+  <div class="mc-top">
+   <button class="mc-burger" id="mcBurger" type="button" aria-label="Open menu">☰</button>
+   <h1 id="mcPageTitle">Dashboard</h1>
+   <span class="pill mc-hide-sm" id="mcPublishPill">…</span>
+   <a class="btn ghost mc-hide-sm" id="mcViewStore" target="_blank" rel="noopener">👁 View store</a>
+   <button class="btn primary" type="button" data-page="product">＋ <span class="mc-hide-sm">Add product</span></button>
+  </div>
+  <div class="mc-content" id="mcContent">
+  <div id="mcDashboard" data-page-id="dashboard">
+   <div class="mc-hero">
+    <h2 id="mcHello">Welcome back!</h2>
+    <p id="mcHeroText">Here is what is happening in your catalogue today.</p>
+    <div class="mc-hero-actions">
+     <button class="btn" type="button" data-page="product">＋ Add a product</button>
+     <button class="btn glass" type="button" data-page="data">📊 Import / export</button>
+     <button class="btn glass" type="button" data-page="studio">📸 Make pro photos</button>
+     <button class="btn glass" type="button" id="mcCopyLink">🔗 Copy store link</button>
+    </div>
+   </div>
+   <div class="mc-kpis" id="mcKpis"></div>
+   <section class="mc-card" id="productGettingStarted" style="margin-bottom:20px;background:var(--grad-soft)">
     <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:space-between">
-      <div><h3 style="margin:0 0 5px">Let's add your first products</h3><p class="hint" style="margin:0">Choose the easiest way to build your catalogue. You can change products and stock settings later.</p></div>
-      <button class="btn" type="button" id="dismissProductGettingStarted">I'll do this later</button>
+     <div><h3 style="margin:0 0 4px">🚀 Let's add your first products</h3><p class="hint" style="margin:0">Choose the easiest way to build your catalogue. You can change everything later.</p></div>
+     <button class="btn ghost" type="button" id="dismissProductGettingStarted">I'll do this later</button>
     </div>
-    <div class="grid" style="margin-top:12px">
-      <button class="admin-tile" type="button" data-admin-open="3" style="min-height:100px"><span class="tile-icon">➕</span><strong>Add products manually</strong><small>Create products one at a time, with photos, units and prices.</small></button>
-      <button class="admin-tile" type="button" data-admin-open="4" style="min-height:100px"><span class="tile-icon">📊</span><strong>Import an Excel file</strong><small>Upload a product list and review it before saving.</small></button>
+    <div class="mc-grid-3" style="margin-top:14px">
+     <button class="mc-tile" type="button" data-page="product" style="--c:#f97316"><span class="t-ic">➕</span><strong>Add manually</strong><small>One product at a time with photo, units and prices.</small></button>
+     <button class="mc-tile" type="button" data-page="sync" style="--c:#10b981"><span class="t-ic">📊</span><strong>Import Excel / CSV</strong><small>Upload a product list and review it before saving.</small></button>
+     <button class="mc-tile" type="button" data-page="connector" style="--c:#f43f5e"><span class="t-ic">🔌</span><strong>Connect your POS</strong><small>Send products & prices automatically from your POS.</small></button>
     </div>
-  </section>
-  <div class="admin-board">
-    <button class="admin-tile" type="button" data-admin-open="0"><span class="tile-icon">⚙️</span><strong>Business settings</strong><small>Brand name, logo, currency and WhatsApp</small></button>
-    <button class="admin-tile" type="button" data-admin-open="1"><span class="tile-icon">🎨</span><strong>Catalogue design</strong><small>Storefront appearance and product layout</small></button>
-    <button class="admin-tile" type="button" data-admin-open="2"><span class="tile-icon">🌐</span><strong>Custom domain</strong><small>Connect your own website address</small></button>
-    <button class="admin-tile" type="button" data-admin-open="3"><span class="tile-icon">➕</span><strong>Add product</strong><small>Create or edit catalogue products</small></button>
-    <button class="admin-tile" type="button" data-admin-open="4"><span class="tile-icon">📊</span><strong>Product import & sync</strong><small>Import POS files and review selected products</small></button>
-    <button class="admin-tile" type="button" data-admin-open="5"><span class="tile-icon">🖼️</span><strong>Category photos</strong><small>Upload a dedicated image for each category</small></button>
-    <button class="admin-tile" type="button" data-admin-open="6"><span class="tile-icon">↕️</span><strong>Category ordering</strong><small>Arrange the order of catalogue categories</small></button>
-    <button class="admin-tile" type="button" data-admin-open="7"><span class="tile-icon">🗂️</span><strong>Products</strong><small>View, search and manage all products</small></button>
-    <button class="admin-tile" type="button" data-admin-open="8"><span class="tile-icon">🧰</span><strong>Business tools</strong><small>Orders and other business utilities</small></button>
-    <button class="admin-tile" type="button" data-admin-open="9"><span class="tile-icon">🔌</span><strong>POS Connections</strong><small>Connect a POS, import files and manage sync safely</small></button>
-    <button class="admin-tile" type="button" data-admin-open="10"><span class="tile-icon">📦</span><strong>Stock Management</strong><small>Units, barcodes, conversions and hybrid stock</small></button>
+   </section>
+   <div class="mc-two">
+    <div class="mc-card"><h3>✅ Launch checklist</h3><div class="mc-progress"><i id="mcProgressBar" style="width:0"></i></div><div class="hint" id="mcProgressText" style="font-size:12.5px;margin-bottom:6px"></div><div id="mcChecklist"></div></div>
+    <div class="mc-card"><h3>🕒 Recently updated products</h3><div class="mc-recent" id="mcRecent"><div class="mc-empty">No products yet.</div></div></div>
+   </div>
+   <div class="mc-card"><h3>⚡ Quick actions</h3>
+    <div class="mc-tiles">
+     <button class="mc-tile" type="button" data-page="studio" style="--c:#0ea5e9"><span class="t-ic">📸</span><strong>Photo Studio</strong><small>Auto white background, shadow &amp; framing for all photos.</small></button>
+     <button class="mc-tile" type="button" data-page="connector" style="--c:#f43f5e"><span class="t-ic">🔌</span><strong>Live POS connector</strong><small>Prices &amp; products straight from AntiSoft or any POS.</small></button>
+     <button class="mc-tile" type="button" data-page="data" style="--c:#10b981"><span class="t-ic">💾</span><strong>Backup &amp; export</strong><small>Excel, CSV and full JSON backups in one click.</small></button>
+     <button class="mc-tile" type="button" data-page="design" style="--c:#8b5cf6"><span class="t-ic">🎨</span><strong>Storefront design</strong><small>Pick one of 8 templates and your brand colour.</small></button>
+     <a class="mc-tile" href="orders.html" style="--c:#06b6d4;text-decoration:none"><span class="t-ic">🧾</span><strong>Orders</strong><small>See WhatsApp orders and update their status.</small></a>
+     <a class="mc-tile" href="quotation.html" style="--c:#f59e0b;text-decoration:none"><span class="t-ic">📄</span><strong>Quotations</strong><small>Build client price quotes and print to PDF.</small></a>
+     <button class="mc-tile" type="button" data-page="ai" style="--c:#db2777"><span class="t-ic">✨</span><strong>AI assistant</strong><small>Write descriptions, translate and get ideas.</small></button>
+     <button class="mc-tile" type="button" data-page="settings" style="--c:#64748b"><span class="t-ic">⚙️</span><strong>Settings</strong><small>Logo, WhatsApp number, currency and colours.</small></button>
+    </div>
+   </div>
   </div>
-</div>
-<div id="adminPageToolbar" class="admin-topbar hidden">
-  <button type="button" class="admin-back" id="adminBack">← Dashboard</button>
-  <strong id="adminCurrentTitle">Admin section</strong>
-  <details class="admin-menu"><summary aria-label="Open admin navigation">⋮</summary><div class="admin-menu-items">
-    <button type="button" data-admin-home>⌂ Dashboard</button>
-    <button type="button" data-admin-open="0">⚙️ Business settings</button>
-    <button type="button" data-admin-open="1">🎨 Catalogue design</button>
-    <button type="button" data-admin-open="2">🌐 Custom domain</button>
-    <button type="button" data-admin-open="3">📦 Add product</button>
-    <button type="button" data-admin-open="4">📊 Product import & sync</button>
-    <button type="button" data-admin-open="5">🖼️ Category photos</button>
-    <button type="button" data-admin-open="6">↕️ Category ordering</button>
-    <button type="button" data-admin-open="7">🗂️ Products</button>
-    <button type="button" data-admin-open="8">🧰 Business tools</button>
-    <button type="button" data-admin-open="9">🔌 POS Connections</button>
-    <button type="button" data-admin-open="10">📦 Stock Management</button>
-  </div></details>
-</div>
-<section class="panel"><div class="row" style="align-items:center"><div><h2 id="businessHeading">Business settings</h2><div id="publishStatus" class="pill">Awaiting approval</div></div><button class="btn" id="signOut">Sign out</button></div><div class="grid"><div><label>Brand name</label><input id="editCompany"></div><div><label>Catalogue slug</label><input id="editSlug" disabled></div><div><label>WhatsApp number</label><input id="editWhatsapp" placeholder="961XXXXXXXX"></div><div><label>Currency</label><select id="editCurrency"><option>USD</option><option>LBP</option><option>EUR</option></select></div><div><label>Brand colour</label><input id="brandColor" type="color" value="#173f35"></div><div><label>Logo image</label><input id="logoFile" type="file" accept="image/*"></div></div><label>Description</label><textarea id="editDescription"></textarea><div class="row"><button class="btn primary" id="saveSettings">Save business settings</button><button class="btn" id="copyLink">Copy catalogue link</button><a class="btn" id="openCatalogue" target="_blank" rel="noopener">Preview catalogue</a><button class="btn" id="installBusinessAdmin" type="button">Install Business Admin</button></div><div class="hint" style="margin-top:8px">Public catalogue link: <span id="catalogueLink"></span></div></section>
-<section class="panel"><h2>Catalogue design</h2><p class="hint">Choose the storefront look and how products are displayed.</p><label for="catalogueTemplate">Catalogue template</label><select id="catalogueTemplate"><option value="classic">Classic — clean product grid</option><option value="premium">Premium — dark luxury storefront</option><option value="fresh">Fresh — bright rounded cards</option><option value="shopify">Shopify-style — modern store grid</option><option value="editorial">Editorial — large visual product cards</option><option value="compact">Compact — more products per screen</option><option value="list">List — horizontal product rows</option><option value="showcase">Showcase — large product images</option></select><button class="btn primary" id="saveTemplate" type="button">Save catalogue design</button><p class="hint">Each business saves its own design. Products, logo, prices and catalogue link stay the same.</p></section>
-<section class="panel"><h2>Custom domain</h2><p class="hint">Enter a domain you own, for example shop.example.com. Your hosting provider must route that domain to this catalogue app and enable HTTPS. Domain approval is manual; it is not active until verified by the platform operator.</p><label>Custom domain (without https://)</label><input id="domainInput" placeholder="shop.example.com"><button class="btn primary" id="requestDomain">Request domain setup</button><div id="domainList"></div></section>
-<section class="panel"><h2 id="productTitle">Add a product</h2><p class="hint">For a basic catalogue, enter the product name, category and prices. Barcode, SKU and POS Product ID are optional. You can configure extra selling units, their barcodes and stock conversion later in Stock Management.</p><input id="productId" type="hidden"><div class="grid"><div><label>Product name *</label><input id="pName" placeholder="Kraft paper bag" autocomplete="off"></div><div><label>Category</label><input id="pCategory" list="categories" placeholder="Products (default)"><datalist id="categories"></datalist></div><div><label>Primary barcode (optional)</label><input id="pBarcode" placeholder="Scan or enter barcode"></div><div><label>SKU (optional)</label><input id="pSku" placeholder="Internal stock code"></div><div><label>POS product ID</label><input id="pPosId" placeholder="ID from your POS"></div><div><label>Product photo</label><input id="pPhoto" type="file" accept="image/*"></div><div><label>First unit (e.g. Box)</label><input id="pLabel1" value="Box"></div><div><label>First price</label><input id="pPrice1" type="number" min="0" step="0.01" placeholder="Leave blank if not priced"></div><div><label>Optional second unit (e.g. Packet)</label><input id="pLabel2" placeholder="Leave blank if this product has one unit"></div><div><label>Second price</label><input id="pPrice2" type="number" min="0" step="0.01" placeholder="Leave blank if not priced"></div><div><label>Display order number</label><input id="pSortOrder" type="number" min="1" step="1" value="1" placeholder="1 = first"></div></div><p class="hint">Use 1, 2, 3… to control product order. Category order follows the first product position in that category.</p><label>Description / sizes / material / specifications</label><textarea id="pDescription" placeholder="Sizes, quantity, material, packaging details..."></textarea><div class="row"><button class="btn primary" id="saveProduct">Save product</button><button class="btn" id="cancelProduct">Clear form</button></div><p class="hint">Images are optimized to WebP up to 1200 × 1200 px before upload. Product records and images are scoped to your business.</p></section>
-<section class="panel" id="bulkImportPanel">
+
+<section data-page-id="settings" class="panel"><div class="row" style="align-items:center"><div><h2 id="businessHeading">Business settings</h2><div id="publishStatus" class="pill">Awaiting approval</div></div><button class="btn" id="signOut">Sign out</button></div><div class="grid"><div><label>Brand name</label><input id="editCompany"></div><div><label>Catalogue slug</label><input id="editSlug" disabled></div><div><label>WhatsApp number</label><input id="editWhatsapp" placeholder="961XXXXXXXX"></div><div><label>Currency</label><select id="editCurrency"><option>USD</option><option>LBP</option><option>EUR</option></select></div><div><label>Brand colour</label><input id="brandColor" type="color" value="#173f35"></div><div><label>Logo image</label><input id="logoFile" type="file" accept="image/*"></div></div><label>Description</label><textarea id="editDescription"></textarea><div class="row"><button class="btn primary" id="saveSettings">Save business settings</button><button class="btn" id="copyLink">Copy catalogue link</button><a class="btn" id="openCatalogue" target="_blank" rel="noopener">Preview catalogue</a><button class="btn" id="installBusinessAdmin" type="button">Install Business Admin</button></div><div class="hint" style="margin-top:8px">Public catalogue link: <span id="catalogueLink"></span></div></section>
+<section data-page-id="design" class="panel"><h2>Catalogue design</h2><p class="hint">Choose the storefront look and how products are displayed.</p><label for="catalogueTemplate">Catalogue template</label><select id="catalogueTemplate"><option value="classic">Classic — clean product grid</option><option value="premium">Premium — dark luxury storefront</option><option value="fresh">Fresh — bright rounded cards</option><option value="shopify">Shopify-style — modern store grid</option><option value="editorial">Editorial — large visual product cards</option><option value="compact">Compact — more products per screen</option><option value="list">List — horizontal product rows</option><option value="showcase">Showcase — large product images</option></select><button class="btn primary" id="saveTemplate" type="button">Save catalogue design</button><p class="hint">Each business saves its own design. Products, logo, prices and catalogue link stay the same.</p></section>
+<section data-page-id="domain" class="panel"><h2>Custom domain</h2><p class="hint">Enter a domain you own, for example shop.example.com. Your hosting provider must route that domain to this catalogue app and enable HTTPS. Domain approval is manual; it is not active until verified by the platform operator.</p><label>Custom domain (without https://)</label><input id="domainInput" placeholder="shop.example.com"><button class="btn primary" id="requestDomain">Request domain setup</button><div id="domainList"></div></section>
+<section data-page-id="product" class="panel"><h2 id="productTitle">Add a product</h2><p class="hint">For a basic catalogue, enter the product name, category and prices. Barcode, SKU and POS Product ID are optional. You can configure extra selling units, their barcodes and stock conversion later in Stock Management.</p><input id="productId" type="hidden"><div class="grid"><div><label>Product name *</label><input id="pName" placeholder="Kraft paper bag" autocomplete="off"></div><div><label>Category</label><input id="pCategory" list="categories" placeholder="Products (default)"><datalist id="categories"></datalist></div><div><label>Primary barcode (optional)</label><input id="pBarcode" placeholder="Scan or enter barcode"></div><div><label>SKU (optional)</label><input id="pSku" placeholder="Internal stock code"></div><div><label>POS product ID</label><input id="pPosId" placeholder="ID from your POS"></div><div><label>Product photo</label><input id="pPhoto" type="file" accept="image/*"></div><div><label>First unit (e.g. Box)</label><input id="pLabel1" value="Box"></div><div><label>First price</label><input id="pPrice1" type="number" min="0" step="0.01" placeholder="Leave blank if not priced"></div><div><label>Optional second unit (e.g. Packet)</label><input id="pLabel2" placeholder="Leave blank if this product has one unit"></div><div><label>Second price</label><input id="pPrice2" type="number" min="0" step="0.01" placeholder="Leave blank if not priced"></div><div><label>Display order number</label><input id="pSortOrder" type="number" min="1" step="1" value="1" placeholder="1 = first"></div></div><p class="hint">Use 1, 2, 3… to control product order. Category order follows the first product position in that category.</p><label>Description / sizes / material / specifications</label><textarea id="pDescription" placeholder="Sizes, quantity, material, packaging details..."></textarea><div class="row"><button class="btn primary" id="saveProduct">Save product</button><button class="btn" id="cancelProduct">Clear form</button></div><p class="hint">Images are optimized to WebP up to 1200 × 1200 px before upload. Product records and images are scoped to your business.</p></section>
+<section data-page-id="sync" class="panel" id="bulkImportPanel">
 <h2>Product &amp; Price Synchronization</h2>
 <p class="hint">Import an Excel/CSV export from almost any POS. Barcode is the primary product reference. Existing products are matched by barcode first, then POS product ID, then SKU. Product names are never used for automatic matching. Full sync can add new products and upload their photos. Review every change before confirming.</p>
 <div class="grid">
@@ -153,9 +219,9 @@
 <button class="btn primary" id="runBulkImport" type="button" disabled>Confirm synchronization</button>
 <p class="hint">Photos are optimized before upload. Matched products are updated instead of skipped. New products are added only in full-sync mode. Missing products are never deleted.</p>
 </section>
-<section class="panel" id="categoryImagesPanel"><h2>Category photos</h2><p class="hint">Upload a dedicated image for each category. These photos are independent of product photos and appear on the public catalogue category cards.</p><div id="categoryImageManager"></div><p class="hint">Images are stored in your business Supabase storage. Run the category image migration once before saving.</p></section><section class="panel" id="categoryOrderingPanel"><h2>Category ordering</h2><p class="hint">Move categories up or down, then save. Products stay grouped by category and their relative order within each category is preserved.</p><div id="categoryOrderList"></div><div class="row" style="margin-top:10px"><button class="btn primary" id="saveCategoryOrder" type="button">Save category order</button><button class="btn" id="normalizeCategoryProducts" type="button">Renumber products in all categories</button><button class="btn" id="resetCategoryOrder" type="button">Reset category order</button></div><p class="hint">Category order is saved separately. Product numbering starts at 1 inside every category.</p></section><section class="panel"><div class="row"><h2 style="flex:2">Products</h2><button class="btn" id="refreshProducts">Refresh</button><button class="btn" id="exportJson">Export JSON</button><button class="btn" id="exportExcel">Export Excel</button><button class="btn" id="reviewDuplicates" type="button">Review duplicates</button></div><div id="duplicateReview" class="hidden"></div><label>Search products</label><input id="productSearch" placeholder="Search name, category, barcode..."><label for="productCategoryFilter" style="margin-top:10px">Filter by category</label><select id="productCategoryFilter"><option value="">All categories</option></select><label class="btn" style="display:block;text-align:center;cursor:pointer">Import catalogue JSON<input id="importJson" type="file" accept=".json,application/json" style="display:none"></label><div id="productList"></div></section>
-<section class="panel"><h2>Business tools</h2><div class="row"><a class="btn" href="orders.html">Orders dashboard</a><a class="btn" href="quotation.html">Quotation builder & client archive</a><a class="btn" href="driver-tracking.html">Driver tracking</a></div><p class="hint">All tools use the signed-in account and selected business ID. They do not use White Pack's Supabase project.</p></section>
-<section class="panel" id="posConnectionsPanel">
+<section data-page-id="catphotos" class="panel" id="categoryImagesPanel"><h2>Category photos</h2><p class="hint">Upload a dedicated image for each category. These photos are independent of product photos and appear on the public catalogue category cards.</p><div id="categoryImageManager"></div><p class="hint">Images are stored in your business Supabase storage. Run the category image migration once before saving.</p></section><section data-page-id="catorder" class="panel" id="categoryOrderingPanel"><h2>Category ordering</h2><p class="hint">Move categories up or down, then save. Products stay grouped by category and their relative order within each category is preserved.</p><div id="categoryOrderList"></div><div class="row" style="margin-top:10px"><button class="btn primary" id="saveCategoryOrder" type="button">Save category order</button><button class="btn" id="normalizeCategoryProducts" type="button">Renumber products in all categories</button><button class="btn" id="resetCategoryOrder" type="button">Reset category order</button></div><p class="hint">Category order is saved separately. Product numbering starts at 1 inside every category.</p></section><section data-page-id="products" class="panel"><div class="row"><h2 style="flex:2">Products</h2><button class="btn" id="refreshProducts">Refresh</button><button class="btn" id="exportJson">Export JSON</button><button class="btn" id="exportExcel">Export Excel</button><button class="btn" id="reviewDuplicates" type="button">Review duplicates</button></div><div id="duplicateReview" class="hidden"></div><label>Search products</label><input id="productSearch" placeholder="Search name, category, barcode..."><label for="productCategoryFilter" style="margin-top:10px">Filter by category</label><select id="productCategoryFilter"><option value="">All categories</option></select><label class="btn" style="display:block;text-align:center;cursor:pointer">Import catalogue JSON<input id="importJson" type="file" accept=".json,application/json" style="display:none"></label><div id="productList"></div></section>
+<section data-page-id="tools" class="panel"><h2>Business tools</h2><div class="row"><a class="btn" href="orders.html">Orders dashboard</a><a class="btn" href="quotation.html">Quotation builder & client archive</a><a class="btn" href="driver-tracking.html">Driver tracking</a></div><p class="hint">All tools use the signed-in account and selected business ID. They do not use White Pack's Supabase project.</p></section>
+<section data-page-id="pos" class="panel" id="posConnectionsPanel">
   <h2>Universal POS Connections</h2>
   <p class="hint">Connect almost any POS system: local Lebanese software, cloud POS, custom software, or systems that export Excel/CSV. This checker recommends a connection method; it does not claim that a direct connector is already installed.</p>
   <div class="grid">
@@ -193,9 +259,9 @@
     <li>Connectors are one-way read-only from the source POS; no writes are sent back to POS software.</li>
     <li>Stock remains optional. The public catalogue will show In stock / Out of stock, not remaining quantities, once stock is configured.</li>
   </ul>
-  <div class="domain"><b>Current integration status</b><p class="hint">Excel/CSV import is available. API adapters and Windows local agents are not implemented yet. AntiSoft is a planned first local-agent adapter only; it is not connected. All saved profiles remain Setup required until a real adapter is developed, security-tested and explicitly enabled.</p></div>
+  <div class="domain"><b>Current integration status</b><p class="hint">Excel/CSV import and the new <b>Live POS connector</b> (Windows agent for AntiSoft/SQL Server, export-folder watcher and HTTPS API) are available. Profiles here are planning notes; create a connector key in <a href="#connector" data-page="connector">Live POS connector</a> to start automatic synchronization. Always test with a dry run first.</p></div>
 </section>
-<section class="panel" id="stockManagementPanel">
+<section data-page-id="stock" class="panel" id="stockManagementPanel">
   <div class="row" style="align-items:center"><h2 style="flex:2">Hybrid Stock Management</h2><button class="btn" id="refreshStock" type="button">Refresh stock</button></div>
   <p class="hint">Stock is stored in the product's base unit. Additional units convert into that base unit. POS physical stock is the source of truth; online orders create reservations. Reservations are disabled by default until you configure units and opening/POS stock.</p>
   <div class="domain" style="margin-bottom:12px">
@@ -252,7 +318,137 @@
   <h3>Retry a pending order reservation</h3>
   <p class="hint">Use this after stock and unit conversions are configured. Enter the order UUID from the Orders dashboard.</p>
   <div class="row"><input id="retryReservationOrderId" placeholder="Order UUID"><button class="btn" id="retryReservation" type="button">Retry reservation</button></div>
-</section></div></main>
+</section>
+<section data-page-id="ai" class="panel" id="aiStudioPanel">
+  <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
+    <div><h2 style="margin-bottom:4px">✨ AI Studio</h2><p class="hint" style="margin:0">Your catalogue creative assistant, powered by OpenAI. AI suggestions never change your live catalogue automatically.</p></div>
+    <div class="pill" id="aiCreditBadge">Credits: loading…</div>
+  </div>
+  <div class="domain" style="margin:14px 0;background:#f7fbf8">
+    <b>AI usage</b><p class="hint" id="aiCreditHelp" style="margin:5px 0 0">Chat uses 1 credit. Proposed image prices: 2 credits to generate and 3 credits to edit. Image generation/editing is currently paused to protect your API balance; no image credits will be charged while paused.</p>
+  </div>
+  <div class="grid">
+    <div class="domain">
+      <h3 style="margin:0 0 8px">💬 ChatGPT catalogue assistant</h3>
+      <p class="hint">Ask for product descriptions, category ideas, translations, merchandising advice or catalogue improvements.</p>
+      <div id="aiChatLog" role="log" aria-live="polite" style="height:260px;overflow:auto;background:#fff;border:1px solid #e1e7e2;border-radius:10px;padding:10px;margin:10px 0"><p class="hint">Hello! I can help improve your catalogue. What would you like to work on?</p></div>
+      <label for="aiChatPrompt">Your message</label><textarea id="aiChatPrompt" placeholder="Example: Write a premium product description for our 750cc kraft salad bowl." style="min-height:90px"></textarea>
+      <button class="btn primary" id="aiSendChat" type="button">Send to AI assistant · 1 credit</button>
+    </div>
+    <div class="domain">
+      <h3 style="margin:0 0 8px">📸 Professional product photography</h3>
+      <p class="hint">Generate a new product image or upload an existing image for AI editing. Review the result before using it in your catalogue.</p>
+      <label for="aiPhotoMode">Photo action</label><select id="aiPhotoMode"><option value="generate">Create a new professional product image · 2 credits (paused)</option><option value="edit">Improve / edit an uploaded photo · 3 credits (paused)</option></select>
+      <label for="aiPhotoPrompt">Describe the result</label><textarea id="aiPhotoPrompt" placeholder="Example: Premium studio product photo, pure white background, soft natural shadow, square composition. Preserve the exact product shape, packaging and label." style="min-height:105px"></textarea>
+      <label for="aiPhotoInput">Original product photo (required for editing)</label><input id="aiPhotoInput" type="file" accept="image/*">
+      <button class="btn primary" id="aiGeneratePhoto" type="button">Generate professional photo</button>
+      <div id="aiPhotoResult" style="margin-top:12px"></div>
+    </div>
+  </div>
+  <div class="domain" style="margin-top:14px">
+    <h3 style="margin:0 0 8px">🎨 Catalogue templates</h3>
+    <p class="hint">Your existing eight catalogue designs remain available. Choose a design below and preview it before applying it.</p>
+    <div class="grid"><div><label for="aiTemplateSelect">Choose a template</label><select id="aiTemplateSelect"><option value="classic">Classic — clean product grid</option><option value="premium">Premium — dark luxury storefront</option><option value="fresh">Fresh — bright rounded cards</option><option value="shopify">Shopify-style — modern store grid</option><option value="editorial">Editorial — large visual product cards</option><option value="compact">Compact — more products per screen</option><option value="list">List — horizontal product rows</option><option value="showcase">Showcase — large product images</option></select></div><div style="display:flex;align-items:end"><button class="btn primary" id="aiApplyTemplate" type="button">Apply selected template</button></div></div>
+    <p class="hint">Applying a template updates only your catalogue design setting. Your products, prices, images and orders are not changed.</p>
+  </div>
+  <div class="domain" style="margin-top:14px"><b>Important before launch</b><p class="hint" style="margin:5px 0 0">AI Studio requires the SQL migration and the Supabase Edge Function included in this package. Configure the OpenAI API key as an Edge Function secret. Never add it to admin.html or saas.js. Subscription billing and paid credit top-ups are the next phase; this release uses an introductory credit balance only.</p></div>
+</section>
+<section class="panel" data-page-id="data" id="dataCenterPanel">
+ <h2>📊 Import &amp; Export Center</h2>
+ <p class="hint">Everything you need to move products in and out of My Catalogue. Exports never change your data. Imports always show a preview first.</p>
+ <h3 style="margin:18px 0 10px">⬇️ Export</h3>
+ <div class="mc-grid-3">
+  <div class="mc-feature" style="--c:#10b981"><h3><span class="ic">📗</span>Products → Excel</h3><p>All products with prices, units, SKU, barcode, POS ID and photo links. Re-importable.</p><button class="btn primary" type="button" id="dcExportXlsx">Download .xlsx</button></div>
+  <div class="mc-feature" style="--c:#0ea5e9"><h3><span class="ic">📄</span>Products → CSV</h3><p>Plain CSV (UTF-8) that opens in Excel, Google Sheets or any POS import tool.</p><button class="btn" type="button" id="dcExportCsv">Download .csv</button></div>
+  <div class="mc-feature" style="--c:#7c3aed"><h3><span class="ic">💾</span>Full backup (JSON)</h3><p>Business settings, products, category order &amp; photos, units. Restore it any time.</p><button class="btn" type="button" id="dcExportBackup">Download backup</button></div>
+  <div class="mc-feature" style="--c:#f97316"><h3><span class="ic">🧾</span>Orders → Excel</h3><p>Orders with customer, items, totals and status for the selected period.</p>
+   <div class="grid" style="margin-bottom:10px"><div><label for="dcOrdersFrom">From</label><input id="dcOrdersFrom" type="date"></div><div><label for="dcOrdersTo">To</label><input id="dcOrdersTo" type="date"></div></div>
+   <button class="btn" type="button" id="dcExportOrders">Download orders</button></div>
+  <div class="mc-feature" style="--c:#ec4899"><h3><span class="ic">🖼️</span>Photo list</h3><p>Every product photo URL in a sheet — handy for printing or sharing with a designer.</p><button class="btn" type="button" id="dcExportPhotos">Download photo list</button></div>
+  <div class="mc-feature" style="--c:#f59e0b"><h3><span class="ic">🏷️</span>Price list (print)</h3><p>A clean, printable price list grouped by category. Save it as PDF from the print window.</p><button class="btn" type="button" id="dcPrintPriceList">Open printable price list</button></div>
+ </div>
+ <h3 style="margin:22px 0 10px">⬆️ Import</h3>
+ <div class="mc-grid-3">
+  <div class="mc-feature" style="--c:#f59e0b"><h3><span class="ic">🔄</span>Excel / CSV import</h3><p>Add new products or update prices from a spreadsheet or POS export, with photo matching.</p><button class="btn primary" type="button" data-page="sync">Open Excel import</button></div>
+  <div class="mc-feature" style="--c:#7c3aed"><h3><span class="ic">♻️</span>Restore JSON backup</h3><p>Adds products and category photos from a backup file. Existing products are never deleted.</p><button class="btn" type="button" id="dcRestoreJson">Choose backup file</button></div>
+  <div class="mc-feature" style="--c:#f43f5e"><h3><span class="ic">🔌</span>Automatic POS feed</h3><p>Let your POS push products and prices automatically on a schedule.</p><button class="btn" type="button" data-page="connector">Set up connector</button></div>
+ </div>
+ <h3 style="margin:22px 0 10px">📥 Templates</h3>
+ <div class="row"><button class="btn" type="button" id="dcTplProducts">Simple product template</button><button class="btn" type="button" id="dcTplPos">POS sync template</button><button class="btn" type="button" id="dcTplUnits">Unit conversion template</button></div>
+</section>
+
+<section class="panel" data-page-id="studio" id="photoStudioPanel">
+ <div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:flex-start">
+  <div><h2>📸 Photo Studio <span class="pill ok">Free · unlimited</span></h2><p class="hint" style="margin:0;max-width:720px">Automatically turns ordinary phone photos into clean, professional catalogue photos: removes plain backgrounds, centres and frames the product, balances light and colour, and adds a soft studio shadow. Everything runs in your browser — no credits used.</p></div>
+ </div>
+ <div class="mc-grid-2" style="margin-top:16px">
+  <div class="mc-card">
+   <h3>🎛️ Studio style</h3>
+   <label>Background</label>
+   <div class="mc-swatches" id="psBg">
+    <button type="button" class="mc-swatch on" data-bg="white" title="Pure white" style="background:#fff"></button>
+    <button type="button" class="mc-swatch" data-bg="light" title="Soft grey" style="background:#f2f2f5"></button>
+    <button type="button" class="mc-swatch" data-bg="studio" title="Studio spotlight" style="background:radial-gradient(circle at 50% 40%,#fff,#e6e6ee)"></button>
+    <button type="button" class="mc-swatch" data-bg="warm" title="Warm cream" style="background:#fbf5ec"></button>
+    <button type="button" class="mc-swatch" data-bg="brand" title="Brand tint" style="background:linear-gradient(135deg,#f3edff,#fdeef6)"></button>
+    <button type="button" class="mc-swatch" data-bg="keep" title="Keep original background" style="background:repeating-linear-gradient(45deg,#ddd 0 6px,#fff 6px 12px)"></button>
+   </div>
+   <div class="grid" style="margin-top:6px">
+    <div><label for="psFill">Product size in frame</label><select id="psFill"><option value="0.74">Small (more space)</option><option value="0.82" selected>Balanced</option><option value="0.9">Large</option></select></div>
+    <div><label for="psTol">Background removal strength</label><select id="psTol"><option value="22">Gentle</option><option value="34" selected>Normal</option><option value="48">Strong</option></select></div>
+    <div><label for="psShadow">Shadow</label><select id="psShadow"><option value="soft" selected>Soft floor shadow</option><option value="drop">Drop shadow</option><option value="none">No shadow</option></select></div>
+    <div><label for="psEnhance">Light &amp; colour</label><select id="psEnhance"><option value="auto" selected>Auto enhance</option><option value="vivid">Vivid</option><option value="none">Keep original</option></select></div>
+   </div>
+   <div class="domain" style="margin-top:14px;padding:12px 14px"><b style="font-size:13.5px">📌 Tips for the best results</b><ul class="hint" style="margin:6px 0 0;padding-left:18px;font-size:13px;line-height:1.7"><li>Shoot on a plain wall, table or sheet of paper.</li><li>Fill most of the frame with the product, keep it in focus.</li><li>Use daylight from a window; avoid strong flash.</li><li>Busy backgrounds are kept and neatly framed instead.</li></ul></div>
+  </div>
+  <div class="mc-card">
+   <h3>🧪 Try one photo</h3>
+   <label for="psProduct">Product</label>
+   <select id="psProduct"><option value="">Choose a product with a photo…</option></select>
+   <label for="psUpload">…or upload a new photo for this product</label>
+   <input id="psUpload" type="file" accept="image/*">
+   <div class="mc-compare" style="margin-top:12px"><figure><img id="psBefore" alt="Before"><figcaption>Before</figcaption></figure><figure><canvas id="psAfter" width="600" height="600"></canvas><figcaption>After ✨</figcaption></figure></div>
+   <div class="row" style="margin-top:12px"><button class="btn" type="button" id="psPreview">✨ Preview</button><button class="btn primary" type="button" id="psApplyOne" disabled>Use this photo</button></div>
+  </div>
+ </div>
+ <div class="mc-card" style="margin-top:16px">
+  <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center"><h3 style="margin:0">⚡ Bulk auto-pro photos</h3><span class="hint" id="psBulkInfo"></span></div>
+  <p class="hint">Process many products at once. You review every result before anything is saved; original photos are kept in storage.</p>
+  <div class="grid">
+   <div><label for="psScope">Which products?</label><select id="psScope"><option value="all">All products with a photo</option><option value="category">One category</option><option value="missing">Products WITHOUT a photo → generate a branded photo card</option></select></div>
+   <div><label for="psCategory">Category</label><select id="psCategory"><option value="">All categories</option></select></div>
+  </div>
+  <div class="row" style="margin-top:12px"><button class="btn primary" type="button" id="psBulkRun">🚀 Generate previews</button><button class="btn" type="button" id="psBulkStop" disabled>Stop</button><button class="btn success" type="button" id="psBulkApply" disabled>✅ Save selected photos</button><button class="btn ghost" type="button" id="psBulkSelectAll">Select all</button></div>
+  <div class="mc-bar" style="margin:12px 0"><i id="psBulkBar"></i></div>
+  <div class="mc-studio-grid" id="psBulkGrid"></div>
+ </div>
+ <div class="mc-card" style="margin-top:16px;background:var(--grad-soft)"><h3>🤖 Want brand-new AI product photos?</h3><p class="hint" style="margin:0 0 10px">For products with no photo at all, AI Studio can create a realistic product image (uses AI credits, enabled by the platform owner). Photo Studio above is free and works best on photos taken against a plain wall, table or sheet of paper.</p><button class="btn" type="button" data-page="ai">Open AI Studio</button></div>
+</section>
+
+<section class="panel" data-page-id="connector" id="liveConnectorPanel">
+ <h2>🔌 Live POS connector</h2>
+ <p class="hint">Connect your POS so products, prices and (optionally) stock flow into your catalogue automatically. One-way and read-only: the connector never writes anything back to your POS, never deletes catalogue products, and keeps your own catalogue names, photos and descriptions.</p>
+ <div class="mc-grid-3" style="margin:14px 0">
+  <div class="mc-feature" style="--c:#f43f5e"><h3><span class="ic">🖥️</span>Windows POS (AntiSoft &amp; SQL Server)</h3><p>Install the small My Catalogue agent on the POS PC. It reads with a read-only SQL login and pushes on a schedule.</p><button class="btn primary" type="button" id="lcGuideWindows">Show setup steps</button></div>
+  <div class="mc-feature" style="--c:#0ea5e9"><h3><span class="ic">📁</span>Any POS that exports Excel/CSV</h3><p>Point the agent at your POS export folder. Every new export is synced automatically.</p><button class="btn" type="button" id="lcGuideFolder">Show setup steps</button></div>
+  <div class="mc-feature" style="--c:#10b981"><h3><span class="ic">☁️</span>Cloud POS / developers</h3><p>Any system that can send JSON over HTTPS can push products with your connector key.</p><button class="btn" type="button" id="lcGuideApi">Show API details</button></div>
+ </div>
+ <div class="mc-card" id="lcGuide" style="display:none;margin-bottom:14px"></div>
+ <div class="mc-card">
+  <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap"><h3 style="margin:0">🔑 Connector keys</h3><button class="btn" type="button" id="lcRefresh">Refresh</button></div>
+  <p class="hint">Each POS computer or system gets its own key. The full key is shown only once — keep it in the agent's config file, never in a public place. Revoke a key instantly if a PC is lost.</p>
+  <div class="grid"><div><label for="lcKeyName">Key name</label><input id="lcKeyName" maxlength="80" placeholder="e.g. AntiSoft – shop PC"></div><div><label for="lcKeyMode">Allowed changes</label><select id="lcKeyMode"><option value="price">Prices only (safest)</option><option value="full" selected>Products + prices</option><option value="full_stock">Products + prices + stock</option></select></div></div>
+  <button class="btn primary" type="button" id="lcCreateKey" style="margin-top:12px">＋ Create connector key</button>
+  <div id="lcNewKey" class="hidden" style="margin-top:14px"></div>
+  <div id="lcKeys" style="margin-top:14px"><div class="mc-empty">Loading keys…</div></div>
+ </div>
+ <div class="mc-card" style="margin-top:14px">
+  <h3>📜 Recent synchronizations</h3>
+  <div id="lcJobs"><div class="mc-empty">Loading history…</div></div>
+ </div>
+</section>
+
+</div></div></div></div></main>
 <script>
 
 // Restore PWA installation support for the business admin.
@@ -332,14 +528,54 @@ $('savePosProfile').addEventListener('click',async()=>{
  }catch(e){setStatus('Could not save POS profile: '+e.message,true)}
 });
 $('refreshPosProfiles').addEventListener('click',()=>loadPosConnections().then(()=>setStatus('POS profiles refreshed.')).catch(e=>setStatus('Could not refresh POS profiles: '+e.message,true)));
-async function sessionLoad(){const {data}=await sb.auth.getSession();user=data.session?.user||null;if(!user){show('authPanel');show('createPanel',false);show('app',false);setStatus('Sign in to manage your catalogue.');return}show('authPanel',false);const r=await sb.from('mc_saas_members').select('business_id,role').eq('user_id',user.id).limit(1).maybeSingle();if(r.error){setStatus('Could not check business membership: '+r.error.message,true);return}if(!r.data){show('createPanel');show('app',false);setStatus('Signed in. Create your business profile to continue.');return}const b=await sb.from('mc_saas_businesses').select('*').eq('id',r.data.business_id).maybeSingle();if(b.error||!b.data){setStatus('Could not load your business: '+(b.error?.message||'not found'),true);return}biz=b.data;show('createPanel',false);show('app');fillSettings();await Promise.all([loadProducts(),loadDomains()]);await loadCategoryImages();await loadStockPanel().catch(e=>setStatus('Stock Management is awaiting the hybrid stock migration: '+e.message,true));await loadPosConnections();posCompatibility();setStatus(biz.is_published?'Business loaded. Your catalogue is published.':'Business loaded. It is private until platform approval.');}
+async function loadAiWallet(){
+ const badge=$('aiCreditBadge');if(!badge||!biz)return;
+ badge.textContent='Credits: loading…';
+ const r=await sb.rpc('mc_saas_ai_get_wallet',{p_business_id:biz.id});
+ if(r.error){badge.textContent='AI setup required';$('aiCreditHelp').textContent='Run AI_STUDIO_MIGRATION.sql in the My Catalogue Supabase project, deploy the mc-ai-studio Edge Function, and configure its secrets. Details: '+r.error.message;return;}
+ const row=Array.isArray(r.data)?r.data[0]:r.data;const balance=Number(row?.credits_balance??row?.balance??0);
+ badge.textContent='Credits available: '+balance.toLocaleString();
+ $('aiCreditHelp').textContent='Chat uses 1 credit. Proposed image prices: 2 credits to generate and 3 credits to edit. Image generation/editing is paused to protect your API balance; no image credits will be charged while paused.';
+}
+function addAiChatLine(role,text){const log=$('aiChatLog'),p=document.createElement('div');p.style.cssText='margin:8px 0;padding:9px 11px;border-radius:9px;white-space:pre-wrap;overflow-wrap:anywhere;'+(role==='user'?'background:#eaf3ec;margin-left:12%':'background:#f3f5f3;margin-right:8%');const strong=document.createElement('b');strong.textContent=role==='user'?'You':'AI Assistant';const body=document.createElement('div');body.textContent=text;p.append(strong,body);log.appendChild(p);log.scrollTop=log.scrollHeight;}
+const aiHistory=[];
+$('aiSendChat').addEventListener('click',async()=>{
+ const prompt=$('aiChatPrompt').value.trim();if(!prompt)return setStatus('Write a message for the AI assistant first.',true);
+ const btn=$('aiSendChat');btn.disabled=true;btn.textContent='AI is thinking…';addAiChatLine('user',prompt);$('aiChatPrompt').value='';
+ try{const {data,error}=await sb.functions.invoke('mc-ai-studio',{body:{action:'chat',business_id:biz.id,prompt,history:aiHistory.slice(-10)}});if(error)throw error;const answer=String(data?.answer||'No response was returned.');aiHistory.push({role:'user',content:prompt},{role:'assistant',content:answer});addAiChatLine('assistant',answer);await loadAiWallet();setStatus('AI assistant replied.');}
+ catch(e){addAiChatLine('assistant','I could not complete that request: '+(e.message||String(e)));setStatus('AI assistant error: '+(e.message||String(e)),true);}
+ finally{btn.disabled=false;btn.textContent='Send to AI assistant · 1 credit';}
+});
+$('aiGeneratePhoto').addEventListener('click',async()=>{
+ const mode=$('aiPhotoMode').value,prompt=$('aiPhotoPrompt').value.trim(),file=$('aiPhotoInput').files[0];
+ if(!prompt)return setStatus('Describe the product photo you want first.',true);
+ if(mode==='edit'&&!file)return setStatus('Choose an original product photo to edit.',true);
+ const btn=$('aiGeneratePhoto'),result=$('aiPhotoResult');btn.disabled=true;btn.textContent='Creating your photo…';result.textContent='The AI image service is working. This may take a little while.';
+ try{
+  let image_base64=null,image_mime=null;
+  if(file){if(file.size>12*1024*1024)throw Error('Choose an image smaller than 12 MB.');image_mime=file.type||'image/jpeg';image_base64=await new Promise((resolve,reject)=>{const fr=new FileReader();fr.onload=()=>resolve(String(fr.result).split(',')[1]);fr.onerror=()=>reject(Error('Could not read the selected image.'));fr.readAsDataURL(file);});}
+  const {data,error}=await sb.functions.invoke('mc-ai-studio',{body:{action:mode==='edit'?'edit_image':'generate_image',business_id:biz.id,prompt,image_base64,image_mime}});if(error)throw error;if(!data?.image_url)throw Error('The AI service did not return an image.');
+  result.innerHTML='';const img=document.createElement('img');img.src=data.image_url;img.alt='AI-generated product photo';img.style.cssText='display:block;width:100%;max-width:420px;border-radius:12px;border:1px solid #dfe7df;background:#fff';result.appendChild(img);
+  const note=document.createElement('p');note.className='hint';note.textContent='Saved to your business image library. Review the image carefully before replacing any live product photo.';result.appendChild(note);
+  const link=document.createElement('a');link.href=data.image_url;link.target='_blank';link.rel='noopener';link.className='btn';link.textContent='Open generated image';link.style.display='inline-block';link.style.textDecoration='none';result.appendChild(link);
+  const copy=document.createElement('button');copy.type='button';copy.className='btn';copy.textContent='Copy image URL';copy.style.marginLeft='8px';copy.onclick=async()=>{await navigator.clipboard.writeText(data.image_url);copy.textContent='Copied';};result.appendChild(copy);
+  await loadAiWallet();setStatus('Professional photo created and saved.');
+ }catch(e){result.textContent='Photo generation failed: '+(e.message||String(e));setStatus('Photo generation failed: '+(e.message||String(e)),true);}
+ finally{btn.disabled=false;btn.textContent='Generate professional photo';}
+});
+$('aiApplyTemplate').addEventListener('click',async()=>{try{const template=$('aiTemplateSelect').value;const r=await sb.rpc('mc_saas_update_catalogue_template',{p_business_id:biz.id,p_template:template});if(r.error)throw r.error;biz.catalogue_template=template;$('catalogueTemplate').value=template;setStatus('Template applied. Your products and prices were not changed.');}catch(e){setStatus('Could not apply template: '+e.message,true)}});
+$('aiPhotoMode').addEventListener('change',()=>{const editing=$('aiPhotoMode').value==='edit';$('aiPhotoInput').required=editing;$('aiPhotoInput').disabled=true;});$('aiPhotoMode').disabled=true;$('aiPhotoPrompt').disabled=true;$('aiPhotoInput').disabled=true;$('aiGeneratePhoto').disabled=true;$('aiGeneratePhoto').textContent='Image generation paused — no API spending';$('aiPhotoResult').textContent='Image generation and editing are paused while API costs are reviewed. Chat remains available and costs 1 credit per request.';
+let sessionLoadPromise=null;function sessionLoad(){if(!sessionLoadPromise)sessionLoadPromise=sessionLoadInner().finally(()=>{sessionLoadPromise=null});return sessionLoadPromise}
+async function sessionLoadInner(){const {data}=await sb.auth.getSession();user=data.session?.user||null;document.dispatchEvent(new CustomEvent('mc:user',{detail:{user}}));if(!user){biz=null;products=[];show('authPanel');show('createPanel',false);show('resetPanel',false);show('app',false);setStatus('Sign in to manage your catalogue.');document.dispatchEvent(new CustomEvent('mc:signed-out'));return}show('authPanel',false);const r=await sb.from('mc_saas_members').select('business_id,role').eq('user_id',user.id).limit(1).maybeSingle();if(r.error){setStatus('Could not check business membership: '+r.error.message,true);return}if(!r.data){show('createPanel');show('app',false);setStatus('Signed in. Create your business profile to continue.');return}const b=await sb.from('mc_saas_businesses').select('*').eq('id',r.data.business_id).maybeSingle();if(b.error||!b.data){setStatus('Could not load your business: '+(b.error?.message||'not found'),true);return}biz=b.data;show('createPanel',false);show('app');fillSettings();await Promise.all([loadProducts(),loadDomains()]);await loadCategoryImages();await loadStockPanel().catch(e=>setStatus('Stock Management is awaiting the hybrid stock migration: '+e.message,true));await loadPosConnections();posCompatibility();await loadAiWallet();$('aiTemplateSelect').value=biz.catalogue_template||'classic';setStatus(biz.is_published?'Business loaded. Your catalogue is published.':'Business loaded. It is private until platform approval.');document.dispatchEvent(new CustomEvent('mc:ready',{detail:{biz,user}}));}
 function fillSettings(){setupBusinessInstall(biz,'admin');$('businessHeading').textContent=biz.company_name+' · Settings';$('publishStatus').textContent=biz.is_published?'Published':'Awaiting platform approval';$('editCompany').value=biz.company_name||'';$('editSlug').value=biz.slug;$('editWhatsapp').value=biz.whatsapp||'';$('editCurrency').value=biz.currency||'USD';$('brandColor').value=biz.primary_color||'#173f35';$('editDescription').value=biz.description||'';$('catalogueTemplate').value=['classic','premium','fresh','shopify','editorial','compact','list','showcase'].includes(biz.catalogue_template)?biz.catalogue_template:'classic';$('catalogueLink').textContent=businessUrl();$('openCatalogue').href=businessUrl();}
-async function oauth(provider){try{const redirectTo=location.origin+location.pathname;const {error}=await sb.auth.signInWithOAuth({provider,options:{redirectTo,scopes:provider==='azure'?'email':undefined,queryParams:provider==='google'?{access_type:'offline',prompt:'select_account'}:undefined}});if(error)throw error}catch(e){setStatus('Sign-in could not start: '+e.message,true)}};$('googleSignIn').onclick=()=>oauth('google');$('microsoftSignIn').onclick=()=>oauth('azure');
-$('saveNewPassword').onclick=async()=>{try{const a=$('newPassword').value,b=$('confirmPassword').value;if(a.length<8)throw Error('Use at least 8 characters.');if(a!==b)throw Error('The passwords do not match.');const {error}=await sb.auth.updateUser({password:a});if(error)throw error;recoveryMode=false;$('newPassword').value='';$('confirmPassword').value='';show('resetPanel',false);setStatus('Password changed successfully. You can now manage your catalogue.');await sessionLoad()}catch(e){setStatus('Could not change password: '+e.message,true)}};
-sb.auth.onAuthStateChange((event)=>{if(event==='PASSWORD_RECOVERY'){recoveryMode=true;show('authPanel',false);show('resetPanel');show('createPanel',false);show('app',false);setStatus('Email verified. Choose your new password below.')}else if(event==='SIGNED_IN'){recoveryMode=false;sessionLoad().catch(e=>setStatus(e.message,true))}});
-$('signIn').onclick=async()=>{try{const {error}=await sb.auth.signInWithPassword({email:$('email').value.trim(),password:$('password').value});if(error)throw error;await sessionLoad()}catch(e){setStatus(e.message,true)}};
-$('signUp').onclick=async()=>{try{const email=$('email').value.trim(),password=$('password').value;if(password.length<8)throw Error('Use a password with at least 8 characters.');const {data,error}=await sb.auth.signUp({email,password});if(error)throw error;if(data.session){await sessionLoad()}else setStatus('Account created. Check your email to confirm the account, then sign in and create your business.')}catch(e){setStatus(e.message,true)}};
-$('forgot').onclick=async()=>{try{const email=$('email').value.trim();if(!email)throw Error('Enter your email first.');const {error}=await sb.auth.resetPasswordForEmail(email,{redirectTo:location.origin+location.pathname+'?type=recovery'});if(error)throw error;setStatus('If this email belongs to an account, a secure password-reset link has been sent. Check your inbox and spam folder.')}catch(e){setStatus(e.message,true)}};
+async function oauth(provider){try{const redirectTo=location.origin+location.pathname;const {error}=await sb.auth.signInWithOAuth({provider,options:{redirectTo,scopes:provider==='azure'?'email':undefined,queryParams:provider==='google'?{access_type:'offline',prompt:'select_account'}:undefined}});if(error)throw error}catch(e){authMsg('Sign-in could not start: '+friendlyAuth(e),true)}};$('googleSignIn').onclick=()=>oauth('google');$('microsoftSignIn').onclick=()=>oauth('azure');
+$('saveNewPassword').onclick=async()=>{try{const a=$('newPassword').value,b=$('confirmPassword').value;if(a.length<8||!/[a-z]/i.test(a)||!/\d/.test(a))throw Error('Use at least 8 characters with letters and numbers.');if(a!==b)throw Error('The passwords do not match.');const {error}=await sb.auth.updateUser({password:a});if(error)throw error;recoveryMode=false;$('newPassword').value='';$('confirmPassword').value='';show('resetPanel',false);setStatus('Password changed successfully. You can now manage your catalogue.');await sessionLoad()}catch(e){setStatus('Could not change password: '+e.message,true)}};
+sb.auth.onAuthStateChange((event,session)=>{if(event==='SIGNED_OUT'){setTimeout(()=>sessionLoad().catch(e=>setStatus(e.message,true)),0);return}if(event==='PASSWORD_RECOVERY'){recoveryMode=true;show('authPanel',false);show('resetPanel');show('createPanel',false);show('app',false);setStatus('Email verified. Choose your new password below.')}else if(event==='SIGNED_IN'){if(recoveryMode)return;if(user&&biz&&session?.user?.id===user.id)return;setTimeout(()=>sessionLoad().catch(e=>setStatus(e.message,true)),0)}});
+const friendlyAuth=e=>{const m=String(e?.message||e||'');if(/invalid login credentials/i.test(m))return 'Email or password is incorrect. Try again or use “Forgot password?”.';if(/email not confirmed/i.test(m))return 'Please confirm your email first — check your inbox (and spam) for the confirmation link.';if(/already registered|already exists/i.test(m))return 'An account with this email already exists. Switch to “Sign in”.';if(/rate limit|too many/i.test(m))return 'Too many attempts. Please wait a minute and try again.';if(/provider is not enabled|unsupported provider/i.test(m))return 'This sign-in option is not enabled yet. Use email and password, or ask the platform owner to enable it.';if(/network|fetch/i.test(m))return 'Network problem — check your internet connection and try again.';return m||'Something went wrong. Please try again.'};const authMsg=(m,err=false)=>{const el=$('authMsg');if(!el)return;el.textContent=m;el.className='mc-auth-msg '+(err?'err':'ok');if(el.offsetParent===null)setStatus(m,err)};const validEmail=v=>/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v);
+$('signIn').onclick=async()=>{const btn=$('signIn');try{const email=$('email').value.trim();if(!validEmail(email))throw Error('Enter a valid email address.');if(!$('password').value)throw Error('Enter your password.');btn.disabled=true;btn.textContent='Signing in…';const {error}=await sb.auth.signInWithPassword({email,password:$('password').value});if(error)throw error;$('password').value='';await sessionLoad()}catch(e){authMsg(friendlyAuth(e),true)}finally{btn.disabled=false;btn.textContent='Sign in'}};
+$('signUp').onclick=async()=>{const btn=$('signUp');try{const email=$('email').value.trim(),password=$('password').value;if(!validEmail(email))throw Error('Enter a valid email address.');if(password.length<8||!/[a-z]/i.test(password)||!/\d/.test(password))throw Error('Use at least 8 characters with letters and numbers.');if($('password2')&&$('password2').value!==password)throw Error('The two passwords do not match.');btn.disabled=true;btn.textContent='Creating account…';const {data,error}=await sb.auth.signUp({email,password,options:{emailRedirectTo:location.origin+location.pathname}});if(error)throw error;if(data.user&&Array.isArray(data.user.identities)&&!data.user.identities.length)throw Error('already registered');if(data.session){await sessionLoad()}else authMsg('🎉 Account created! We sent a confirmation link to '+email+'. Open it, then come back and sign in.')}catch(e){authMsg(friendlyAuth(e),true)}finally{btn.disabled=false;btn.textContent='Create my account'}};
+$('magicLink').onclick=async()=>{try{const email=$('email').value.trim();if(!validEmail(email))throw Error('Type your email address above first.');const {error}=await sb.auth.signInWithOtp({email,options:{emailRedirectTo:location.origin+location.pathname,shouldCreateUser:false}});if(error)throw error;authMsg('✨ Check your inbox: we sent a one-click sign-in link to '+email+'.')}catch(e){authMsg(friendlyAuth(e),true)}};
+$('forgot').onclick=async()=>{try{const email=$('email').value.trim();if(!validEmail(email))throw Error('Type your email address above first, then press “Forgot password?”.');const {error}=await sb.auth.resetPasswordForEmail(email,{redirectTo:location.origin+location.pathname+'?type=recovery'});if(error)throw error;authMsg('If this email belongs to an account, a secure password-reset link has been sent. Check your inbox and spam folder.')}catch(e){authMsg(friendlyAuth(e),true)}};
 $('createBusiness').onclick=async()=>{try{const company=$('company').value.trim(),slug=slugify($('slug').value||company);if(!company||!slug)throw Error('Enter a business name and valid catalogue link name.');const {data,error}=await sb.rpc('mc_saas_create_business',{p_company_name:company,p_slug:slug,p_description:$('description').value.trim(),p_whatsapp:$('whatsapp').value.trim().replace(/\D/g,''),p_currency:$('currency').value});if(error)throw error;setStatus('Business profile created. It is private until the platform owner approves it.');await sessionLoad()}catch(e){setStatus(e.message,true)}};
 $('company').addEventListener('input',()=>{if(!$('slug').dataset.edited)$('slug').value=slugify($('company').value)});$('slug').addEventListener('input',()=>{$('slug').dataset.edited='1';$('slug').value=slugify($('slug').value)});
 $('saveSettings').onclick=async()=>{try{if(!$('editCompany').value.trim())throw Error('Business name is required.');let logo=biz.logo_url||'';const file=$('logoFile').files[0];if(file){const optimized=await optimizeImage(file);const ext=optimized.type==='image/webp'?'webp':'jpg';const path=biz.id+'/logo-'+Date.now()+'.'+ext;const up=await sb.storage.from('mc-saas-images').upload(path,optimized,{upsert:true,contentType:optimized.type});if(up.error)throw up.error;logo=sb.storage.from('mc-saas-images').getPublicUrl(path).data.publicUrl}const payload={company_name:$('editCompany').value.trim(),description:$('editDescription').value.trim(),whatsapp:$('editWhatsapp').value.trim().replace(/\D/g,''),currency:$('editCurrency').value,primary_color:$('brandColor').value,logo_url:logo};const r=await sb.rpc('mc_saas_update_business_settings',{p_business_id:biz.id,p_company_name:payload.company_name,p_description:payload.description,p_whatsapp:payload.whatsapp,p_currency:payload.currency,p_logo_url:payload.logo_url,p_primary_color:payload.primary_color});if(r.error)throw r.error;biz={...biz,...payload};fillSettings();setStatus('Business settings saved securely.')}catch(e){setStatus(e.message,true)}};
@@ -366,20 +602,20 @@ async function saveProductAtOrder(productId, requestedOrder, extraPayload={}){
 }
 function renderProducts(){
  const cats=[...new Set(products.map(p=>p.category).filter(Boolean))].sort();$('categories').innerHTML=cats.map(c=>'<option value="'+esc(c)+'"></option>').join('');
- const q=$('productSearch').value.toLowerCase().trim();const selectedCategory=$('productCategoryFilter').value;const categoryOptions=[...new Set(products.map(p=>String(p.category||'').trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b));const categorySelect=$('productCategoryFilter');const previousCategory=categorySelect.value;categorySelect.innerHTML='<option value="">All categories</option>'+categoryOptions.map(c=>'<option value="'+esc(c)+'">'+esc(c)+'</option>').join('');if(categoryOptions.includes(previousCategory))categorySelect.value=previousCategory;const activeCategory=categorySelect.value;const list=products.filter(p=>(!activeCategory||String(p.category||'').trim()===activeCategory)&&[p.name,p.category,p.barcode,p.description].join(' ').toLowerCase().includes(q));const shown=list.slice(0,productsShown);
+ const q=$('productSearch').value.toLowerCase().trim();const selectedCategory=$('productCategoryFilter').value;const categoryOptions=[...new Set(products.map(p=>String(p.category||'').trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b));const categorySelect=$('productCategoryFilter');const previousCategory=categorySelect.value;categorySelect.innerHTML='<option value="">All categories</option>'+categoryOptions.map(c=>'<option value="'+esc(c)+'">'+esc(c)+'</option>').join('');if(categoryOptions.includes(previousCategory))categorySelect.value=previousCategory;const activeCategory=categorySelect.value;const list=products.filter(p=>(!activeCategory||String(p.category||'').trim()===activeCategory)&&[p.name,p.category,p.barcode,p.sku,p.pos_product_id,p.description].join(' ').toLowerCase().includes(q));const shown=list.slice(0,productsShown);
  $('productList').innerHTML=shown.map(p=>`<article class="item" data-product-row="${esc(p.id)}">
  <div class="itemPhoto"><img loading="lazy" decoding="async" src="${esc(p.image||'')}" alt="${esc(p.name)}" onerror="this.onerror=null;this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22120%22 height=%22120%22 viewBox=%220 0 120 120%22%3E%3Crect width=%22120%22 height=%22120%22 fill=%22%23f3f5f3%22/%3E%3Ctext x=%2260%22 y=%2268%22 font-size=%2238%22 text-anchor=%22middle%22 fill=%22%23717d75%22%3E%F0%9F%93%A6%3C/text%3E%3C/svg%3E'"><input type="file" accept="image/*" data-inline-photo="${esc(p.id)}" aria-label="Change photo for ${esc(p.name)}"></div>
  <div><div class="inlineFields">
- <input data-field="name" value="${esc(p.name)}" aria-label="Product name" placeholder="Product name">
- <input data-field="category" value="${esc(p.category||'Products')}" aria-label="Category" placeholder="Category">
- <input data-field="barcode" value="${esc(p.barcode||'')}" aria-label="Barcode or SKU" placeholder="Barcode / SKU">
- <input data-field="sort_order" type="number" min="0" step="1" value="${(Number(p.sort_order)||0)+1}" aria-label="Display order (1 = first)" placeholder="Order (1 = first)">
- <input data-field="label1" value="${esc(p.label1||'Box')}" aria-label="First unit" placeholder="First unit">
- <input data-field="price1" type="number" min="0" step="0.01" value="${p.price1==null?'':esc(p.price1)}" aria-label="First price" placeholder="First price">
- <input data-field="label2" value="${esc(p.label2||'')}" aria-label="Optional second unit" placeholder="Optional second unit (leave blank if none)">
- <input data-field="price2" type="number" min="0" step="0.01" value="${p.price2==null?'':esc(p.price2)}" aria-label="Second price" placeholder="Second price">
- <textarea class="wide" data-field="description" aria-label="Description" placeholder="Description / sizes">${esc(p.description||'')}</textarea>
- </div><div class="inlineActions"><button class="btn primary" data-inline-save="${esc(p.id)}">Save this row</button><button class="btn" data-edit="${esc(p.id)}">Open full editor</button><button class="btn danger" data-delete="${esc(p.id)}">Delete</button></div></div></article>`).join('')||'<p class="hint">No products yet.</p>';
+ <label class="mc-mini">Product name<input data-field="name" value="${esc(p.name)}" aria-label="Product name" placeholder="Product name"></label>
+ <label class="mc-mini">Category<input data-field="category" value="${esc(p.category||'Products')}" aria-label="Category" placeholder="Category"></label>
+ <label class="mc-mini">Barcode or SKU<input data-field="barcode" value="${esc(p.barcode||'')}" aria-label="Barcode or SKU" placeholder="Barcode / SKU"></label>
+ <label class="mc-mini">Display order (1 = first)<input data-field="sort_order" type="number" min="0" step="1" value="${(Number(p.sort_order)||0)+1}" aria-label="Display order (1 = first)" placeholder="Order (1 = first)"></label>
+ <label class="mc-mini">First unit<input data-field="label1" value="${esc(p.label1||'Box')}" aria-label="First unit" placeholder="First unit"></label>
+ <label class="mc-mini">First price<input data-field="price1" type="number" min="0" step="0.01" value="${p.price1==null?'':esc(p.price1)}" aria-label="First price" placeholder="First price"></label>
+ <label class="mc-mini">Optional second unit<input data-field="label2" value="${esc(p.label2||'')}" aria-label="Optional second unit" placeholder="Optional second unit (leave blank if none)"></label>
+ <label class="mc-mini">Second price<input data-field="price2" type="number" min="0" step="0.01" value="${p.price2==null?'':esc(p.price2)}" aria-label="Second price" placeholder="Second price"></label>
+ <label class="mc-mini wide">Description<textarea class="wide" data-field="description" aria-label="Description" placeholder="Description / sizes">${esc(p.description||'')}</textarea></label>
+ </div><div class="inlineActions"><button class="btn primary" data-inline-save="${esc(p.id)}">Save this row</button><button class="btn" data-edit="${esc(p.id)}">Open full editor</button><button class="btn" type="button" data-studio="${esc(p.id)}">📸 Pro photo</button><button class="btn danger" data-delete="${esc(p.id)}">Delete</button></div></div></article>`).join('')||'<p class="hint">No products yet.</p>';
  if(list.length>shown.length){$('productList').insertAdjacentHTML('beforeend',`<div class="row" style="margin-top:10px"><button type="button" class="btn primary" id="showMoreProducts">Show 50 more (${list.length-shown.length} remaining)</button></div>`)}
  $('productList').insertAdjacentHTML('afterbegin',`<p class="hint">Showing ${shown.length} of ${list.length} matching products (${products.length} total). Use search to find products quickly.</p>`);
 }
@@ -422,8 +658,8 @@ $('saveCategoryOrder').onclick=async()=>{
 };
 $('productSearch').oninput=()=>{productsShown=PRODUCT_BATCH_SIZE;renderProducts()};$('productCategoryFilter').onchange=()=>{productsShown=PRODUCT_BATCH_SIZE;renderProducts()};$('refreshProducts').onclick=()=>loadProducts().then(()=>setStatus('Products refreshed.')).catch(e=>setStatus(e.message,true));
 $('saveProduct').onclick=async()=>{try{const id=$('productId').value,name=$('pName').value.trim(),category=$('pCategory').value.trim()||'Products',sku=$('pSku').value.trim();if(!name)throw Error('Product name is required.');if(sku&&products.some(x=>String(x.sku||'').trim().toLowerCase()===sku.toLowerCase()&&x.id!==id))throw Error('This SKU already exists in your catalogue. Use a different SKU or leave it blank.');const p={business_id:biz.id,name,category,barcode:$('pBarcode').value.trim(),sku,pos_product_id:$('pPosId').value.trim(),description:$('pDescription').value.trim(),label1:$('pLabel1').value.trim()||'Box',price1:parsePrice($('pPrice1').value),label2:$('pLabel2').value.trim(),price2:$('pLabel2').value.trim()?parsePrice($('pPrice2').value):null,sort_order:Math.max(0,(Number($('pSortOrder').value)||1)-1),updated_at:new Date().toISOString()};if([p.price1,p.price2].some(v=>v!==null&&(!Number.isFinite(v)||v<0)))throw Error('Prices must be zero or greater.');const file=$('pPhoto').files[0];if(file){const optimized=await optimizeImage(file);const ext=optimized.type==='image/webp'?'webp':'jpg';const path=biz.id+'/'+crypto.randomUUID()+'.'+ext;const up=await sb.storage.from('mc-saas-images').upload(path,optimized,{upsert:false,contentType:optimized.type});if(up.error)throw up.error;p.image=sb.storage.from('mc-saas-images').getPublicUrl(path).data.publicUrl}if(id){const old=products.find(x=>x.id===id);if(!p.image)p.image=old?.image||'';const requested=Math.max(1,Math.floor(Number($('pSortOrder').value)||1));await saveProductAtOrder(id,requested,p);await syncOptionalSecondaryUnit(id,old?.label2,p.label2)}else{const nextOrder=products.filter(x=>(String(x.category||'Products').trim()||'Products')===category).reduce((m,x)=>Math.max(m,Number(x.sort_order)||-1),-1)+1;p.sort_order=nextOrder;const r=await sb.from('mc_saas_products').insert(p);if(r.error)throw r.error}resetProduct();await loadProducts();await loadCategoryImages();await loadStockPanel().catch(()=>{});setStatus('Product saved to your business catalogue.')}catch(e){setStatus(e.message,true)}};
-$('productList').onchange=async e=>{const input=e.target.closest('[data-inline-photo]');if(!input||!input.files?.[0])return;const id=input.dataset.inlinePhoto;try{setStatus('Uploading product photo…');const optimized=await optimizeImage(input.files[0]);const path=biz.id+'/'+crypto.randomUUID()+'.webp';const up=await sb.storage.from('mc-saas-images').upload(path,optimized,{upsert:false,contentType:optimized.type});if(up.error)throw up.error;const image=sb.storage.from('mc-saas-images').getPublicUrl(path).data.publicUrl;const r=await sb.from('mc_saas_products').update({image,updated_at:new Date().toISOString()}).eq('id',id).eq('business_id',biz.id);if(r.error)throw r.error;await loadProducts();setStatus('Product photo updated.')}catch(err){setStatus('Photo update failed: '+err.message,true)}};
-$('productList').onclick=async e=>{if(e.target.closest('#showMoreProducts')){productsShown+=PRODUCT_BATCH_SIZE;renderProducts();return}const inline=e.target.closest('[data-inline-save]');if(inline){const id=inline.dataset.inlineSave,row=inline.closest('[data-product-row]');try{const value=k=>row.querySelector(`[data-field="${k}"]`)?.value??'';const name=value('name').trim(),category=value('category').trim();if(!name||!category)throw Error('Product name and category are required.');const parse=v=>String(v).trim()===''?null:Number(v);const price1=parse(value('price1')),price2=parse(value('price2')),sort=Number(value('sort_order'));if([price1,price2].some(v=>v!==null&&(!Number.isFinite(v)||v<0)))throw Error('Prices must be zero or greater.');if(!Number.isFinite(sort)||sort<0)throw Error('Display order must be zero or greater.');const payload={name,category,barcode:value('barcode').trim(),label1:value('label1').trim()||'Box',price1,label2:value('label2').trim(),price2:value('label2').trim()?price2:null,description:value('description').trim(),sort_order:Math.max(0,Math.floor(sort)-1),updated_at:new Date().toISOString()};const oldProduct=products.find(x=>x.id===id);await saveProductAtOrder(id,Math.max(1,Math.floor(sort)||1),payload);await syncOptionalSecondaryUnit(id,oldProduct?.label2,payload.label2);await loadProducts();setStatus('Product updated. Products in this category have been renumbered from 1; other categories keep their own numbering.')}catch(err){setStatus('Could not save this product: '+err.message,true)}return;}const eb=e.target.closest('[data-edit]'),db=e.target.closest('[data-delete]');try{if(eb){const p=products.find(x=>x.id===eb.dataset.edit);if(!p)return;$('productId').value=p.id;$('pName').value=p.name;$('pCategory').value=p.category;$('pBarcode').value=p.barcode||'';$('pSku').value=p.sku||'';$('pPosId').value=p.pos_product_id||'';$('pLabel1').value=p.label1||'Box';$('pPrice1').value=p.price1??'';$('pLabel2').value=p.label2||'';$('pPrice2').value=p.price2??'';$('pDescription').value=p.description||'';$('pSortOrder').value=String((Number(p.sort_order)||0)+1);$('pPhoto').value='';$('productTitle').textContent='Edit product';$('saveProduct').textContent='Update product';window.scrollTo({top:0,behavior:'smooth'})}if(db&&confirm('Delete this product?')){const r=await sb.from('mc_saas_products').delete().eq('id',db.dataset.delete).eq('business_id',biz.id);if(r.error)throw r.error;await loadProducts();setStatus('Product deleted.')}}catch(e){setStatus(e.message,true)}};
+$('productList').onchange=async e=>{const input=e.target.closest('[data-inline-photo]');if(!input||!input.files?.[0])return;const id=input.dataset.inlinePhoto;try{setStatus('Uploading product photo…');const optimized=await optimizeImage(input.files[0]);const path=biz.id+'/'+crypto.randomUUID()+'.'+(optimized.type==='image/webp'?'webp':'jpg');const up=await sb.storage.from('mc-saas-images').upload(path,optimized,{upsert:false,contentType:optimized.type});if(up.error)throw up.error;const image=sb.storage.from('mc-saas-images').getPublicUrl(path).data.publicUrl;const r=await sb.from('mc_saas_products').update({image,updated_at:new Date().toISOString()}).eq('id',id).eq('business_id',biz.id);if(r.error)throw r.error;await loadProducts();setStatus('Product photo updated.')}catch(err){setStatus('Photo update failed: '+err.message,true)}};
+$('productList').onclick=async e=>{if(e.target.closest('#showMoreProducts')){productsShown+=PRODUCT_BATCH_SIZE;renderProducts();return}const inline=e.target.closest('[data-inline-save]');if(inline){const id=inline.dataset.inlineSave,row=inline.closest('[data-product-row]');try{const value=k=>row.querySelector(`[data-field="${k}"]`)?.value??'';const name=value('name').trim(),category=value('category').trim();if(!name||!category)throw Error('Product name and category are required.');const parse=v=>String(v).trim()===''?null:Number(v);const price1=parse(value('price1')),price2=parse(value('price2')),sort=Number(value('sort_order'));if([price1,price2].some(v=>v!==null&&(!Number.isFinite(v)||v<0)))throw Error('Prices must be zero or greater.');if(!Number.isFinite(sort)||sort<0)throw Error('Display order must be zero or greater.');const payload={name,category,barcode:value('barcode').trim(),label1:value('label1').trim()||'Box',price1,label2:value('label2').trim(),price2:value('label2').trim()?price2:null,description:value('description').trim(),sort_order:Math.max(0,Math.floor(sort)-1),updated_at:new Date().toISOString()};const oldProduct=products.find(x=>x.id===id);await saveProductAtOrder(id,Math.max(1,Math.floor(sort)||1),payload);await syncOptionalSecondaryUnit(id,oldProduct?.label2,payload.label2);await loadProducts();setStatus('Product updated. Products in this category have been renumbered from 1; other categories keep their own numbering.')}catch(err){setStatus('Could not save this product: '+err.message,true)}return;}const eb=e.target.closest('[data-edit]'),db=e.target.closest('[data-delete]');try{if(eb){const p=products.find(x=>x.id===eb.dataset.edit);if(!p)return;$('productId').value=p.id;$('pName').value=p.name;$('pCategory').value=p.category;$('pBarcode').value=p.barcode||'';$('pSku').value=p.sku||'';$('pPosId').value=p.pos_product_id||'';$('pLabel1').value=p.label1||'Box';$('pPrice1').value=p.price1??'';$('pLabel2').value=p.label2||'';$('pPrice2').value=p.price2??'';$('pDescription').value=p.description||'';$('pSortOrder').value=String((Number(p.sort_order)||0)+1);$('pPhoto').value='';$('productTitle').textContent='Edit product';$('saveProduct').textContent='Update product';if(window.mcOpenPage)window.mcOpenPage('product');window.scrollTo({top:0,behavior:'smooth'})}if(db&&confirm('Delete this product?')){const r=await sb.from('mc_saas_products').delete().eq('id',db.dataset.delete).eq('business_id',biz.id);if(r.error)throw r.error;await loadProducts();setStatus('Product deleted.')}}catch(e){setStatus(e.message,true)}};
 function normalizedProductKey(v){return String(v??'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,' ').trim().replace(/\s+/g,' ')}
 $('reviewDuplicates').onclick=()=>{const groups=new Map();for(const p of products){const name=normalizedProductKey(p.name);if(!name)continue;const key='name:'+name;if(!groups.has(key))groups.set(key,[]);groups.get(key).push(p)}const inNameGroups=new Set([...groups.values()].filter(arr=>arr.length>1).flat().map(p=>p.id));const byCode=new Map();for(const p of products){const code=normalizedProductKey(p.barcode);if(!code||inNameGroups.has(p.id))continue;if(!byCode.has(code))byCode.set(code,[]);byCode.get(code).push(p)}for(const [code,arr] of byCode){if(arr.length>1)groups.set('sku:'+code,arr)}const dup=[...groups.entries()].filter(([,arr])=>arr.length>1);const box=$('duplicateReview');box.classList.remove('hidden');if(!dup.length){box.innerHTML='<p class="status">No exact duplicate names or barcodes were found in this business catalogue.</p>';return}box.innerHTML='<p class="hint">Review each group carefully. Delete only the extra record; this action permanently deletes that product from this business.</p>'+dup.map(([key,arr])=>`<div class="duplicateGroup"><b>${esc(key.replace(/^(sku:|name:)/,''))}</b><span class="pill">${arr.length} records</span>${arr.map((p,i)=>`<div class="duplicateRow"><img src="${esc(p.image||'')}" alt="" onerror="this.style.visibility='hidden'"><div><b>${esc(p.name)}</b><small>${esc(p.category||'')} · ${esc(p.barcode||'No SKU')}</small><small>${esc(p.label1||'Box')}: ${p.price1==null?'—':esc(p.price1)} · ${esc(p.label2||'Packet')}: ${p.price2==null?'—':esc(p.price2)}</small></div>${i===0?'<span class="pill">Keep for now</span>':`<button class="btn danger" data-delete-duplicate="${esc(p.id)}">Delete this extra record</button>`}</div>`).join('')}</div>`).join('');};
 $('duplicateReview').addEventListener('click',async e=>{const b=e.target.closest('[data-delete-duplicate]');if(!b)return;const p=products.find(x=>x.id===b.dataset.deleteDuplicate);if(!p||!confirm('Permanently delete duplicate product "'+p.name+'"? Make sure the first record in this group is the one you want to keep.'))return;try{const r=await sb.from('mc_saas_products').delete().eq('id',p.id).eq('business_id',biz.id);if(r.error)throw r.error;await loadProducts();$('reviewDuplicates').click();setStatus('Duplicate product deleted.')}catch(err){setStatus('Could not delete duplicate: '+err.message,true)}});
@@ -467,14 +703,14 @@ $('importJson').onchange=async e=>{
   if(Array.isArray(d.products))d.products.forEach(raw=>{const category=clean(raw.category||raw.group||'Products')||'Products';const key=norm(category),photo=raw.image||raw.photo||raw.image_url||'';if(photo&&!importedCategoryPhotos.has(key))importedCategoryPhotos.set(key,String(photo))});
   for(const raw of d.products){
    const name=clean(raw.name||raw.product_name||raw.title);if(!name)continue;
-   const barcode=clean(raw.barcode||raw.sku||raw.productCode||raw.code), n=norm(name), c=norm(barcode);
+   const barcode=clean(Object.prototype.hasOwnProperty.call(raw,'barcode')&&raw.format!=='legacy'&&('pos_product_id' in raw)?raw.barcode:(raw.barcode||raw.sku||raw.productCode||raw.code)), n=norm(name), c=norm(barcode);
    if(knownNames.has(n)||(c&&knownCodes.has(c))||(inFileNames.has(n))||(c&&inFileCodes.has(c))){duplicates++;continue}
    inFileNames.add(n);if(c)inFileCodes.add(c);
    const p1=toPrice(raw.price1??raw.price??raw.price_1),p2=toPrice(raw.price2??raw.price_2);
    if([p1,p2].some(v=>v!==null&&(!Number.isFinite(v)||v<0)))throw Error('Invalid price for product '+name);
    const category=clean(raw.category||raw.group||'Products')||'Products';
    const rawOrder=raw.sort_order??raw.sortOrder??raw.displayOrder??raw.order;
-   rows.push({raw,name,barcode,category,description:clean(raw.description||raw.details),label1:clean(raw.price1Label||raw.label1||raw.unit1||'Box')||'Box',price1:p1,label2:clean(raw.price2Label||raw.label2||raw.unit2||''),price2:p2,photo:raw.image||raw.photo||raw.image_url||'',sourceOrder:Number.isFinite(Number(rawOrder))&&clean(rawOrder)!==''?Number(rawOrder):rows.length});
+   rows.push({raw,name,barcode,category,description:clean(raw.description||raw.details),label1:clean(raw.price1Label||raw.label1||raw.unit1||'Box')||'Box',price1:p1,label2:clean(raw.price2Label||raw.label2||raw.unit2||''),price2:p2,sku:('pos_product_id' in raw)?clean(raw.sku):'',posProductId:clean(raw.pos_product_id||raw.posProductId),isActive:raw.is_active!==false,photo:raw.image||raw.photo||raw.image_url||'',sourceOrder:Number.isFinite(Number(rawOrder))&&clean(rawOrder)!==''?Number(rawOrder):rows.length});
   }
   // Preserve White Pack category ordering and product order when present; otherwise retain JSON order.
   rows.sort((a,b)=>{const ar=categoryRank.has(norm(a.category))?categoryRank.get(norm(a.category)):Number.MAX_SAFE_INTEGER;const br=categoryRank.has(norm(b.category))?categoryRank.get(norm(b.category)):Number.MAX_SAFE_INTEGER;return ar-br||a.sourceOrder-b.sourceOrder});
@@ -486,8 +722,8 @@ $('importJson').onchange=async e=>{
    const r=rows[i];
    try{
     let image='';if(r.photo){image=await uploadImportedPhoto(String(r.photo),r.name);if(image)photos++}
-    const p={business_id:biz.id,name:r.name,category:r.category,description:r.description,image,barcode:r.barcode,label1:r.label1,price1:r.price1,label2:r.label2,price2:r.price2,sort_order:r.sort_order,is_active:true,updated_at:new Date().toISOString()};
-    const ins=await sb.from('mc_saas_products').insert(p);if(ins.error)throw ins.error;
+    const p={business_id:biz.id,name:r.name,category:r.category,description:r.description,image,barcode:r.barcode,label1:r.label1,price1:r.price1,label2:r.label2,price2:r.price2,sort_order:r.sort_order,is_active:r.isActive,updated_at:new Date().toISOString()};
+    if(r.sku&&!products.some(x=>String(x.sku||'').trim().toLowerCase()===r.sku.toLowerCase()))p.sku=r.sku;if(r.posProductId)p.pos_product_id=r.posProductId;const ins=await sb.from('mc_saas_products').insert(p);if(ins.error)throw ins.error;
     saved++;if(r.barcode)knownCodes.add(norm(r.barcode));knownNames.add(norm(r.name));
     setStatus('Importing '+(i+1)+'/'+rows.length+': '+r.name+' · '+saved+' saved, '+failed+' failed');await new Promise(resolve=>requestAnimationFrame(()=>resolve()));
    }catch(err){failed++;errors.push(r.name+': '+err.message)}
@@ -850,31 +1086,12 @@ $('retryReservation').onclick=async()=>{
 };
 $('refreshStock').onclick=()=>loadStockPanel().then(()=>setStatus('Stock information refreshed.')).catch(e=>setStatus(e.message,true));
 
-sb.auth.onAuthStateChange(()=>setTimeout(()=>sessionLoad().catch(e=>setStatus(e.message,true)),0));sessionLoad().catch(e=>setStatus(e.message,true));
+// v8: single auth listener above (the old second listener caused double loading).
+window.MCAdmin={get biz(){return biz},get user(){return user},get products(){return products},setStatus,loadProducts:()=>loadProducts(),loadCategoryImages:()=>loadCategoryImages(),loadStockPanel:()=>loadStockPanel(),reload:()=>sessionLoad(),loadXlsx:()=>loadXlsxReader(),businessUrl:()=>biz?businessUrl():'',get categoryRows(){return savedCategoryRows},stockUnits:()=>stockUnitsCache,replaceProductImage:async(id,file)=>{const optimized=await optimizeImage(file,1600,.9);const ext=optimized.type==='image/webp'?'webp':'jpg';const path=biz.id+'/'+crypto.randomUUID()+'.'+ext;const up=await sb.storage.from('mc-saas-images').upload(path,optimized,{upsert:false,contentType:optimized.type});if(up.error)throw up.error;const image=sb.storage.from('mc-saas-images').getPublicUrl(path).data.publicUrl;const r=await sb.from('mc_saas_products').update({image,updated_at:new Date().toISOString()}).eq('id',id).eq('business_id',biz.id);if(r.error)throw r.error;const p=products.find(x=>x.id===id);if(p)p.image=image;return image}};
+document.dispatchEvent(new CustomEvent('mc:admin-api'));
+sessionLoad().catch(e=>setStatus(e.message,true));
 })();
 </script>
-<script>
-(function(){
- const app=document.getElementById('app'); if(!app) return;
- const sections=Array.from(app.children).filter(el=>el.tagName==='SECTION');
- const names=['Business settings','Catalogue design','Custom domain','Add product','Product & Price Synchronization','Category photos','Category ordering','Products','Business tools','POS Connections','Stock Management'];
- const board=document.getElementById('adminDashboard'), toolbar=document.getElementById('adminPageToolbar');
- const title=document.getElementById('adminCurrentTitle');
- function home(){sections.forEach(s=>s.classList.add('hidden'));board.classList.remove('hidden');toolbar.classList.add('hidden');}
- function openPage(index){
-   if(!sections[index]) return;
-   sections.forEach((s,i)=>s.classList.toggle('hidden',i!==index));
-   board.classList.add('hidden');toolbar.classList.remove('hidden');
-   title.textContent=names[index]||'Admin section';
-   document.querySelectorAll('.admin-menu[open]').forEach(d=>d.removeAttribute('open'));
-   window.scrollTo({top:0,behavior:'smooth'});
- }
- app.addEventListener('click',function(e){
-   const open=e.target.closest('[data-admin-open]');
-   if(open){e.preventDefault();openPage(Number(open.dataset.adminOpen));return;}
-   if(e.target.closest('[data-admin-home]')||e.target.closest('#adminBack')){e.preventDefault();home();}
- });
- sections.forEach(s=>s.classList.add('hidden'));
-})();
-</script>
+<script src="photo-studio.js"></script>
+<script src="admin-pro.js"></script>
 </body></html>

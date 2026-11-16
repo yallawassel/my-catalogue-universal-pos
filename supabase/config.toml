@@ -1,0 +1,7 @@
+[functions.mc-ai-studio]
+verify_jwt = true
+
+# Live POS connector: authenticated by the x-connector-key header (hashed key table),
+# not by a user JWT, so the gateway JWT check is disabled for this function only.
+[functions.mc-pos-connector]
+verify_jwt = false

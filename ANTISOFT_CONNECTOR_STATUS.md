@@ -2,7 +2,9 @@
 
 ## Status
 
-The AntiSoft connector is **not implemented or connected** in this staging build. The current release supports spreadsheet-based POS imports. This document records the required design before a local Windows connector is developed.
+**v8 update:** a one-way, read-only connector is now implemented (`pos-agent/` + `mc-pos-connector`, see `POS_CONNECTOR_GUIDE.md`). It is not connected to any AntiSoft PC until you create a key, fill the column mapping in `antisoft-products.sql`, and pass the release gate below with a dry run. The original requirements are kept for reference:
+
+The AntiSoft connector was **not implemented or connected** in the v7 staging build. The current release supports spreadsheet-based POS imports. This document records the required design before a local Windows connector is developed.
 
 ## Intended one-way architecture
 
