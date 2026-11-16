@@ -1,4 +1,11 @@
-# My Catalogue — Multi-business SaaS starter
+# My Catalogue PRO (v8) — Multi-business SaaS catalogue
+
+> **New in v8:** colourful pro design, dashboard, upgraded sign-in (magic link, strength meter),
+> Import & Export Center, **Live POS connector** (Windows agent for AntiSoft/SQL Server, CSV folder
+> watcher, HTTPS API), free **Photo Studio** (auto white background, framing, shadow, bulk mode) and a
+> smarter storefront. Start with **`PRO_V8_UPGRADE_GUIDE.md`**, then **`POS_CONNECTOR_GUIDE.md`**.
+> The only new database step is `POS_CONNECTOR_V8_MIGRATION.sql` + deploying `mc-pos-connector`.
+
 
 This package turns the White Pack feature set into a separate multi-business catalogue platform. It uses the **My Catalogue Supabase project** (`mkodburhxdrvfacytovb.supabase.co`) and does not use or alter the White Pack Supabase project.
 
@@ -65,7 +72,7 @@ New businesses are created unpublished (`is_published=false`). A platform operat
 
 The current build supports Excel/CSV imports and per-row approval. Barcode is the primary matching key, followed by POS Product ID and SKU. Rows with barcodes are preselected for review; users can manually select other rows. Existing catalogue display names are retained when an imported row matches.
 
-The AntiSoft Windows connector and connectors for external POS APIs are roadmap items, not active connections. The AntiSoft connector must use a dedicated read-only SQL account and must handle multiple unit barcodes per product before release. See `ANTISOFT_CONNECTOR_STATUS.md`.
+v8 adds the Live POS connector (Windows agent + HTTPS API). The AntiSoft query still needs your real column names before going live, and every connector run should be tested with a dry run first. The AntiSoft connector must use a dedicated read-only SQL account and must handle multiple unit barcodes per product before release. See `ANTISOFT_CONNECTOR_STATUS.md`.
 
 ## Current limitations to finish before commercial launch
 
@@ -88,3 +95,13 @@ New businesses see a first-product onboarding panel with two paths: add products
 The v7 package adds a business-scoped POS compatibility checker and setup-profile screen. Run `UNIVERSAL_POS_CONNECTIONS_V7_MIGRATION.sql` in the **My Catalogue staging Supabase project only** before saving profiles. See `UNIVERSAL_POS_ARCHITECTURE_V7.md` and `UNIVERSAL_POS_COMPATIBILITY_CHECKER_GUIDE.md`.
 
 Saving a profile is not a live connection. Excel/CSV remains the currently available sync method. Vendor API, local Windows agent, and custom adapters require separate implementation. AntiSoft is not connected. Do not store credentials in the profile table or browser code. Stock and reservations remain unchanged by this upgrade.
+
+
+## AI Studio (Phase 1)
+
+The additive AI Studio upgrade adds ChatGPT-style catalogue assistance, GPT Image generation/editing, a business-scoped credit wallet and usage ledger, and an admin UI entry. See `AI_STUDIO_INSTALLATION_GUIDE.md`. Run `AI_STUDIO_MIGRATION.sql` only in the existing My Catalogue Supabase project, then deploy `supabase/functions/mc-ai-studio` and configure the OpenAI API key as an Edge Function secret. Subscription checkout, recurring credit allowances and paid top-ups are intentionally deferred to Phase 2.
+
+
+## AI Studio — Phase 1
+
+See `AI_STUDIO_INSTALLATION_GUIDE.md`, `AI_STUDIO_PHASE1_RELEASE_NOTES.md`, and `AI_STUDIO_MIGRATION.sql` for the additive AI assistant and product-photo feature. Deploy to staging first. The AI API key belongs only in Supabase Edge Function secrets. Subscription checkout and recurring credit renewals are not part of Phase 1.

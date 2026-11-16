@@ -1,0 +1,42 @@
+{
+  "endpoint": "https://mkodburhxdrvfacytovb.supabase.co/functions/v1/mc-pos-connector",
+  "apikey": "sb_publishable_FEJP96SGoEETQs_gaWjiqg_5LaRjyPw",
+  "connectorKey": "mcpos_PASTE_YOUR_KEY_FROM_ADMIN",
+
+  "source": "sqlserver",
+  "syncMode": "full",
+  "markupPercent": 0,
+  "includeStock": false,
+  "autoApply": false,
+  "groupUnitsByProduct": true,
+
+  "sqlServer": {
+    "connectionString": "Server=.\\SQLEXPRESS;Database=Data2025;User Id=mc_readonly;Password=CHANGE_ME;ApplicationIntent=ReadOnly;Encrypt=False;TrustServerCertificate=True",
+    "queryFile": "antisoft-products.sql",
+    "timeoutSeconds": 60
+  },
+
+  "csv": {
+    "folder": "C:\\POS\\Exports",
+    "pattern": "*.csv",
+    "delimiter": ",",
+    "encoding": "UTF8"
+  },
+
+  "columns": {
+    "barcode": "Barcode",
+    "posProductId": "ItemID",
+    "sku": "SKU",
+    "name": "Name",
+    "category": "Category",
+    "description": "Description",
+    "unit1": "Unit1",
+    "price1": "Price1",
+    "unit2": "Unit2",
+    "price2": "Price2",
+    "unitFactor": "UnitFactor",
+    "stock": "Stock"
+  },
+
+  "logFolder": "logs"
+}

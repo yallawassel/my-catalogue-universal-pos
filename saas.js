@@ -35,5 +35,15 @@
     if (!blob) throw new Error('Image optimization failed in this browser.');
     return new File([blob],(file.name.replace(/\.[^.]+$/,'')||'photo')+'.webp',{type:'image/webp'});
   }
-  window.MC = { sb, esc, slugify, resolveBusiness, optimizeImage, money:(n,c='USD') => (c==='LBP'?'LBP ':'$')+Number(n||0).toLocaleString(undefined,{maximumFractionDigits:2}) };
+  window.MC = { url: SUPABASE_URL, publishableKey: SUPABASE_PUBLISHABLE_KEY, sb, esc, slugify, resolveBusiness, optimizeImage, money:(n,c='USD') => (c==='LBP'?'LBP ':'$')+Number(n||0).toLocaleString(undefined,{maximumFractionDigits:2}) };
+  // v8: turn the #status bar on staff pages into an auto-hiding toast (admin.html has its own).
+  document.addEventListener('DOMContentLoaded', () => {
+    const st = document.getElementById('status');
+    if (!st || document.body.classList.contains('mc-admin')) return;
+    let t = null;
+    const kick = () => { st.classList.remove('mc-hide'); clearTimeout(t); if (!st.textContent.trim()) return; t = setTimeout(() => st.classList.add('mc-hide'), /err|error/.test(st.className) ? 9000 : 4200); };
+    new MutationObserver(kick).observe(st, { childList: true, characterData: true, subtree: true });
+    st.addEventListener('click', () => st.classList.add('mc-hide'));
+    kick();
+  });
 })();
