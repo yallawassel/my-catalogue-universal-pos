@@ -333,7 +333,34 @@
     <div class="pill" id="aiCreditBadge">Credits: loading…</div>
   </div>
   <div class="domain" style="margin:14px 0;background:#f7fbf8">
-    <b>AI usage</b><p class="hint" id="aiCreditHelp" style="margin:5px 0 0">Chat uses 1 credit. Proposed image prices: 2 credits to generate and 3 credits to edit. Image generation/editing is currently paused to protect your API balance; no image credits will be charged while paused.</p>
+    <b>AI usage</b><p class="hint" id="aiCreditHelp" style="margin:5px 0 0">Chat uses 1 credit. AI Pro photos use 1 credit (medium) or 2 credits (high) per photo.</p>
+  </div>
+  <div class="mc-card" id="apCreditsCard" style="margin-bottom:16px;border:2px solid #c4b5fd;background:linear-gradient(135deg,#faf7ff,#fff)">
+   <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap"><h3 style="margin:0">💳 AI credits</h3><span class="pill ok" style="font-size:15px;padding:8px 14px!important" id="apBalance">… credits</span></div>
+   <p class="hint" style="margin:6px 0 12px">1 credit = 1 AI pro photo (medium quality) · high quality = 2 credits · chat message = 1 credit. Credits never expire.</p>
+   <div class="mc-grid-3" id="apPacks"></div>
+   <div class="grid" style="margin-top:12px">
+    <div><label for="apPayMethod">How will you pay?</label><select id="apPayMethod"><option value="whish">Whish Money</option><option value="omt">OMT</option><option value="cash">Cash</option><option value="bank">Bank transfer</option><option value="other">Other</option></select></div>
+    <div><label for="apPayRef">Payment reference / sender name (optional)</label><input id="apPayRef" maxlength="200" placeholder="e.g. Whish transfer from 70 123 456"></div>
+   </div>
+   <div class="domain" id="apPayInfo" style="margin-top:12px;padding:12px 14px;white-space:pre-wrap"></div>
+   <button class="btn primary" type="button" id="apRequest" style="margin-top:12px;width:100%" disabled>Choose a pack above</button>
+   <div id="apOrders" style="margin-top:12px"></div>
+  </div>
+  <div class="mc-card" id="apProCard" style="margin-bottom:16px;border:2px solid #f9a8d4;background:linear-gradient(135deg,#fff7fb,#fff)">
+   <h3 style="margin:0 0 4px">📸 AI Pro photos — phone photos → catalogue photos</h3>
+   <p class="hint" style="margin:0 0 12px">Upload many phone photos at once. AI removes messy backgrounds, fixes light and makes clean studio photos while keeping your real product, labels and text. You review every result before it goes into your catalogue. Failed photos are refunded automatically.</p>
+   <div class="grid">
+    <div><label for="apSource">Photos to improve</label><select id="apSource"><option value="upload">New photos from my phone / computer</option><option value="products">My products' current photos</option></select></div>
+    <div id="apUploadBox"><label for="apFiles">Choose photos</label><input id="apFiles" type="file" accept="image/*" multiple></div>
+    <div id="apCatBox" class="hidden"><label for="apCategory">Category</label><select id="apCategory"><option value="">All categories</option></select></div>
+    <div><label for="apQuality">Quality</label><select id="apQuality"><option value="medium" selected>Medium · 1 credit per photo (recommended)</option><option value="high">High · 2 credits per photo</option></select></div>
+    <div><label for="apBackground">Background</label><select id="apBackground"><option value="white">Pure white</option><option value="light">Soft light grey</option><option value="studio">White studio spotlight</option><option value="warm">Warm cream</option></select></div>
+   </div>
+   <div class="hint" id="apEstimate" style="margin:10px 0;font-weight:700"></div>
+   <div class="row"><button class="btn" type="button" id="apPrepare">1️⃣ Prepare list</button><button class="btn primary" type="button" id="apRun" disabled>2️⃣ ✨ Make AI pro photos</button><button class="btn ghost" type="button" id="apStop" disabled>Stop</button><button class="btn success" type="button" id="apSave" disabled>3️⃣ ✅ Save selected</button></div>
+   <div class="mc-bar" style="margin:12px 0"><i id="apBar"></i></div>
+   <div class="mc-studio-grid" id="apGrid"></div>
   </div>
   <div class="grid">
     <div class="domain">
@@ -346,7 +373,7 @@
     <div class="domain">
       <h3 style="margin:0 0 8px">📸 Professional product photography</h3>
       <p class="hint">Generate a new product image or upload an existing image for AI editing. Review the result before using it in your catalogue.</p>
-      <label for="aiPhotoMode">Photo action</label><select id="aiPhotoMode"><option value="generate">Create a new professional product image · 2 credits (paused)</option><option value="edit">Improve / edit an uploaded photo · 3 credits (paused)</option></select>
+      <label for="aiPhotoMode">Photo action</label><select id="aiPhotoMode"><option value="generate">Create a new professional product image · 2 credits</option><option value="edit">Improve / edit an uploaded photo · 3 credits</option></select>
       <label for="aiPhotoPrompt">Describe the result</label><textarea id="aiPhotoPrompt" placeholder="Example: Premium studio product photo, pure white background, soft natural shadow, square composition. Preserve the exact product shape, packaging and label." style="min-height:105px"></textarea>
       <label for="aiPhotoInput">Original product photo (required for editing)</label><input id="aiPhotoInput" type="file" accept="image/*">
       <button class="btn primary" id="aiGeneratePhoto" type="button">Generate professional photo</button>
@@ -359,7 +386,7 @@
     <div class="grid"><div><label for="aiTemplateSelect">Choose a template</label><select id="aiTemplateSelect"><option value="classic">Classic — clean product grid</option><option value="premium">Premium — dark luxury storefront</option><option value="fresh">Fresh — bright rounded cards</option><option value="shopify">Shopify-style — modern store grid</option><option value="editorial">Editorial — large visual product cards</option><option value="compact">Compact — more products per screen</option><option value="list">List — horizontal product rows</option><option value="showcase">Showcase — large product images</option></select></div><div style="display:flex;align-items:end"><button class="btn primary" id="aiApplyTemplate" type="button">Apply selected template</button></div></div>
     <p class="hint">Applying a template updates only your catalogue design setting. Your products, prices, images and orders are not changed.</p>
   </div>
-  <div class="domain" style="margin-top:14px"><b>Important before launch</b><p class="hint" style="margin:5px 0 0">AI Studio requires the SQL migration and the Supabase Edge Function included in this package. Configure the OpenAI API key as an Edge Function secret. Never add it to admin.html or saas.js. Subscription billing and paid credit top-ups are the next phase; this release uses an introductory credit balance only.</p></div>
+  
 </section>
 <section class="panel" data-page-id="data" id="dataCenterPanel">
  <h2>📊 Import &amp; Export Center</h2>
@@ -581,7 +608,7 @@ async function loadAiWallet(){
  if(r.error){badge.textContent='AI setup required';$('aiCreditHelp').textContent='Run AI_STUDIO_MIGRATION.sql in the My Catalogue Supabase project, deploy the mc-ai-studio Edge Function, and configure its secrets. Details: '+r.error.message;return;}
  const row=Array.isArray(r.data)?r.data[0]:r.data;const balance=Number(row?.credits_balance??row?.balance??0);
  badge.textContent='Credits available: '+balance.toLocaleString();
- $('aiCreditHelp').textContent='Chat uses 1 credit. Proposed image prices: 2 credits to generate and 3 credits to edit. Image generation/editing is paused to protect your API balance; no image credits will be charged while paused.';
+ $('aiCreditHelp').textContent='Chat uses 1 credit. AI Pro photos use 1 credit (medium) or 2 credits (high) per photo. Buy credit packs above.';document.dispatchEvent(new CustomEvent('mc:ai-wallet',{detail:{balance}}));
 }
 function addAiChatLine(role,text){const log=$('aiChatLog'),p=document.createElement('div');p.style.cssText='margin:8px 0;padding:9px 11px;border-radius:9px;white-space:pre-wrap;overflow-wrap:anywhere;'+(role==='user'?'background:#eaf3ec;margin-left:12%':'background:#f3f5f3;margin-right:8%');const strong=document.createElement('b');strong.textContent=role==='user'?'You':'AI Assistant';const body=document.createElement('div');body.textContent=text;p.append(strong,body);log.appendChild(p);log.scrollTop=log.scrollHeight;}
 const aiHistory=[];
@@ -1180,7 +1207,7 @@ $('retryReservation').onclick=async()=>{
 $('refreshStock').onclick=()=>loadStockPanel().then(()=>setStatus('Stock information refreshed.')).catch(e=>setStatus(e.message,true));
 
 // v8: single auth listener above (the old second listener caused double loading).
-window.MCAdmin={get biz(){return biz},get user(){return user},get products(){return products},setStatus,loadProducts:()=>loadProducts(),loadCategoryImages:()=>loadCategoryImages(),loadStockPanel:()=>loadStockPanel(),reload:()=>sessionLoad(),loadXlsx:()=>loadXlsxReader(),businessUrl:()=>biz?businessUrl():'',get categoryRows(){return savedCategoryRows},stockUnits:()=>stockUnitsCache,replaceProductImage:async(id,file)=>{const optimized=await optimizeImage(file,1600,.9);const ext=optimized.type==='image/webp'?'webp':'jpg';const path=biz.id+'/'+crypto.randomUUID()+'.'+ext;const up=await sb.storage.from('mc-saas-images').upload(path,optimized,{upsert:false,contentType:optimized.type});if(up.error)throw up.error;const image=sb.storage.from('mc-saas-images').getPublicUrl(path).data.publicUrl;const r=await sb.from('mc_saas_products').update({image,updated_at:new Date().toISOString()}).eq('id',id).eq('business_id',biz.id);if(r.error)throw r.error;const p=products.find(x=>x.id===id);if(p)p.image=image;return image}};
+window.MCAdmin={setProductImageUrl:async(id,url)=>{const r=await sb.from('mc_saas_products').update({image:url,updated_at:new Date().toISOString()}).eq('id',id).eq('business_id',biz.id);if(r.error)throw r.error;const p=products.find(x=>x.id===id);if(p)p.image=url;return url},loadAiWallet:()=>loadAiWallet(),get biz(){return biz},get user(){return user},get products(){return products},setStatus,loadProducts:()=>loadProducts(),loadCategoryImages:()=>loadCategoryImages(),loadStockPanel:()=>loadStockPanel(),reload:()=>sessionLoad(),loadXlsx:()=>loadXlsxReader(),businessUrl:()=>biz?businessUrl():'',get categoryRows(){return savedCategoryRows},stockUnits:()=>stockUnitsCache,replaceProductImage:async(id,file)=>{const optimized=await optimizeImage(file,1600,.9);const ext=optimized.type==='image/webp'?'webp':'jpg';const path=biz.id+'/'+crypto.randomUUID()+'.'+ext;const up=await sb.storage.from('mc-saas-images').upload(path,optimized,{upsert:false,contentType:optimized.type});if(up.error)throw up.error;const image=sb.storage.from('mc-saas-images').getPublicUrl(path).data.publicUrl;const r=await sb.from('mc_saas_products').update({image,updated_at:new Date().toISOString()}).eq('id',id).eq('business_id',biz.id);if(r.error)throw r.error;const p=products.find(x=>x.id===id);if(p)p.image=image;return image}};
 document.dispatchEvent(new CustomEvent('mc:admin-api'));
 sessionLoad().catch(e=>setStatus(e.message,true));
 })();
@@ -1189,4 +1216,5 @@ sessionLoad().catch(e=>setStatus(e.message,true));
 <script src="photo-match.js"></script>
 <script src="photo-studio.js"></script>
 <script src="admin-pro.js"></script>
+<script src="ai-pro.js"></script>
 </body></html>
