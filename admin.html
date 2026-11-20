@@ -390,6 +390,29 @@
  <div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:flex-start">
   <div><h2>📸 Photo Studio <span class="pill ok">Free · unlimited</span></h2><p class="hint" style="margin:0;max-width:720px">Automatically turns ordinary phone photos into clean, professional catalogue photos: removes plain backgrounds, centres and frames the product, balances light and colour, and adds a soft studio shadow. Everything runs in your browser — no credits used.</p></div>
  </div>
+ <div class="mc-card" id="qsCard" style="margin-top:16px;border:2px solid #f9a8d4;background:linear-gradient(135deg,#fff7fb,#fff)">
+  <h3>📷 Quick shoot — photograph products one by one (phone)</h3>
+  <p class="hint" style="margin-top:-4px">Take a photo of each product with your phone camera. The background is removed automatically for free and the photo is framed like a studio shot. Tap <b>Save &amp; next</b> and the next product appears.</p>
+  <div class="grid">
+   <div><label for="qsScope">Which products?</label><select id="qsScope"><option value="missing">Products without a photo</option><option value="all">All products</option></select></div>
+   <div><label for="qsCategory">Category</label><select id="qsCategory"><option value="">All categories</option></select></div>
+  </div>
+  <button class="btn primary" type="button" id="qsStart" style="margin-top:12px;width:100%">▶️ Start quick shoot</button>
+  <div id="qsRun" class="hidden" style="margin-top:14px">
+   <div class="mc-bar" style="margin-bottom:10px"><i id="qsBar"></i></div>
+   <div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start;flex-wrap:wrap"><div><b id="qsName" style="font-size:18px"></b><div class="hint" id="qsMeta"></div></div><span class="pill" id="qsCount"></span></div>
+   <div class="mc-compare" style="margin-top:12px"><figure><img id="qsBefore" alt=""><figcaption>Your photo</figcaption></figure><figure><canvas id="qsAfter" width="600" height="600"></canvas><figcaption id="qsAfterCap">Pro photo ✨</figcaption></figure></div>
+   <input id="qsCamera" type="file" accept="image/*" capture="environment" class="hidden">
+   <div class="row" style="margin-top:12px">
+    <button class="btn primary" type="button" id="qsShoot" style="flex:1 1 100%;min-height:56px;font-size:17px">📷 Take photo</button>
+    <button class="btn success" type="button" id="qsSave" disabled>✅ Save &amp; next</button>
+    <button class="btn" type="button" id="qsOriginal" disabled>Use original</button>
+    <button class="btn ghost" type="button" id="qsSkip">⏭ Skip</button>
+    <button class="btn ghost" type="button" id="qsStop">■ Stop</button>
+   </div>
+   <p class="hint" style="font-size:12.5px;margin-top:10px">Best results: put the product on a white sheet of paper or against a plain wall, in daylight, and fill most of the picture with it. Change background colour or shadow in <b>Studio style</b> below.</p>
+  </div>
+ </div>
  <div class="mc-card" id="pmCard" style="margin-top:16px;border:2px solid #c4b5fd;background:linear-gradient(135deg,#faf7ff,#fff)">
   <h3>🧠 Smart photo matcher — add photos to existing products</h3>
   <p class="hint" style="margin-top:-4px">Select many photos (or a whole folder). Each photo is matched to the right product automatically by barcode / SKU / POS ID in the file name or by a similar product name (Arabic &amp; English). Review, change any match, then save.</p>
@@ -398,6 +421,7 @@
    <div><label for="pmFolder">…or a whole folder (computer)</label><input id="pmFolder" type="file" webkitdirectory directory multiple></div>
   </div>
   <label style="display:flex;gap:8px;align-items:center;font-weight:600;margin-top:10px"><input id="pmOnlyMissing" type="checkbox" checked style="width:auto"> Only products that don't have a photo yet</label>
+  <label style="display:flex;gap:8px;align-items:center;font-weight:600;margin-top:6px"><input id="pmMakePro" type="checkbox" checked style="width:auto"> ✨ Make them pro before saving (free: remove background, white studio look, shadow)</label>
   <div class="row" style="margin-top:12px"><button class="btn primary" type="button" id="pmRun">🧠 Match photos</button><button class="btn success" type="button" id="pmSave" disabled>✅ Save selected</button><button class="btn ghost" type="button" id="pmAll">Select all</button></div>
   <div id="pmSummary" class="hint" style="margin:10px 0" aria-live="polite"></div>
   <div class="mc-bar" style="margin-bottom:12px"><i id="pmBar"></i></div>
