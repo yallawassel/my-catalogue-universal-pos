@@ -220,3 +220,7 @@ body.mc-admin #resetPanel,body.mc-admin #createPanel{max-width:560px;margin:60px
 .mc-mini.wide{grid-column:1/-1}
 
 @media print{#status.status{display:none!important}header:not(.store-header){box-shadow:none}}
+
+/* quick shoot: keep before/after side by side on phones */
+#qsRun .mc-compare{grid-template-columns:1fr 1fr!important}
+#qsRun .mc-compare figure{padding:6px}

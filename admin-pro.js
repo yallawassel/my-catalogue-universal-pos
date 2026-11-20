@@ -455,12 +455,71 @@ Headers:
     pm.busy = true; pmRender(); let ok = 0, failed = 0;
     for (let i = 0; i < chosen.length; i++) {
       const r = chosen[i];
-      try { await A().replaceProductImage(r.p.id, r.file); r.saved = true; r.selected = false; ok++; } catch (e) { failed++; r.reason = 'Failed: ' + e.message; }
+      try {
+        let file = r.file;
+        if ($('pmMakePro') && $('pmMakePro').checked && window.MCStudio) {
+          try { const res = await MCStudio.process(r.file, studioOpts()); file = new File([res.blob], 'studio.' + (res.blob.type === 'image/webp' ? 'webp' : 'jpg'), { type: res.blob.type }); r.pro = res.bgRemoved; } catch (_) { /* keep the original photo */ }
+        }
+        await A().replaceProductImage(r.p.id, file); r.saved = true; r.selected = false; ok++;
+      } catch (e) { failed++; r.reason = 'Failed: ' + e.message; }
       $('pmBar').style.width = Math.round(100 * (i + 1) / chosen.length) + '%'; toast(`Saving photos ${i + 1}/${chosen.length}…`);
     }
     pm.busy = false; pmRender(); await A().loadProducts();
-    toast(`${ok} photo(s) saved${failed ? ', ' + failed + ' failed' : ''}. Tip: use Photo Studio below to make them look professional.`, failed > 0);
+    const pro = chosen.filter(r => r.pro).length;
+    toast(`${ok} photo(s) saved${pro ? ` (${pro} with background removed)` : ''}${failed ? ', ' + failed + ' failed' : ''}.`, failed > 0);
   });
+
+  /* ------------------------------ Quick shoot (phone) ------------------------------ */
+  const qs = { list: [], i: 0, file: null, blob: null, busy: false };
+  function qsFillCats() {
+    const cs = $('qsCategory'); if (!cs) return; const prev = cs.value;
+    const cats = [...new Set((A().products || []).map(catOf))].sort();
+    cs.innerHTML = '<option value="">All categories</option>' + cats.map(c => `<option>${esc(c)}</option>`).join(''); if (cats.includes(prev)) cs.value = prev;
+  }
+  const prevStudioHook = hooks.studio; hooks.studio = () => { prevStudioHook && prevStudioHook(); qsFillCats(); };
+  function qsShow() {
+    const p = qs.list[qs.i]; qs.file = null; qs.blob = null;
+    $('qsSave').disabled = true; $('qsOriginal').disabled = true; $('qsBefore').removeAttribute('src');
+    const c = $('qsAfter'); c.getContext('2d').clearRect(0, 0, c.width, c.height); $('qsAfterCap').textContent = 'Pro photo ✨';
+    if (!p) { $('qsRun').classList.add('hidden'); toast('🎉 Quick shoot finished — all products in this list are done.'); A().loadProducts(); return; }
+    $('qsName').textContent = p.name;
+    $('qsMeta').textContent = [catOf(p), p.barcode, p.price1 != null ? MC.money(p.price1, A().biz.currency) + ' / ' + (p.label1 || '') : ''].filter(Boolean).join(' · ');
+    $('qsCount').textContent = `${qs.i + 1} / ${qs.list.length}`;
+    $('qsBar').style.width = Math.round(100 * qs.i / qs.list.length) + '%';
+    if (p.image) $('qsBefore').src = p.image;
+    $('qsShoot').textContent = '📷 Take photo';
+  }
+  on('qsStart', () => {
+    const cat = $('qsCategory').value, missing = $('qsScope').value === 'missing';
+    qs.list = (A().products || []).filter(p => (!missing || !p.image) && (!cat || catOf(p) === cat))
+      .sort((a, b) => catOf(a).localeCompare(catOf(b)) || (a.sort_order || 0) - (b.sort_order || 0));
+    if (!qs.list.length) throw Error(missing ? 'Every product in this selection already has a photo 🎉' : 'No products in this selection.');
+    qs.i = 0; $('qsRun').classList.remove('hidden'); qsShow(); $('qsRun').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+  on('qsShoot', () => { $('qsCamera').value = ''; $('qsCamera').click(); });
+  $('qsCamera') && $('qsCamera').addEventListener('change', async () => {
+    const f = $('qsCamera').files[0]; if (!f) return;
+    qs.file = f; $('qsBefore').src = window.MCMatch ? MCMatch.thumb(f) : URL.createObjectURL(f);
+    $('qsShoot').disabled = true; $('qsShoot').textContent = '✨ Making it pro…';
+    try {
+      const res = await MCStudio.process(f, studioOpts());
+      const c = $('qsAfter'), ctx = c.getContext('2d'); ctx.clearRect(0, 0, c.width, c.height); ctx.drawImage(res.canvas, 0, 0, c.width, c.height);
+      qs.blob = res.blob; $('qsSave').disabled = false; $('qsOriginal').disabled = false;
+      $('qsAfterCap').textContent = res.bgRemoved ? 'Background removed ✨' : 'Framed (background too busy to remove)';
+      if (!res.bgRemoved) toast('Background was too busy to remove. Retake on a plain surface, or save it framed.');
+    } catch (e) { toast('Could not process this photo: ' + e.message + ' — you can still use the original.', true); $('qsOriginal').disabled = false; }
+    finally { $('qsShoot').disabled = false; $('qsShoot').textContent = '🔄 Retake photo'; }
+  });
+  async function qsSaveFile(file) {
+    if (qs.busy) return; qs.busy = true; $('qsSave').disabled = true; $('qsOriginal').disabled = true;
+    try { await A().replaceProductImage(qs.list[qs.i].id, file); toast('✅ Saved: ' + qs.list[qs.i].name); qs.i++; qsShow(); }
+    catch (e) { toast('Could not save: ' + e.message, true); $('qsSave').disabled = !qs.blob; $('qsOriginal').disabled = !qs.file; }
+    finally { qs.busy = false; }
+  }
+  on('qsSave', () => qs.blob && qsSaveFile(new File([qs.blob], 'studio.' + (qs.blob.type === 'image/webp' ? 'webp' : 'jpg'), { type: qs.blob.type })));
+  on('qsOriginal', () => qs.file && qsSaveFile(qs.file));
+  on('qsSkip', () => { qs.i++; qsShow(); });
+  on('qsStop', () => { $('qsRun').classList.add('hidden'); qs.list = []; A().loadProducts(); toast('Quick shoot stopped. Your saved photos are in the catalogue.'); });
 
   // admin.html may have finished loading the business before this file arrived.
   if (window.MCAdmin && window.MCAdmin.biz) onReady();
