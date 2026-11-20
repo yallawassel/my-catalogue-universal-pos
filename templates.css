@@ -1,0 +1,127 @@
+/* My Catalogue — industry catalogue templates (v11). Loaded after storefront.css.
+   Each template sets a few variables; the shared "tpl-pack" rules below use them.
+   --brand (the business colour) is the accent in every template. */
+
+body.tpl-pack{
+  --t-bg:#f7f6fb;--t-ink:#1b1740;--t-muted:#6b6890;--t-card:#fff;--t-line:rgba(0,0,0,.07);
+  --t-head-bg:var(--brand);--t-head-ink:#fff;--t-font:system-ui,sans-serif;--t-title:var(--t-font);
+  --t-radius:16px;--t-shadow:0 2px 6px rgba(0,0,0,.04),0 10px 24px rgba(0,0,0,.06);--t-img-bg:#fff;
+  --t-ratio:1/1;--t-fit:contain;--t-pad:8px;--t-cols:2;--t-cols-d:4;--t-gap:12px;--t-btn-radius:12px;
+  --t-accent-ink:#fff;--t-search:#fff;--t-transform:none;--t-track:normal;
+  background:var(--t-bg);color:var(--t-ink);font-family:var(--t-font)
+}
+body.tpl-pack header{background:var(--t-head-bg);color:var(--t-head-ink);box-shadow:none;border-bottom:1px solid var(--t-line)}
+body.tpl-pack header h1{font-family:var(--t-title);text-transform:var(--t-transform);letter-spacing:var(--t-track)}
+body.tpl-pack header .logo{box-shadow:0 0 0 2px var(--t-line)}
+body.tpl-pack #installCatalogue{background:var(--brand)!important;color:var(--t-accent-ink)!important;font-family:var(--t-font)}
+body.tpl-pack .toolbar{background:var(--t-bg)}
+body.tpl-pack .search{background-color:var(--t-search);color:var(--t-ink);font-family:var(--t-font);border:1px solid var(--t-line);box-shadow:none}
+body.tpl-pack .title{font-family:var(--t-title);text-transform:var(--t-transform);letter-spacing:var(--t-track);color:var(--t-ink)}
+body.tpl-pack .grid{grid-template-columns:repeat(var(--t-cols),minmax(0,1fr));gap:var(--t-gap)}
+@media(min-width:760px){body.tpl-pack .grid{grid-template-columns:repeat(var(--t-cols-d),minmax(0,1fr))}}
+body.tpl-pack .category,body.tpl-pack .product,body.tpl-pack .empty{background:var(--t-card);color:var(--t-ink);border-radius:var(--t-radius);box-shadow:var(--t-shadow);border:1px solid var(--t-line)}
+body.tpl-pack .category:hover,body.tpl-pack .product:hover{box-shadow:var(--t-shadow);transform:translateY(-2px)}
+body.tpl-pack .category img,body.tpl-pack .product img,body.tpl-pack .category .placeholder,body.tpl-pack .product>.placeholder{height:auto;aspect-ratio:var(--t-ratio);object-fit:var(--t-fit);padding:var(--t-pad);background:var(--t-img-bg)}
+body.tpl-pack .name{font-family:var(--t-title);color:var(--t-ink)}
+body.tpl-pack .count,body.tpl-pack .desc,body.tpl-pack footer,body.tpl-pack .mc-search-note{color:var(--t-muted)}
+body.tpl-pack .category .info:after{color:var(--brand)}
+body.tpl-pack .category-chip{background:var(--t-card);color:var(--t-ink);border:1px solid var(--t-line);box-shadow:none;font-family:var(--t-font)}
+body.tpl-pack .category-chip:before{background:var(--brand)}
+body.tpl-pack .category-art,body.tpl-pack .placeholder{background:color-mix(in srgb,var(--brand) 12%,var(--t-card));color:var(--brand)}
+body.tpl-pack .priceChoice{background:var(--t-card);color:var(--t-ink);border:1px solid var(--t-line);border-radius:var(--t-btn-radius);font-family:var(--t-font)}
+body.tpl-pack .priceChoice.active{background:var(--brand);color:var(--t-accent-ink);border-color:var(--brand);box-shadow:none}
+body.tpl-pack .qtybtn{background:color-mix(in srgb,var(--t-ink) 8%,transparent);color:var(--t-ink);border-radius:var(--t-btn-radius)}
+body.tpl-pack .addbtn,body.tpl-pack .back,body.tpl-pack .cartbar{background:var(--brand);color:var(--t-accent-ink);border-radius:var(--t-btn-radius);box-shadow:none;font-family:var(--t-font);text-transform:var(--t-transform);letter-spacing:var(--t-track)}
+body.tpl-pack .cartbar{border-radius:999px;box-shadow:0 10px 26px rgba(0,0,0,.25)}
+body.tpl-pack .cartbar .mc-cart-total{color:var(--t-accent-ink)}
+body.tpl-pack .box{color:#111827}
+
+/* ---------- Chocolate & Sweets ---------- */
+body.template-chocolate{--t-bg:#f6efe6;--t-ink:#2b1a12;--t-muted:#7a6252;--t-card:#fffaf3;--t-line:#ead9c3;--t-head-bg:linear-gradient(135deg,#3b2418,#5a3826);--t-font:'Inter',system-ui,sans-serif;--t-title:'Playfair Display',Georgia,serif;--t-radius:18px;--t-img-bg:#fffaf3;--t-shadow:0 8px 24px rgba(59,36,24,.08);--t-cols-d:4}
+body.template-chocolate header{border-bottom:3px solid #c9a45c}
+body.template-chocolate .title{font-size:28px;font-weight:700}
+body.template-chocolate .title:after{content:'';display:block;width:56px;height:2px;background:#c9a45c;margin-top:8px}
+body.template-chocolate .name{font-weight:700;font-size:17px}
+
+/* ---------- Luxury ---------- */
+body.template-luxury{--t-bg:#0e0e0e;--t-ink:#f3ede2;--t-muted:#a99f8e;--t-card:#161616;--t-line:#2b2620;--t-head-bg:#0e0e0e;--t-head-ink:#f3ede2;--t-font:'Jost',system-ui,sans-serif;--t-title:'Cormorant Garamond',Georgia,serif;--t-radius:2px;--t-shadow:none;--t-img-bg:#f7f3ec;--t-pad:18px;--t-ratio:4/5;--t-btn-radius:0;--t-accent-ink:#0e0e0e;--t-search:#161616;--t-transform:uppercase;--t-track:.12em;--t-cols:2;--t-cols-d:3;--t-gap:18px}
+body.template-luxury header{border-bottom:1px solid var(--brand)}
+body.template-luxury header h1{font-weight:600;font-size:26px}
+body.template-luxury .title{font-weight:500;font-size:22px;text-align:center}
+body.template-luxury .name{font-weight:600;font-size:19px;letter-spacing:.02em}
+body.template-luxury .addbtn{background:transparent;color:var(--brand);border:1px solid var(--brand)}
+body.template-luxury .addbtn:hover{background:var(--brand);color:#0e0e0e}
+body.template-luxury .category,body.template-luxury .product{border-color:#2b2620}
+
+/* ---------- Small Store / Boutique ---------- */
+body.template-boutique{--t-bg:#fbf6f2;--t-ink:#3a2a2a;--t-muted:#8c7470;--t-card:#fff;--t-line:#f0e2db;--t-head-bg:#fbf6f2;--t-head-ink:#3a2a2a;--t-font:'DM Sans',system-ui,sans-serif;--t-title:'DM Serif Display',Georgia,serif;--t-radius:24px;--t-btn-radius:999px;--t-shadow:0 10px 28px rgba(120,70,60,.08);--t-cols-d:4}
+body.template-boutique header h1{font-weight:400;font-size:28px}
+body.template-boutique .title{font-weight:400;font-size:27px}
+body.template-boutique .name{font-weight:400;font-size:18px}
+body.template-boutique .category img,body.template-boutique .product img{border-radius:18px}
+
+/* ---------- Mini Market ---------- */
+body.template-minimarket{--t-bg:#f2f7ef;--t-ink:#14301d;--t-muted:#5d7464;--t-card:#fff;--t-line:#dfe9d9;--t-head-bg:var(--brand);--t-font:'Nunito',system-ui,sans-serif;--t-title:'Nunito',system-ui,sans-serif;--t-radius:14px;--t-pad:6px;--t-gap:9px;--t-cols:2;--t-cols-d:5;--t-shadow:0 2px 8px rgba(20,48,29,.06)}
+body.template-minimarket header{border-bottom:4px solid #facc15}
+body.template-minimarket .name{font-weight:800;font-size:14.5px}
+body.template-minimarket .title{font-weight:900}
+body.template-minimarket .priceChoice small{font-size:15px;font-weight:900}
+
+/* ---------- Supermarket ---------- */
+body.template-supermarket{--t-bg:#f4f4f4;--t-ink:#1d1d1f;--t-muted:#6e6e73;--t-card:#fff;--t-line:#e6e6e6;--t-head-bg:var(--brand);--t-font:'Poppins',system-ui,sans-serif;--t-title:'Poppins',system-ui,sans-serif;--t-radius:8px;--t-btn-radius:8px;--t-pad:5px;--t-cols:3;--t-cols-d:6;--t-gap:7px;--t-shadow:none}
+body.template-supermarket .name{font-weight:600;font-size:12.5px;line-height:1.3}
+body.template-supermarket .body,body.template-supermarket .info{padding:7px}
+body.template-supermarket .desc{display:none}
+body.template-supermarket .priceChoices{grid-template-columns:1fr}
+body.template-supermarket .priceChoice{background:#ffd60a;color:#1d1d1f;border:0;font-weight:800;padding:5px 4px;font-size:11px}
+body.template-supermarket .priceChoice.active{background:#ffd60a;color:#1d1d1f;outline:2px solid var(--brand)}
+body.template-supermarket .priceChoice small{font-size:15px;font-weight:800}
+body.template-supermarket .qtyrow{gap:3px}
+body.template-supermarket .qtybtn{width:28px;height:28px;font-size:16px}
+body.template-supermarket .addbtn{padding:8px 4px;font-size:12px}
+body.template-supermarket .title{font-weight:800;font-size:19px}
+@media(max-width:380px){body.template-supermarket .grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+/* ---------- Wholesaler / Distributor ---------- */
+body.template-wholesale{--t-bg:#eef1f5;--t-ink:#0f1f33;--t-muted:#5b6b80;--t-card:#fff;--t-line:#d7dde5;--t-head-bg:#0f1f33;--t-font:'Inter',system-ui,sans-serif;--t-title:'Inter',system-ui,sans-serif;--t-radius:6px;--t-btn-radius:6px;--t-shadow:none;--t-cols:2;--t-cols-d:4;--t-gap:8px;--t-pad:6px}
+body.template-wholesale header{border-bottom:4px solid var(--brand)}
+body.template-wholesale #products.grid{grid-template-columns:1fr;gap:6px}
+@media(min-width:760px){body.template-wholesale #products.grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+body.template-wholesale .product{display:grid;grid-template-columns:96px minmax(0,1fr);align-items:start}
+body.template-wholesale .product img,body.template-wholesale .product>.placeholder{width:96px;height:96px;aspect-ratio:1/1;border-right:1px solid var(--t-line)}
+body.template-wholesale .product .body{padding:8px 10px}
+body.template-wholesale .name{font-weight:700;font-size:14px}
+body.template-wholesale .desc{font-size:12px}
+body.template-wholesale .priceChoices{display:flex;flex-wrap:wrap}
+body.template-wholesale .priceChoice{flex:1;min-width:84px}
+body.template-wholesale .qtyrow{display:inline-flex;margin-top:8px}
+body.template-wholesale .addbtn{display:inline-block;width:auto;padding:9px 16px;margin-left:8px}
+body.template-wholesale .title{font-weight:800;text-transform:uppercase;letter-spacing:.04em;font-size:17px}
+
+/* ---------- Bakery & Café ---------- */
+body.template-bakery{--t-bg:#fff7f0;--t-ink:#4a2c22;--t-muted:#9a7a6c;--t-card:#fff;--t-line:#f6e3d6;--t-head-bg:linear-gradient(135deg,var(--brand),color-mix(in srgb,var(--brand) 60%,#f6b48f));--t-font:'Nunito',system-ui,sans-serif;--t-title:'Fredoka',system-ui,sans-serif;--t-radius:26px;--t-btn-radius:999px;--t-shadow:0 10px 26px rgba(217,119,91,.12);--t-cols-d:4}
+body.template-bakery .title{font-weight:600;font-size:26px}
+body.template-bakery .name{font-weight:600;font-size:17px}
+body.template-bakery .category img,body.template-bakery .product img{border-radius:22px}
+
+/* ---------- Fashion ---------- */
+body.template-fashion{--t-bg:#fff;--t-ink:#111;--t-muted:#6b6b6b;--t-card:#fff;--t-line:transparent;--t-head-bg:#fff;--t-head-ink:#111;--t-font:'Jost',system-ui,sans-serif;--t-title:'Jost',system-ui,sans-serif;--t-radius:0;--t-btn-radius:0;--t-shadow:none;--t-img-bg:#f4f4f4;--t-ratio:3/4;--t-fit:cover;--t-pad:0;--t-transform:uppercase;--t-track:.08em;--t-cols:2;--t-cols-d:4;--t-gap:14px;--t-search:#f4f4f4}
+body.template-fashion header{border-bottom:1px solid #eee}
+body.template-fashion header h1{font-weight:600}
+body.template-fashion .name{font-weight:500;font-size:14px;text-transform:uppercase;letter-spacing:.06em}
+body.template-fashion .body,body.template-fashion .info{padding:10px 2px}
+body.template-fashion .category:hover,body.template-fashion .product:hover{transform:none}
+body.template-fashion .title{font-weight:600;font-size:18px}
+
+/* ---------- Electronics & Tech ---------- */
+body.template-electronics{--t-bg:#0b1220;--t-ink:#e6edf7;--t-muted:#8ea0bb;--t-card:#111a2e;--t-line:#1e2a44;--t-head-bg:#0b1220;--t-head-ink:#e6edf7;--t-font:'Inter',system-ui,sans-serif;--t-title:'Rajdhani',system-ui,sans-serif;--t-radius:14px;--t-btn-radius:10px;--t-shadow:0 0 0 1px #1e2a44;--t-img-bg:#fff;--t-accent-ink:#04131a;--t-search:#111a2e;--t-cols-d:4}
+body.template-electronics header{border-bottom:1px solid var(--brand);box-shadow:0 0 24px color-mix(in srgb,var(--brand) 30%,transparent)}
+body.template-electronics .title{font-weight:700;font-size:26px;text-transform:uppercase;letter-spacing:.06em}
+body.template-electronics .name{font-weight:700;font-size:18px}
+body.template-electronics .product:hover,body.template-electronics .category:hover{box-shadow:0 0 0 1px var(--brand),0 0 22px color-mix(in srgb,var(--brand) 25%,transparent)}
+
+/* ---------- Beauty & Pharmacy ---------- */
+body.template-beauty{--t-bg:#fbf5fb;--t-ink:#3d2440;--t-muted:#8d7290;--t-card:#fff;--t-line:#f1e1f0;--t-head-bg:linear-gradient(135deg,color-mix(in srgb,var(--brand) 85%,#fff),color-mix(in srgb,var(--brand) 55%,#b9a7f5));--t-font:'Quicksand',system-ui,sans-serif;--t-title:'Marcellus',Georgia,serif;--t-radius:22px;--t-btn-radius:999px;--t-shadow:0 10px 26px rgba(192,85,154,.10);--t-cols-d:4}
+body.template-beauty .title{font-weight:400;font-size:26px}
+body.template-beauty .name{font-weight:400;font-size:17px}
+body.template-beauty .desc{font-weight:500}

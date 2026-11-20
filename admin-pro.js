@@ -44,6 +44,7 @@
     if (hooks[key]) try { hooks[key](); } catch (e) { console.error(e); }
   }
   window.mcOpenPage = openPage;
+  window.mcPageHooks = hooks;
   document.addEventListener('click', e => {
     const p = e.target.closest('[data-page]');
     if (p && !p.closest('.mc-auth')) { e.preventDefault(); openPage(p.dataset.page); return; }
