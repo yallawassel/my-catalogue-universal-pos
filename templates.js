@@ -39,6 +39,8 @@
       const href = F + t.font + '&display=swap';
       if (link.href !== href) link.href = href;
     }
+    window.MCTemplates.current = t.key;
+    try { doc.dispatchEvent(new CustomEvent('mc:template', { detail: { key: t.key } })); } catch (_) { }
     return t;
   }
   window.MCTemplates = { list, keys, get, apply, groups: { all: 'All', food: 'Food & sweets', grocery: 'Grocery & markets', retail: 'Small stores', wholesale: 'Wholesale', fashion: 'Fashion, luxury & beauty', tech: 'Tech', general: 'General' } };
