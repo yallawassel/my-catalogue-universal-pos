@@ -14,15 +14,28 @@
     if (!platformHosts.includes(host) && !host.endsWith('.github.io')) {
       const d = await sb.from('mc_saas_custom_domains').select('business_id').eq('domain',host).eq('verified',true).eq('active',true).maybeSingle();
       if (!d.error && d.data?.business_id) {
-        const b = await sb.from('mc_saas_businesses').select('*').eq('id',d.data.business_id).eq('is_published',true).maybeSingle();
+        const b = await sb.from('mc_saas_businesses').select(PUBLIC_BUSINESS_COLUMNS).eq('id',d.data.business_id).eq('is_published',true).maybeSingle();
         if (!b.error && b.data) return b.data;
       }
     }
     if (shop) {
-      const b = await sb.from('mc_saas_businesses').select('*').eq('slug',slugify(shop)).eq('is_published',true).maybeSingle();
+      const b = await sb.from('mc_saas_businesses').select(PUBLIC_BUSINESS_COLUMNS).eq('slug',slugify(shop)).eq('is_published',true).maybeSingle();
       if (!b.error && b.data) return b.data;
     }
     return null;
+  }
+  // v9: never ask for private business fields (billing notes, owner id) on public pages.
+  const PUBLIC_BUSINESS_COLUMNS = 'id,company_name,slug,description,whatsapp,currency,logo_url,primary_color,catalogue_template,is_published';
+  // v9: Supabase returns at most 1,000 rows per request — load big catalogues page by page.
+  async function fetchAll(build, pageSize = 1000) {
+    let out = [];
+    for (let from = 0; from < 100000; from += pageSize) {
+      const r = await build().range(from, from + pageSize - 1);
+      if (r.error) return { data: null, error: r.error };
+      out = out.concat(r.data || []);
+      if (!r.data || r.data.length < pageSize) break;
+    }
+    return { data: out, error: null };
   }
   async function optimizeImage(file, maxSize=1200, quality=.84) {
     if (!file || !file.type.startsWith('image/')) throw new Error('Choose an image file.');
@@ -35,7 +48,7 @@
     if (!blob) throw new Error('Image optimization failed in this browser.');
     return new File([blob],(file.name.replace(/\.[^.]+$/,'')||'photo')+'.webp',{type:'image/webp'});
   }
-  window.MC = { url: SUPABASE_URL, publishableKey: SUPABASE_PUBLISHABLE_KEY, sb, esc, slugify, resolveBusiness, optimizeImage, money:(n,c='USD') => (c==='LBP'?'LBP ':'$')+Number(n||0).toLocaleString(undefined,{maximumFractionDigits:2}) };
+  window.MC = { fetchAll, PUBLIC_BUSINESS_COLUMNS, url: SUPABASE_URL, publishableKey: SUPABASE_PUBLISHABLE_KEY, sb, esc, slugify, resolveBusiness, optimizeImage, money:(n,c='USD') => (c==='LBP'?'LBP ':'$')+Number(n||0).toLocaleString(undefined,{maximumFractionDigits:2}) };
   // v8: turn the #status bar on staff pages into an auto-hiding toast (admin.html has its own).
   document.addEventListener('DOMContentLoaded', () => {
     const st = document.getElementById('status');

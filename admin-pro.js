@@ -221,6 +221,7 @@
     w.document.close();
   });
   on('dcRestoreJson', () => $('importJson').click());
+  on('dcMatchPhotos', () => { openPage('studio'); setTimeout(() => $('pmCard') && $('pmCard').scrollIntoView({ behavior: 'smooth' }), 300); });
   on('dcTplProducts', () => $('downloadProductTemplate').click());
   on('dcTplPos', () => $('downloadPosTemplate').click());
   on('dcTplUnits', () => $('downloadUnitTemplate').click());
@@ -404,6 +405,62 @@ Headers:
     g.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
   on('lcGuideWindows', () => guide('windows')); on('lcGuideFolder', () => guide('folder')); on('lcGuideApi', () => guide('api'));
+
+  /* ------------------------ Smart photo matcher (existing products) ------------------------ */
+  const pm = { files: [], rows: [], busy: false };
+  const pmCollect = () => { const seen = new Set(); return [...($('pmFiles').files || []), ...(($('pmFolder') && $('pmFolder').files) || [])].filter(f => (/^image\//.test(f.type) || /\.(jpe?g|png|webp|gif|bmp|heic|heif|avif)$/i.test(f.name)) && !seen.has(f.name + '|' + f.size) && seen.add(f.name + '|' + f.size)); };
+  function pmRender() {
+    const opt = (r) => {
+      const ranked = r.ranked.slice(0, 8);
+      if (r.file && !ranked.some(x => pm.files[x.fileIndex] === r.file)) ranked.unshift({ fileIndex: pm.files.indexOf(r.file), score: r.score || 0 });
+      return `<select data-pm-pick="${r.idx}" style="margin-top:6px;font-size:12px;padding:6px!important"><option value="-1">— No photo —</option>${ranked.map(x => `<option value="${x.fileIndex}" ${pm.files[x.fileIndex] === r.file ? 'selected' : ''}>${Math.round(x.score * 100)}% · ${esc(pm.files[x.fileIndex].name)}</option>`).join('')}</select>`;
+    };
+    $('pmGrid').innerHTML = pm.rows.filter(r => r.file || r.ranked.length).map(r => {
+      const pct = Math.round((r.score || 0) * 100);
+      const tag = r.saved ? ['Saved ✓', '#1b1740'] : r.manual ? ['Chosen by you', '#7c3aed'] : r.level === 'auto' ? [pct + '% match', '#059669'] : r.level === 'check' ? [pct + '% · check', '#d97706'] : ['Suggestions', '#6b6890'];
+      return `<div class="mc-studio-card"><label class="sel"><input type="checkbox" data-pm-sel="${r.idx}" ${r.selected ? 'checked' : ''} ${r.file && !r.saved ? '' : 'disabled'}></label><span class="tag" style="background:${tag[1]}">${esc(tag[0])}</span>${r.file ? `<img src="${MCMatch.thumb(r.file)}" alt="">` : '<div style="aspect-ratio:1;display:grid;place-items:center;background:#faf9ff;color:var(--muted);font-size:13px">No photo chosen</div>'}<div class="meta"><b>${esc(r.p.name)}</b><span class="hint">${esc(catOf(r.p))}${r.p.image ? ' · has a photo' : ''}</span>${r.reason && r.file && !r.manual ? `<div class="hint" style="font-size:11.5px">${esc(r.reason)}</div>` : ''}${r.saved ? '' : opt(r)}</div></div>`;
+    }).join('') || '<div class="mc-empty">No matches found. Tip: name photos with the barcode or the product name, e.g. <b>5281234567890.jpg</b> or <b>Kraft bowl 750cc.jpg</b>.</div>';
+    const n = pm.rows.filter(r => r.selected && r.file && !r.saved).length;
+    $('pmSave').disabled = !n || pm.busy; $('pmSave').textContent = `✅ Save ${n} photo${n === 1 ? '' : 's'}`;
+    const used = new Set(pm.rows.filter(r => r.file).map(r => r.file));
+    const auto = pm.rows.filter(r => r.file && r.level === 'auto' && !r.manual).length, check = pm.rows.filter(r => r.file && r.level === 'check' && !r.manual).length;
+    $('pmSummary').innerHTML = pm.files.length ? `📸 <b>${pm.files.length}</b> photos · <b style="color:#047857">${auto}</b> matched automatically · <b style="color:#b45309">${check}</b> to check · <b>${pm.files.length - used.size}</b> photos not matched` : '';
+  }
+  on('pmRun', () => {
+    if (!window.MCMatch) throw Error('photo-match.js did not load. Refresh the page.');
+    pm.files = pmCollect(); if (!pm.files.length) throw Error('Choose some photos or a photo folder first.');
+    const prods = (A().products || []).filter(p => !$('pmOnlyMissing').checked || !p.image);
+    if (!prods.length) throw Error('Every product already has a photo. Untick “Only products that don\'t have a photo yet” to replace photos.');
+    const res = MCMatch.match(prods.map(p => ({ key: p.id, name: p.name, barcode: p.barcode, sku: p.sku, posProductId: p.pos_product_id })), pm.files);
+    pm.rows = prods.map((p, idx) => { const m = res.byItem.get(p.id); return { idx, p, file: m ? m.file : null, score: m ? m.score : 0, level: m ? m.level : '', reason: m ? m.reason : '', ranked: res.rank(p.id), selected: !!(m && m.level === 'auto'), manual: false, saved: false }; })
+      .sort((a, b) => (b.file ? 1 : 0) - (a.file ? 1 : 0) || b.score - a.score);
+    pm.rows.forEach((r, i) => r.idx = i);
+    pmRender();
+    toast(`Matched ${pm.rows.filter(r => r.file).length} of ${pm.files.length} photos. Green = sure, orange = please check.`);
+  });
+  $('pmGrid') && $('pmGrid').addEventListener('change', e => {
+    const sel = e.target.closest('[data-pm-sel]'); if (sel) { pm.rows[Number(sel.dataset.pmSel)].selected = sel.checked; pmRender(); return; }
+    const pick = e.target.closest('[data-pm-pick]'); if (!pick) return;
+    const r = pm.rows[Number(pick.dataset.pmPick)], fi = Number(pick.value), file = fi < 0 ? null : pm.files[fi];
+    if (file) pm.rows.forEach(o => { if (o !== r && o.file === file && !o.saved) { o.file = null; o.selected = false; o.level = ''; } }); // one photo = one product
+    const hit = r.ranked.find(x => x.fileIndex === fi);
+    Object.assign(r, { file, manual: true, selected: !!file, score: hit ? hit.score : r.score });
+    pmRender();
+  });
+  on('pmAll', () => { const all = pm.rows.filter(r => r.file && !r.saved).every(r => r.selected); pm.rows.forEach(r => { if (r.file && !r.saved) r.selected = !all; }); pmRender(); });
+  on('pmSave', async () => {
+    const chosen = pm.rows.filter(r => r.selected && r.file && !r.saved); if (!chosen.length) return;
+    const replacing = chosen.filter(r => r.p.image).length;
+    if (!confirm(`Save ${chosen.length} photo(s)${replacing ? ` (${replacing} will replace an existing photo — originals stay in storage)` : ''}?`)) return;
+    pm.busy = true; pmRender(); let ok = 0, failed = 0;
+    for (let i = 0; i < chosen.length; i++) {
+      const r = chosen[i];
+      try { await A().replaceProductImage(r.p.id, r.file); r.saved = true; r.selected = false; ok++; } catch (e) { failed++; r.reason = 'Failed: ' + e.message; }
+      $('pmBar').style.width = Math.round(100 * (i + 1) / chosen.length) + '%'; toast(`Saving photos ${i + 1}/${chosen.length}…`);
+    }
+    pm.busy = false; pmRender(); await A().loadProducts();
+    toast(`${ok} photo(s) saved${failed ? ', ' + failed + ' failed' : ''}. Tip: use Photo Studio below to make them look professional.`, failed > 0);
+  });
 
   // admin.html may have finished loading the business before this file arrived.
   if (window.MCAdmin && window.MCAdmin.biz) onReady();

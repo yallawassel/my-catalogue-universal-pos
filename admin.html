@@ -190,7 +190,7 @@
 <p class="hint">New to the system? Download the simple product template, fill in Product Name, Category, Unit and Price, then upload it here. Barcode, SKU and POS Product ID are optional for ordinary catalogue products. Blank price cells are ignored in price-only mode. Existing images are always preserved unless you explicitly select a replacement photo.</p>
 <div class="grid">
   <div><label>1. Excel or CSV file</label><input id="bulkSheet" type="file" accept=".xlsx,.xls,.csv,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"></div>
-  <div><label>2. Product photos (select multiple)</label><input id="bulkPhotos" type="file" accept="image/*" multiple><div class="hint">You can select many photos at once. On some phones, select them from Files or Gallery.</div></div>
+  <div><label>2. Product photos (select multiple)</label><input id="bulkPhotos" type="file" accept="image/*" multiple><label for="bulkPhotoFolder" style="margin-top:8px">…or a whole photo folder (computer)</label><input id="bulkPhotoFolder" type="file" webkitdirectory directory multiple><div class="hint">🧠 Smart matching links each photo to its product automatically — by barcode, SKU or POS ID in the file name, the photo name written in Excel, or a similar product name (English, French &amp; Arabic, sizes like 8oz / 750cc must agree). You review every match before importing.</div><label style="display:flex;gap:8px;align-items:center;font-weight:600;margin-top:8px"><input id="bulkReplacePhotos" type="checkbox" style="width:auto"> Also replace photos of products that already have one</label></div>
 </div>
 <div class="row" style="margin-top:12px">
   <button class="btn" id="downloadProductTemplate" type="button">Download simple product template</button>
@@ -203,6 +203,12 @@
   <button class="btn" id="selectAllRows" type="button">Select all rows</button>
   <button class="btn" id="clearRowSelection" type="button">Clear selection</button>
 </div>
+<div class="row" style="margin-top:8px">
+  <button class="btn" id="acceptPhotoSuggestions" type="button">✅ Accept all photo suggestions</button>
+  <button class="btn" id="dropUncertainPhotos" type="button">Remove uncertain photos</button>
+  <button class="btn" id="rematchPhotos" type="button">🧠 Re-run smart photo matching</button>
+</div>
+<div id="bulkPhotoSummary" class="hint" style="margin-top:8px" aria-live="polite"></div>
 <p class="hint">For safety, only rows with a barcode are selected automatically. Rows without a barcode can still be selected manually after review.</p>
 <div id="bulkSummary" class="hint" style="margin-top:10px" aria-live="polite"></div>
 <div id="bulkPreview" style="overflow-x:auto;margin-top:12px"></div>
@@ -210,6 +216,7 @@
  <div style="max-width:900px;margin:20px auto;background:#fff;border-radius:16px;padding:16px">
   <div class="row" style="align-items:center"><h2 style="flex:2">Choose product photo</h2><button class="btn danger" id="closePhotoPicker" type="button">Close</button></div>
   <p id="photoPickerFor" class="hint"></p>
+  <input id="photoPickerSearch" type="search" placeholder="Search photo file names…" style="margin-bottom:12px">
   <div id="photoGallery" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px"></div>
  </div>
 </div>
@@ -371,6 +378,7 @@
  <div class="mc-grid-3">
   <div class="mc-feature" style="--c:#f59e0b"><h3><span class="ic">🔄</span>Excel / CSV import</h3><p>Add new products or update prices from a spreadsheet or POS export, with photo matching.</p><button class="btn primary" type="button" data-page="sync">Open Excel import</button></div>
   <div class="mc-feature" style="--c:#7c3aed"><h3><span class="ic">♻️</span>Restore JSON backup</h3><p>Adds products and category photos from a backup file. Existing products are never deleted.</p><button class="btn" type="button" id="dcRestoreJson">Choose backup file</button></div>
+  <div class="mc-feature" style="--c:#0ea5e9"><h3><span class="ic">🧠</span>Smart photo matching</h3><p>Upload a folder of photos — each one is linked to the right product automatically.</p><button class="btn" type="button" id="dcMatchPhotos">Match photos to products</button></div>
   <div class="mc-feature" style="--c:#f43f5e"><h3><span class="ic">🔌</span>Automatic POS feed</h3><p>Let your POS push products and prices automatically on a schedule.</p><button class="btn" type="button" data-page="connector">Set up connector</button></div>
  </div>
  <h3 style="margin:22px 0 10px">📥 Templates</h3>
@@ -380,6 +388,19 @@
 <section class="panel" data-page-id="studio" id="photoStudioPanel">
  <div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:flex-start">
   <div><h2>📸 Photo Studio <span class="pill ok">Free · unlimited</span></h2><p class="hint" style="margin:0;max-width:720px">Automatically turns ordinary phone photos into clean, professional catalogue photos: removes plain backgrounds, centres and frames the product, balances light and colour, and adds a soft studio shadow. Everything runs in your browser — no credits used.</p></div>
+ </div>
+ <div class="mc-card" id="pmCard" style="margin-top:16px;border:2px solid #c4b5fd;background:linear-gradient(135deg,#faf7ff,#fff)">
+  <h3>🧠 Smart photo matcher — add photos to existing products</h3>
+  <p class="hint" style="margin-top:-4px">Select many photos (or a whole folder). Each photo is matched to the right product automatically by barcode / SKU / POS ID in the file name or by a similar product name (Arabic &amp; English). Review, change any match, then save.</p>
+  <div class="grid">
+   <div><label for="pmFiles">Photos</label><input id="pmFiles" type="file" accept="image/*" multiple></div>
+   <div><label for="pmFolder">…or a whole folder (computer)</label><input id="pmFolder" type="file" webkitdirectory directory multiple></div>
+  </div>
+  <label style="display:flex;gap:8px;align-items:center;font-weight:600;margin-top:10px"><input id="pmOnlyMissing" type="checkbox" checked style="width:auto"> Only products that don't have a photo yet</label>
+  <div class="row" style="margin-top:12px"><button class="btn primary" type="button" id="pmRun">🧠 Match photos</button><button class="btn success" type="button" id="pmSave" disabled>✅ Save selected</button><button class="btn ghost" type="button" id="pmAll">Select all</button></div>
+  <div id="pmSummary" class="hint" style="margin:10px 0" aria-live="polite"></div>
+  <div class="mc-bar" style="margin-bottom:12px"><i id="pmBar"></i></div>
+  <div id="pmGrid" class="mc-studio-grid"></div>
  </div>
  <div class="mc-grid-2" style="margin-top:16px">
   <div class="mc-card">
@@ -584,7 +605,7 @@ $('signOut').onclick=async()=>{await sb.auth.signOut();biz=null;products=[];awai
 $('pPhoto').addEventListener('change',()=>{if($('pPhoto').files[0])setStatus('Photo selected. It will be optimized when you save the product.')});
 function resetProduct(){$('productId').value='';$('pName').value='';$('pCategory').value='Products';$('pBarcode').value='';$('pSku').value='';$('pPosId').value='';$('pPhoto').value='';$('pLabel1').value='Box';$('pPrice1').value='';$('pLabel2').value='';$('pPrice2').value='';$('pDescription').value='';$('pSortOrder').value=String(products.filter(p=>(String(p.category||'Products').trim()||'Products')===(String($('pCategory').value||'').trim()||'Products')).length+1);$('productTitle').textContent='Add a product';$('saveProduct').textContent='Save product'}$('pCategory').addEventListener('change',()=>{if(!$('productId').value)$('pSortOrder').value=String(products.filter(p=>(String(p.category||'Products').trim()||'Products')===(String($('pCategory').value||'').trim()||'Products')).length+1)});$('cancelProduct').onclick=resetProduct;
 $('dismissProductGettingStarted').onclick=()=>{if(biz)localStorage.setItem('mc-product-onboarding-dismissed-'+biz.id,'1');$('productGettingStarted').classList.add('hidden')};
-async function loadProducts(){setStatus('Loading products…');const r=await sb.from('mc_saas_products').select('*').eq('business_id',biz.id).order('sort_order').order('name');if(r.error)throw r.error;products=r.data||[];productsShown=PRODUCT_BATCH_SIZE;renderProducts();const gettingStarted=$('productGettingStarted');if(gettingStarted){const dismissed=localStorage.getItem('mc-product-onboarding-dismissed-'+biz.id)==='1';gettingStarted.classList.toggle('hidden',products.length>0||dismissed)}}
+async function loadProducts(){setStatus('Loading products…');const r=await MC.fetchAll(()=>sb.from('mc_saas_products').select('*').eq('business_id',biz.id).order('sort_order').order('name').order('id'));if(r.error)throw r.error;products=r.data||[];productsShown=PRODUCT_BATCH_SIZE;renderProducts();const gettingStarted=$('productGettingStarted');if(gettingStarted){const dismissed=localStorage.getItem('mc-product-onboarding-dismissed-'+biz.id)==='1';gettingStarted.classList.toggle('hidden',products.length>0||dismissed)}}
 // Product numbering is independent inside each category. Category order is stored separately.
 async function saveProductAtOrder(productId, requestedOrder, extraPayload={}){
  const moving=products.find(p=>String(p.id)===String(productId));
@@ -776,23 +797,27 @@ function mapBulkRow(raw,i){
   const photoName=/^https?:\/\//i.test(photoCell)?'':photoCell;
   return {rowNo:i+2,name,category,barcode,sku,posProductId,label1,price1,label2,price2,hasPrice1,hasPrice2,hasLabel2,description,photoName,imageUrl,sortOrder,photo:null,matchType:'',selected:products.length===0?!!name:!!barcode,problem:''};
 }
-function photoScore(row,file){
- const fn=normBulk(file.name), name=normBulk(row.name), code=normBulk(row.barcode);
- if(row.photoName && normBulk(row.photoName)===fn)return 120;
- if(code && fn===code)return 115;
- if(name && fn===name)return 110;
- if(code && fn.includes(code))return 95;
- if(name && fn.includes(name))return 90;
- const a=new Set(name.split(' ').filter(t=>t.length>1)), b=new Set(fn.split(' ').filter(t=>t.length>1));
- if(!a.size||!b.size)return 0;
- const overlap=[...a].filter(t=>b.has(t)).length;
- return Math.round(70*overlap/a.size);
+function photoScore(row,file){ // used by the photo picker ranking
+ if(window.MCMatch)return Math.round(100*MCMatch.scorePair({name:row.name,barcode:row.barcode,sku:row.sku,posProductId:row.posProductId,photoName:row.photoName},file).score);
+ const fn=normBulk(file.name),name=normBulk(row.name);return name&&fn.includes(name)?90:0;
 }
-function autoMatchPhoto(row){
- if(!bulkState.photos.length)return;
- const ranked=bulkState.photos.map(file=>({file,score:photoScore(row,file)})).sort((a,b)=>b.score-a.score);
- if(ranked[0]?.score>=70){row.photo=ranked[0].file;row.matchType=ranked[0].score>=90?'Likely match':'Possible match'}
- else {row.photo=null;row.matchType='Choose photo'}
+function bulkKeepsExistingPhoto(row){const m=findSyncMatch(row).product;return !!(m&&m.image&&!$('bulkReplacePhotos').checked)}
+function autoMatchAllPhotos(){
+ const rows=bulkState.rows;rows.forEach(r=>{if(!r.photoManual){r.photo=null;r.photoMatch=null}});
+ if(!bulkState.photos.length||!rows.length){updatePhotoSummary();return}
+ if(!window.MCMatch){setStatus('Smart photo matching did not load. Refresh the page.',true);return}
+ const manualFiles=new Set(rows.filter(r=>r.photoManual&&r.photo).map(r=>r.photo));
+ const files=bulkState.photos.filter(f=>!manualFiles.has(f));
+ const items=[];rows.forEach((r,i)=>{if(r.photoManual||r.imageUrl||bulkKeepsExistingPhoto(r))return;items.push({key:i,name:r.name,barcode:r.barcode,sku:r.sku,posProductId:r.posProductId,photoName:r.photoName})});
+ const res=MCMatch.match(items,files);
+ res.byItem.forEach((m,i)=>{rows[i].photo=m.file;rows[i].photoMatch={score:m.score,level:m.level,reason:m.reason}});
+ updatePhotoSummary();
+}
+function updatePhotoSummary(){
+ const rows=bulkState.rows,used=new Set(rows.filter(r=>r.photo).map(r=>r.photo));
+ const auto=rows.filter(r=>r.photo&&r.photoMatch&&r.photoMatch.level==='auto').length,check=rows.filter(r=>r.photo&&r.photoMatch&&r.photoMatch.level==='check').length,manual=rows.filter(r=>r.photo&&r.photoManual).length,none=rows.filter(r=>!r.photo&&!r.imageUrl).length;
+ const el=$('bulkPhotoSummary');if(!el)return;
+ el.innerHTML=bulkState.photos.length?`📸 <b>${bulkState.photos.length}</b> photos · <b style="color:#047857">${auto}</b> matched automatically · <b style="color:#b45309">${check}</b> to check · ${manual} chosen by you · ${none} products without photo · ${bulkState.photos.length-used.size} photos not used`:'';
 }
 function loadXlsxReader(){return new Promise((resolve,reject)=>{if(window.XLSX){resolve(window.XLSX);return}const sources=['https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js','https://unpkg.com/xlsx@0.18.5/dist/xlsx.full.min.js','https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js'];let index=0;const next=()=>{if(window.XLSX){resolve(window.XLSX);return}if(index>=sources.length){reject(new Error('Excel reader could not load. Refresh the page or import a CSV file.'));return}const s=document.createElement('script');s.src=sources[index++];s.async=true;s.onload=()=>window.XLSX?resolve(window.XLSX):next();s.onerror=next;document.head.appendChild(s)};next()})}
 function setBulkSummary(message){$('bulkSummary').textContent=message}
@@ -810,25 +835,30 @@ function renderBulkPreview(){
  const rows=bulkState.rows;
  rows.forEach(r=>{r.problem=[r.price1,r.price2].some(v=>v!==null&&(!Number.isFinite(v)||v<0))?'Invalid price':'';const m=findSyncMatch(r);r.match=m.product||null;r.matchType=m.type;if(m.ambiguous)r.problem=m.type+' — resolve manually';else if($('syncMode').value==='price'&&!m.product)r.problem='No existing match — price-only mode cannot add products';});
  if(!rows.length){$('bulkPreview').innerHTML='';return}
- $('bulkPreview').innerHTML=`<table style="width:100%;min-width:850px;border-collapse:collapse;font-size:13px"><thead><tr><th style="text-align:left;padding:8px">Import</th><th style="text-align:left;padding:8px">Product / details</th><th style="text-align:left;padding:8px">Prices</th><th style="text-align:left;padding:8px">Photo match</th><th style="text-align:left;padding:8px">Order</th><th style="text-align:left;padding:8px">Status</th></tr></thead><tbody>${rows.map((r,i)=>`<tr style="border-top:1px solid #e5e7eb"><td style="padding:8px"><input type="checkbox" data-bulk-select="${i}" ${r.selected?'checked':''} style="width:auto"></td><td style="padding:8px"><b>${esc(r.name||'(Missing name)')}</b><br><small>${esc(r.category)} · ${esc(r.barcode||r.sku||'No barcode/SKU')}</small><br><small>${r.match?'Matched by '+esc(r.matchType)+' · catalogue name kept: '+esc(r.match.name):esc(r.matchType||'')}</small><br><small>${esc(r.description)}</small></td><td style="padding:8px">${esc(r.label1)}: ${r.price1===null?'—':esc(r.price1)}<br>${esc(r.label2)}: ${r.price2===null?'—':esc(r.price2)}</td><td style="padding:8px;min-width:190px">${r.photo?`<img src="${URL.createObjectURL(r.photo)}" alt="" style="display:block;width:100px;height:86px;object-fit:contain;background:#f5f7f5;border:1px solid #dce4dd;border-radius:8px;margin-bottom:6px">`:''}<button class="btn" type="button" data-choose-photo="${i}">${r.photo?'Change photo':'Choose photo'}</button><small style="display:block;margin-top:5px">${r.photo?esc(r.photo.name):'No photo selected'}</small></td><td style="padding:8px">${r.sortOrder+1}</td><td style="padding:8px">${esc(r.problem||r.matchType||'Ready')}</td></tr>`).join('')}</tbody></table>`;
+ $('bulkPreview').innerHTML=`<table style="width:100%;min-width:850px;border-collapse:collapse;font-size:13px"><thead><tr><th style="text-align:left;padding:8px">Import</th><th style="text-align:left;padding:8px">Product / details</th><th style="text-align:left;padding:8px">Prices</th><th style="text-align:left;padding:8px">Photo match</th><th style="text-align:left;padding:8px">Order</th><th style="text-align:left;padding:8px">Status</th></tr></thead><tbody>${rows.map((r,i)=>`<tr style="border-top:1px solid #e5e7eb"><td style="padding:8px"><input type="checkbox" data-bulk-select="${i}" ${r.selected?'checked':''} style="width:auto"></td><td style="padding:8px"><b>${esc(r.name||'(Missing name)')}</b><br><small>${esc(r.category)} · ${esc(r.barcode||r.sku||'No barcode/SKU')}</small><br><small>${r.match?'Matched by '+esc(r.matchType)+' · catalogue name kept: '+esc(r.match.name):esc(r.matchType||'')}</small><br><small>${esc(r.description)}</small></td><td style="padding:8px">${esc(r.label1)}: ${r.price1===null?'—':esc(r.price1)}<br>${esc(r.label2)}: ${r.price2===null?'—':esc(r.price2)}</td><td style="padding:8px;min-width:190px">${r.photo?`<img src="${window.MCMatch?MCMatch.thumb(r.photo):URL.createObjectURL(r.photo)}" alt="" style="display:block;width:100px;height:86px;object-fit:contain;background:#f5f7f5;border:1px solid #dce4dd;border-radius:8px;margin-bottom:6px">`:''}${photoBadge(r)}<button class="btn" type="button" data-choose-photo="${i}">${r.photo?'Change photo':'Choose photo'}</button><small style="display:block;margin-top:5px;overflow-wrap:anywhere">${r.photo?esc(r.photo.name):(r.imageUrl?'Photo URL from Excel':(bulkKeepsExistingPhoto(r)?'Keeps current catalogue photo':'No photo selected'))}</small></td><td style="padding:8px">${r.sortOrder+1}</td><td style="padding:8px">${esc(r.problem||r.matchType||'Ready')}</td></tr>`).join('')}</tbody></table>`;
  $('bulkPreview').querySelectorAll('[data-choose-photo]').forEach(btn=>btn.onclick=()=>openPhotoPicker(Number(btn.dataset.choosePhoto)));
  $('bulkPreview').querySelectorAll('[data-bulk-select]').forEach(cb=>cb.onchange=()=>{bulkState.rows[Number(cb.dataset.bulkSelect)].selected=cb.checked;updateBulkCount()});
  $('runBulkImport').disabled=!rows.some(r=>r.selected&&!r.problem);
 }
+function photoBadge(r){if(!r.photo)return'';if(r.photoManual)return '<span class="pill" style="display:inline-block;margin-bottom:6px">✋ Chosen by you</span>';const m=r.photoMatch;if(!m)return'';const pct=Math.round(m.score*100);return m.level==='auto'?`<span class="pill ok" style="display:inline-block;margin-bottom:6px" title="${esc(m.reason)}">✅ ${pct}% · ${esc(m.reason)}</span>`:`<span class="pill warn" style="display:inline-block;margin-bottom:6px" title="Please check">🟡 ${pct}% · check</span>`}
 function openPhotoPicker(rowIndex){
  photoPickerRow=rowIndex;
  const row=bulkState.rows[rowIndex];
  $('photoPickerFor').textContent='Choose a photo for: '+row.name;
  const current=bulkState.photos.indexOf(row.photo);
- $('photoGallery').innerHTML=`<button type="button" class="btn" data-gallery-photo="-1" style="min-height:150px">No photo</button>`+bulkState.photos.map((f,i)=>`<button type="button" data-gallery-photo="${i}" class="btn" style="background:${i===current?'#d8eee3':'#f4f7f4'};color:#173f35;padding:8px;min-width:0"><img src="${URL.createObjectURL(f)}" alt="" style="width:100%;height:105px;object-fit:contain;background:#fff;border-radius:7px"><span style="display:block;font-size:12px;overflow-wrap:anywhere;margin-top:6px">${esc(f.name)}</span></button>`).join('');
- $('photoPicker').classList.remove('hidden');
+ const usedBy=new Map();bulkState.rows.forEach((r,ri)=>{if(r.photo&&ri!==rowIndex)usedBy.set(r.photo,r.name)});
+ const ranked=bulkState.photos.map((f,i)=>({f,i,score:photoScore(row,f)})).sort((a,b)=>b.score-a.score);
+ const drawGallery=()=>{const q=(window.MCMatch?MCMatch.normalize($('photoPickerSearch').value):$('photoPickerSearch').value.toLowerCase());
+ $('photoGallery').innerHTML=`<button type="button" class="btn" data-gallery-photo="-1" style="min-height:150px">No photo</button>`+ranked.filter(x=>!q||(window.MCMatch?MCMatch.normalize(x.f.name):x.f.name.toLowerCase()).includes(q)).slice(0,300).map(({f,i,score})=>`<button type="button" data-gallery-photo="${i}" class="btn" style="background:${i===current?'#e9dcff':'#f6f5fd'};color:#1b1740;padding:8px;min-width:0;flex-direction:column;align-items:stretch;position:relative"><img src="${window.MCMatch?MCMatch.thumb(f):URL.createObjectURL(f)}" alt="" style="width:100%;height:105px;object-fit:contain;background:#fff;border-radius:7px">${score>=30?`<span style="position:absolute;top:10px;left:10px;background:${score>=80?'#059669':score>=55?'#d97706':'#6b6890'};color:#fff;border-radius:999px;padding:2px 7px;font-size:11px">${score}%</span>`:''}<span style="display:block;font-size:12px;overflow-wrap:anywhere;margin-top:6px">${esc(f.name)}</span>${usedBy.has(f)?`<small style="color:#b45309">used by ${esc(usedBy.get(f))}</small>`:''}</button>`).join('');
  $('photoGallery').querySelectorAll('[data-gallery-photo]').forEach(btn=>btn.onclick=()=>{
-  const n=Number(btn.dataset.galleryPhoto);
-  bulkState.rows[photoPickerRow].photo=n<0?null:bulkState.photos[n];
-  bulkState.rows[photoPickerRow].matchType=n<0?'No photo':'Manually selected';
+  const n=Number(btn.dataset.galleryPhoto),row2=bulkState.rows[photoPickerRow],file=n<0?null:bulkState.photos[n];
+  if(file)bulkState.rows.forEach((r,ri)=>{if(ri!==photoPickerRow&&r.photo===file){r.photo=null;r.photoMatch=null;r.photoManual=false}});
+  row2.photo=file;row2.photoManual=true;row2.photoMatch=null;
   $('photoPicker').classList.add('hidden');
-  renderBulkPreview();updateBulkCount();
- });
+  renderBulkPreview();updateBulkCount();updatePhotoSummary();
+ })};
+ $('photoPickerSearch').value='';$('photoPickerSearch').oninput=drawGallery;drawGallery();
+ $('photoPicker').classList.remove('hidden');
 }
 $('closePhotoPicker').onclick=()=>$('photoPicker').classList.add('hidden');
 function updateBulkCount(){const selected=bulkState.rows.filter(r=>r.selected&&!r.problem).length,matched=bulkState.rows.filter(r=>r.selected&&r.match&&!r.problem).length,newRows=bulkState.rows.filter(r=>r.selected&&!r.match&&!r.problem).length;setBulkSummary(`${bulkState.rows.length} rows · ${matched} existing products to update · ${newRows} new products · ${selected} selected. Check the match status and authorize the preview before syncing.`);$('runBulkImport').disabled=selected===0||bulkState.busy||!$('syncConfirm').checked}
@@ -836,22 +866,28 @@ $('syncConfirm').addEventListener('change',updateBulkCount);
 $('syncMode').addEventListener('change',()=>{if(bulkState.rows.length){bulkState.rows.forEach(r=>r.problem='');renderBulkPreview();updateBulkCount()}});
 $('downloadPosTemplate').onclick=async()=>{try{const XLSX=await loadXlsxReader();const wb=XLSX.utils.book_new();const rows=[{'POS Product ID':'','Product Name':'Example product','Barcode':'1234567890123','SKU':'SKU-001','Category':'Products','Label1':'Box','Price1':10,'Label2':'Packet','Price2':2,'Description':'Optional details'}];const ws=XLSX.utils.json_to_sheet(rows);XLSX.utils.book_append_sheet(wb,ws,'POS Products');XLSX.writeFile(wb,'my-catalogue-pos-sync-template.xlsx');setStatus('POS synchronization template downloaded. Replace the example row with your POS export.')}catch(e){setStatus('Could not create template: '+e.message,true)}};
 $('downloadProductTemplate').onclick=async()=>{try{const XLSX=await loadXlsxReader();const wb=XLSX.utils.book_new();const headers=['Product Name','Category','Barcode','SKU','POS Product ID','Label1','Price1','Label2','Price2','Description','Photo URL','Display Order'];const ws=XLSX.utils.aoa_to_sheet([headers]);ws['!cols']=[{wch:28},{wch:20},{wch:18},{wch:18},{wch:20},{wch:16},{wch:12},{wch:16},{wch:12},{wch:36},{wch:42},{wch:14}];XLSX.utils.book_append_sheet(wb,ws,'Products');const guide=XLSX.utils.aoa_to_sheet([['MY CATALOGUE — PRODUCT IMPORT GUIDE'],['Required','Product Name'],['Recommended','Category, Label1, Price1'],['Optional','Barcode, SKU, POS Product ID, Label2, Price2, Description, Photo URL, Display Order'],['Units','Label1 is the required base selling unit. Label2 is optional; leave it blank for a single-unit product. After importing, configure additional units, unit barcodes and conversion factors in Admin → Stock Management after the Hybrid Stock migration is installed.'],['Photos','Use a public HTTPS Photo URL or upload multiple image files separately in Product Import & Sync and match them during preview.'],['Safety','The importer never matches by product name. Existing products match by Barcode, POS Product ID, then SKU. Review the preview before confirming.'],['Stock','Do not enter stock quantities in this simple template. Configure stock separately after unit conversions are verified.']]);XLSX.utils.book_append_sheet(wb,guide,'Instructions');const example=XLSX.utils.aoa_to_sheet([headers,['Sample paper bag','Packaging','','','', 'Piece',1.5,'Pack of 10',12,'Kraft paper bag','','1']]);XLSX.utils.book_append_sheet(wb,example,'Example');XLSX.writeFile(wb,'my-catalogue-product-template.xlsx');setStatus('Simple product template downloaded. Fill the Products sheet and upload it for preview.')}catch(e){setStatus('Could not create product template: '+e.message,true)}};
-$('bulkPhotos').addEventListener('change',()=>{bulkState.photos=Array.from($('bulkPhotos').files||[]);if(bulkState.rows.length){bulkState.rows.forEach(autoMatchPhoto);renderBulkPreview();updateBulkCount()}setStatus(`${bulkState.photos.length} photo(s) selected.`,false)});
+function collectBulkPhotos(){const isImg=f=>/^image\//.test(f.type)||/\.(jpe?g|png|webp|gif|bmp|heic|heif|avif)$/i.test(f.name);const seen=new Set();return [...Array.from($('bulkPhotos').files||[]),...Array.from(($('bulkPhotoFolder')&&$('bulkPhotoFolder').files)||[])].filter(f=>isImg(f)&&!seen.has(f.name+'|'+f.size)&&seen.add(f.name+'|'+f.size))}
+const onBulkPhotosChanged=()=>{bulkState.photos=collectBulkPhotos();bulkState.rows.forEach(r=>{if(r.photoManual&&!bulkState.photos.includes(r.photo)){r.photoManual=false;r.photo=null}});if(bulkState.rows.length){autoMatchAllPhotos();renderBulkPreview();updateBulkCount()}setStatus(`${bulkState.photos.length} photo(s) ready.`+(bulkState.rows.length?' Smart matching done — review the Photo match column.':' Now choose the Excel file and press Analyze.'),false)};
+$('bulkPhotos').addEventListener('change',onBulkPhotosChanged);$('bulkPhotoFolder')&&$('bulkPhotoFolder').addEventListener('change',onBulkPhotosChanged);
+$('bulkReplacePhotos').addEventListener('change',()=>{if(bulkState.rows.length){autoMatchAllPhotos();renderBulkPreview();updateBulkCount()}});
+$('acceptPhotoSuggestions').onclick=()=>{let n=0;bulkState.rows.forEach(r=>{if(r.photo&&r.photoMatch&&r.photoMatch.level==='check'){r.photoMatch.level='auto';r.photoMatch.reason='accepted';n++}});renderBulkPreview();updatePhotoSummary();setStatus(n+' photo suggestion(s) accepted.')};
+$('dropUncertainPhotos').onclick=()=>{let n=0;bulkState.rows.forEach(r=>{if(r.photo&&r.photoMatch&&r.photoMatch.level==='check'){r.photo=null;r.photoMatch=null;n++}});renderBulkPreview();updatePhotoSummary();setStatus(n+' uncertain photo(s) removed. Choose them manually if needed.')};
+$('rematchPhotos').onclick=()=>{if(!bulkState.rows.length){setStatus('Analyze the spreadsheet first.',true);return}bulkState.rows.forEach(r=>{r.photoManual=false});autoMatchAllPhotos();renderBulkPreview();updateBulkCount();setStatus('Smart photo matching finished.')};
 $('analyzeBulk').onclick=async()=>{
  try{
   const f=$('bulkSheet').files[0];if(!f)throw Error('Choose an Excel or CSV file first.');
   const XLSX=await loadXlsxReader();
    const ab=await f.arrayBuffer(),wb=XLSX.read(ab,{type:'array'}),sheet=wb.Sheets[wb.SheetNames[0]],raw=XLSX.utils.sheet_to_json(sheet,{defval:'',raw:false});
   if(!raw.length)throw Error('The first sheet has no product rows.');
-  bulkState.photos=Array.from($('bulkPhotos').files||[]);
+  bulkState.photos=collectBulkPhotos();
   bulkState.rows=raw.map((r,i)=>mapBulkRow(r,i)).filter(r=>r.name||r.barcode||r.sku||r.posProductId);
   if(!bulkState.rows.length)throw Error('No usable product rows found. Include at least a Product Name, Barcode, SKU or POS Product ID.');
-  bulkState.rows.forEach(r=>{if([r.price1,r.price2].some(v=>v!==null&&(!Number.isFinite(v)||v<0)))r.problem='Invalid price';autoMatchPhoto(r)});$('syncConfirm').checked=false;
+  bulkState.rows.forEach(r=>{if([r.price1,r.price2].some(v=>v!==null&&(!Number.isFinite(v)||v<0)))r.problem='Invalid price'});autoMatchAllPhotos();$('syncConfirm').checked=false;
   bulkState.analyzed=true;renderBulkPreview();updateBulkCount();
   setStatus('Spreadsheet analyzed. Review photo matches before importing.');
  }catch(e){setStatus('Could not analyze spreadsheet: '+e.message,true)}
 };
-$('clearBulk').onclick=()=>{$('bulkSheet').value='';$('bulkPhotos').value='';bulkState.rows=[];bulkState.photos=[];bulkState.analyzed=false;$('bulkPreview').innerHTML='';$('runBulkImport').disabled=true;$('syncConfirm').checked=false;setBulkSummary('');setStatus('Bulk import cleared.')};
+$('clearBulk').onclick=()=>{$('bulkSheet').value='';$('bulkPhotos').value='';if($('bulkPhotoFolder'))$('bulkPhotoFolder').value='';if($('bulkPhotoSummary'))$('bulkPhotoSummary').textContent='';bulkState.rows=[];bulkState.photos=[];bulkState.analyzed=false;$('bulkPreview').innerHTML='';$('runBulkImport').disabled=true;$('syncConfirm').checked=false;setBulkSummary('');setStatus('Bulk import cleared.')};
 $('selectBarcodeRows').onclick=()=>{bulkState.rows.forEach(r=>r.selected=!!String(r.barcode||'').trim());renderBulkPreview();updateBulkCount();setStatus('Selected only rows that contain a barcode.')};
 $('selectAllRows').onclick=()=>{bulkState.rows.forEach(r=>r.selected=true);renderBulkPreview();updateBulkCount();setStatus('All import rows selected. Review them before authorizing.')};
 $('clearRowSelection').onclick=()=>{bulkState.rows.forEach(r=>r.selected=false);renderBulkPreview();updateBulkCount();setStatus('All import selections cleared.')};
@@ -1092,6 +1128,7 @@ document.dispatchEvent(new CustomEvent('mc:admin-api'));
 sessionLoad().catch(e=>setStatus(e.message,true));
 })();
 </script>
+<script src="photo-match.js"></script>
 <script src="photo-studio.js"></script>
 <script src="admin-pro.js"></script>
 </body></html>
