@@ -25,7 +25,7 @@
     return null;
   }
   // v9: never ask for private business fields (billing notes, owner id) on public pages.
-  const PUBLIC_BUSINESS_COLUMNS = 'id,company_name,slug,description,whatsapp,currency,logo_url,primary_color,catalogue_template,is_published';
+  const PUBLIC_BUSINESS_COLUMNS = 'id,company_name,slug,description,whatsapp,currency,logo_url,primary_color,catalogue_template,is_published,banner_mode,banner_product_ids,banner_video_url,banner_headline';
   // v9: Supabase returns at most 1,000 rows per request — load big catalogues page by page.
   async function fetchAll(build, pageSize = 1000) {
     let out = [];
