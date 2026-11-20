@@ -203,6 +203,7 @@
   <button class="btn" id="selectAllRows" type="button">Select all rows</button>
   <button class="btn" id="clearRowSelection" type="button">Clear selection</button>
 </div>
+<div id="bulkMapping" class="mc-card hidden" style="margin:12px 0"></div>
 <div class="row" style="margin-top:8px">
   <button class="btn" id="acceptPhotoSuggestions" type="button">✅ Accept all photo suggestions</button>
   <button class="btn" id="dropUncertainPhotos" type="button">Remove uncertain photos</button>
@@ -873,21 +874,53 @@ $('bulkReplacePhotos').addEventListener('change',()=>{if(bulkState.rows.length){
 $('acceptPhotoSuggestions').onclick=()=>{let n=0;bulkState.rows.forEach(r=>{if(r.photo&&r.photoMatch&&r.photoMatch.level==='check'){r.photoMatch.level='auto';r.photoMatch.reason='accepted';n++}});renderBulkPreview();updatePhotoSummary();setStatus(n+' photo suggestion(s) accepted.')};
 $('dropUncertainPhotos').onclick=()=>{let n=0;bulkState.rows.forEach(r=>{if(r.photo&&r.photoMatch&&r.photoMatch.level==='check'){r.photo=null;r.photoMatch=null;n++}});renderBulkPreview();updatePhotoSummary();setStatus(n+' uncertain photo(s) removed. Choose them manually if needed.')};
 $('rematchPhotos').onclick=()=>{if(!bulkState.rows.length){setStatus('Analyze the spreadsheet first.',true);return}bulkState.rows.forEach(r=>{r.photoManual=false});autoMatchAllPhotos();renderBulkPreview();updateBulkCount();setStatus('Smart photo matching finished.')};
+function renderColumnMapping(){
+ const el=$('bulkMapping'),c=bulkState.cols;if(!el||!c){if(el)el.classList.add('hidden');return}
+ const opts=sel=>'<option value="">— not in my file —</option>'+c.headers.map((h,k)=>`<option value="${esc(h)}" ${sel===k?'selected':''}>${esc(h)}${c.samples[k]?' · e.g. '+esc(String(c.samples[k]).slice(0,28)):''}</option>`).join('');
+ const important=['name','price1','barcode','category','label1'];
+ const fields=c.fields.filter(x=>x.f!=='sortOrder');
+ const nameMissing=c.mapping.name===undefined;
+ el.classList.remove('hidden');
+ el.innerHTML=`<h3 style="margin:0 0 6px">🧩 Columns found in your file</h3>
+ <p class="hint" style="margin:0 0 10px">Sheet <b>${esc(c.sheet)}</b> · column titles read from row <b>${c.headerRow+1}</b> · ${c.rows.length} data rows. ${c.mapping._nameGuessed?'<b style="color:#b45309">The product name column was guessed — please check it.</b>':''}${nameMissing?'<b style="color:#be123c">Choose which column holds the product name.</b>':''}</p>
+ <div class="grid">${c.sheetNames.length>1?`<div><label for="colSheet">Sheet</label><select id="colSheet">${c.sheetNames.map(n=>`<option ${n===c.sheet?'selected':''}>${esc(n)}</option>`).join('')}</select></div>`:''}
+ <div><label for="colHeaderRow">Row with the column titles</label><input id="colHeaderRow" type="number" min="1" value="${c.headerRow+1}"></div>
+ ${fields.map(x=>`<div><label for="col_${x.f}">${esc(x.label)}${important.includes(x.f)?' ★':''}</label><select id="col_${x.f}" data-col-field="${x.f}" style="${x.f==='name'&&(nameMissing||c.mapping._nameGuessed)?'border-color:#f59e0b!important;background:#fffbeb':''}">${opts(c.mapping[x.f])}</select></div>`).join('')}</div>
+ <div class="row" style="margin-top:12px"><button class="btn primary" type="button" id="applyColumns">✅ Apply columns &amp; analyze again</button><span class="hint">Tip: prices from cost / purchase columns are never used as selling price.</span></div>`;
+ $('applyColumns').onclick=()=>{
+  const mapping={};el.querySelectorAll('[data-col-field]').forEach(s=>mapping[s.dataset.colField]=s.value);
+  const sheet=$('colSheet')?$('colSheet').value:c.sheet,headerRow=Math.max(0,(Number($('colHeaderRow').value)||1)-1);
+  const sameLayout=sheet===c.sheet&&headerRow===c.headerRow;
+  bulkState.colOverride={file:c.file,sheet,headerRow,mapping:sameLayout?mapping:undefined};
+  $('analyzeBulk').click();
+ };
+}
+$('bulkSheet').addEventListener('change',()=>{bulkState.colOverride=null;bulkState.cols=null;const el=$('bulkMapping');if(el){el.classList.add('hidden');el.innerHTML=''}});
 $('analyzeBulk').onclick=async()=>{
  try{
   const f=$('bulkSheet').files[0];if(!f)throw Error('Choose an Excel or CSV file first.');
   const XLSX=await loadXlsxReader();
-   const ab=await f.arrayBuffer(),wb=XLSX.read(ab,{type:'array'}),sheet=wb.Sheets[wb.SheetNames[0]],raw=XLSX.utils.sheet_to_json(sheet,{defval:'',raw:false});
-  if(!raw.length)throw Error('The first sheet has no product rows.');
+  const ab=await f.arrayBuffer(),wb=XLSX.read(ab,{type:'array'});
+  const sheets=wb.SheetNames.map(name=>({name,aoa:XLSX.utils.sheet_to_json(wb.Sheets[name],{header:1,defval:'',raw:false,blankrows:true})}));
+  const ov=bulkState.colOverride&&bulkState.colOverride.file===f.name+'|'+f.size?bulkState.colOverride:null;
+  const chosen=(ov&&sheets.find(x=>x.name===ov.sheet))||(window.MCCols?MCCols.bestSheet(sheets):sheets[0]);
+  if(!window.MCCols)throw Error('Column detection did not load. Refresh the page.');
+  const cols=MCCols.read(chosen.aoa,ov&&ov.sheet===chosen.name?ov:null);
+  bulkState.cols={...cols,sheet:chosen.name,sheetNames:sheets.map(x=>x.name),file:f.name+'|'+f.size};
+  const raw=cols.rows;
+  renderColumnMapping();
+  if(!raw.length)throw Error('No product rows found under the column titles (row '+(cols.headerRow+1)+'). Check the column settings below.');
+  if(cols.mapping.name===undefined&&cols.mapping.barcode===undefined&&cols.mapping.sku===undefined&&cols.mapping.posProductId===undefined)throw Error('Could not find the product name or code columns. Choose them in “Columns found in your file” below, then press Apply.');
   bulkState.photos=collectBulkPhotos();
-  bulkState.rows=raw.map((r,i)=>mapBulkRow(r,i)).filter(r=>r.name||r.barcode||r.sku||r.posProductId);
+  bulkState.rows=raw.map((r,i)=>{const m=mapBulkRow(r,i);if(r.__row)m.rowNo=r.__row;return m}).filter(r=>r.name||r.barcode||r.sku||r.posProductId);
   if(!bulkState.rows.length)throw Error('No usable product rows found. Include at least a Product Name, Barcode, SKU or POS Product ID.');
   bulkState.rows.forEach(r=>{if([r.price1,r.price2].some(v=>v!==null&&(!Number.isFinite(v)||v<0)))r.problem='Invalid price'});autoMatchAllPhotos();$('syncConfirm').checked=false;
   bulkState.analyzed=true;renderBulkPreview();updateBulkCount();
-  setStatus('Spreadsheet analyzed. Review photo matches before importing.');
+  const noName=bulkState.rows.filter(r=>!r.name).length;
+  setStatus(noName?`Spreadsheet analyzed, but ${noName} row(s) have no product name — check “Columns found in your file”.`:`Spreadsheet analyzed: ${bulkState.rows.length} products found. Review columns and photo matches before importing.`,noName>0);
  }catch(e){setStatus('Could not analyze spreadsheet: '+e.message,true)}
 };
-$('clearBulk').onclick=()=>{$('bulkSheet').value='';$('bulkPhotos').value='';if($('bulkPhotoFolder'))$('bulkPhotoFolder').value='';if($('bulkPhotoSummary'))$('bulkPhotoSummary').textContent='';bulkState.rows=[];bulkState.photos=[];bulkState.analyzed=false;$('bulkPreview').innerHTML='';$('runBulkImport').disabled=true;$('syncConfirm').checked=false;setBulkSummary('');setStatus('Bulk import cleared.')};
+$('clearBulk').onclick=()=>{$('bulkSheet').value='';$('bulkPhotos').value='';if($('bulkPhotoFolder'))$('bulkPhotoFolder').value='';if($('bulkPhotoSummary'))$('bulkPhotoSummary').textContent='';bulkState.rows=[];bulkState.photos=[];bulkState.analyzed=false;bulkState.cols=null;bulkState.colOverride=null;if($('bulkMapping')){$('bulkMapping').classList.add('hidden');$('bulkMapping').innerHTML=''}$('bulkPreview').innerHTML='';$('runBulkImport').disabled=true;$('syncConfirm').checked=false;setBulkSummary('');setStatus('Bulk import cleared.')};
 $('selectBarcodeRows').onclick=()=>{bulkState.rows.forEach(r=>r.selected=!!String(r.barcode||'').trim());renderBulkPreview();updateBulkCount();setStatus('Selected only rows that contain a barcode.')};
 $('selectAllRows').onclick=()=>{bulkState.rows.forEach(r=>r.selected=true);renderBulkPreview();updateBulkCount();setStatus('All import rows selected. Review them before authorizing.')};
 $('clearRowSelection').onclick=()=>{bulkState.rows.forEach(r=>r.selected=false);renderBulkPreview();updateBulkCount();setStatus('All import selections cleared.')};
@@ -1128,6 +1161,7 @@ document.dispatchEvent(new CustomEvent('mc:admin-api'));
 sessionLoad().catch(e=>setStatus(e.message,true));
 })();
 </script>
+<script src="excel-columns.js"></script>
 <script src="photo-match.js"></script>
 <script src="photo-studio.js"></script>
 <script src="admin-pro.js"></script>
