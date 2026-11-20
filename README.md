@@ -1,9 +1,15 @@
-# My Catalogue PRO (v8) — Multi-business SaaS catalogue
+# My Catalogue PRO (v9) — Multi-business SaaS catalogue
+
+> **v9 (security & reliability):** see `docs/V9_AUDIT_REPORT.md`. Orders are now priced and validated by the
+> server, spam-limited, private billing fields are hidden from visitors (after `sql/V9_PHASE_B_PRIVATE_BUSINESS_COLUMNS.sql`),
+> and catalogues larger than 1,000 products load completely. Project layout: website files in the root,
+> guides in `docs/`, database scripts in `sql/`, Edge Functions in `supabase/`, Windows POS agent in `pos-agent/`.
+
 
 > **New in v8:** colourful pro design, dashboard, upgraded sign-in (magic link, strength meter),
 > Import & Export Center, **Live POS connector** (Windows agent for AntiSoft/SQL Server, CSV folder
 > watcher, HTTPS API), free **Photo Studio** (auto white background, framing, shadow, bulk mode) and a
-> smarter storefront. Start with **`PRO_V8_UPGRADE_GUIDE.md`**, then **`POS_CONNECTOR_GUIDE.md`**.
+> smarter storefront. Start with **`docs/PRO_V8_UPGRADE_GUIDE.md`**, then **`docs/POS_CONNECTOR_GUIDE.md`**.
 > The only new database step is `POS_CONNECTOR_V8_MIGRATION.sql` + deploying `mc-pos-connector`.
 
 
