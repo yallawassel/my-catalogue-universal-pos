@@ -355,3 +355,50 @@ body.tpl-pack .L-row{flex-wrap:wrap}
 body.tpl-pack .L-row .addbtn.L-grow{flex:1 1 100%;width:100%}
 body.tpl-pack .L-lux-col .info,body.tpl-pack .L-fa-col .info,body.tpl-pack .L-bou-cat .info{display:block}
 body.tpl-pack .L-bou-cat .name,body.tpl-pack .L-bou-cat .count{text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* =====================================================================
+   v13 — moving banner (banner.js). Works with every template.
+   ===================================================================== */
+#mcBanner:empty,#mcBanner[hidden]{display:none}
+.mcb{position:relative;margin:6px 0 16px;border-radius:var(--t-radius,20px);overflow:hidden;background:var(--t-card,#fff);border:1px solid var(--t-line,rgba(0,0,0,.06));box-shadow:0 10px 30px rgba(0,0,0,.08)}
+.mcb-track{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.mcb-track::-webkit-scrollbar{display:none}
+.mcb-slide{flex:0 0 100%;scroll-snap-align:start;display:grid;grid-template-columns:46% 1fr;align-items:center;min-height:210px;background:linear-gradient(120deg,color-mix(in srgb,var(--brand,#7c3aed) 16%,var(--t-card,#fff)),var(--t-card,#fff) 70%);color:var(--t-ink,#1b1740)}
+.mcb-img{height:100%;display:flex;align-items:center;justify-content:center;padding:14px}
+.mcb-img img{width:100%;height:100%;max-height:200px;object-fit:contain;filter:drop-shadow(0 12px 18px rgba(0,0,0,.14));animation:mcbIn .7s ease}
+.mcb-cap{padding:16px 16px 30px 6px;display:flex;flex-direction:column;align-items:flex-start;gap:6px;min-width:0}
+.mcb-head{font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--brand,#7c3aed)}
+.mcb-cap b{font-family:var(--t-title,inherit);font-size:20px;line-height:1.2;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.mcb-price{font-size:22px;font-weight:800;color:var(--brand,#7c3aed)}
+.mcb-go{border:0;background:var(--brand,#7c3aed);color:var(--t-accent-ink,#fff);border-radius:var(--t-btn-radius,999px);padding:10px 18px;font:700 13.5px var(--t-font,inherit);cursor:pointer;margin-top:4px}
+.mcb-video{display:block;position:relative;background:#000}
+.mcb-video video{display:block;width:100%;height:240px;object-fit:cover}
+.mcb-video .mcb-cap{position:absolute;inset:auto 0 0 0;padding:40px 16px 30px;background:linear-gradient(0deg,rgba(0,0,0,.7),transparent);color:#fff}
+.mcb-video .mcb-head{color:#fff;opacity:.85}
+.mcb-dots{position:absolute;left:0;right:0;bottom:10px;display:flex;justify-content:center;gap:6px}
+.mcb-dot{width:7px;height:7px;border-radius:999px;border:0;padding:0;background:color-mix(in srgb,var(--t-ink,#1b1740) 25%,transparent);cursor:pointer;transition:width .25s}
+.mcb-dot.on{width:22px;background:var(--brand,#7c3aed)}
+.mcb-video~.mcb-dots .mcb-dot{background:rgba(255,255,255,.5)}
+.mcb-nav{display:none;position:absolute;top:50%;transform:translateY(-50%);width:40px;height:40px;border-radius:50%;border:0;background:rgba(255,255,255,.92);color:#111;font-size:24px;line-height:1;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.15)}
+.mcb-nav.prev{left:10px}.mcb-nav.next{right:10px}
+@media(min-width:760px){.mcb-slide{min-height:320px;grid-template-columns:50% 1fr}.mcb-img img{max-height:300px}.mcb-cap b{font-size:30px}.mcb-price{font-size:28px}.mcb-video video{height:380px}.mcb-nav{display:block}}
+@keyframes mcbIn{from{opacity:0;transform:scale(.94)}to{opacity:1;transform:none}}
+.product.mcb-flash{outline:3px solid var(--brand,#7c3aed);outline-offset:2px;transition:outline-color 1s}
+/* template touches */
+body.template-luxury .mcb{border-radius:2px;background:#0e0e0e;border-color:#2b2620}
+body.template-luxury .mcb-slide{background:linear-gradient(120deg,#1a1712,#0e0e0e 70%);color:#f3ede2}
+body.template-luxury .mcb-img{background:#f7f3ec;margin:14px;height:auto;align-self:stretch}
+body.template-luxury .mcb-cap b{text-transform:uppercase;letter-spacing:.08em;font-weight:500}
+body.template-luxury .mcb-go{background:transparent;border:1px solid var(--brand);color:var(--brand);border-radius:0;text-transform:uppercase;letter-spacing:.14em;font-size:11px}
+body.template-fashion .mcb{border-radius:0;border:0;box-shadow:none;margin-left:-12px;margin-right:-12px}
+body.template-fashion .mcb-slide{background:#f4f4f4}
+body.template-fashion .mcb-cap b{text-transform:uppercase;letter-spacing:.1em;font-weight:500}
+body.template-fashion .mcb-go{background:#111;border-radius:0;text-transform:uppercase;letter-spacing:.12em}
+body.template-electronics .mcb{background:#0b1220;border-color:#1e2a44}
+body.template-electronics .mcb-slide{background:radial-gradient(circle at 25% 50%,color-mix(in srgb,var(--brand) 22%,transparent),transparent 60%),#0f1a30;color:#e6edf7}
+body.template-electronics .mcb-img img{background:#fff;border-radius:14px;padding:8px}
+body.template-supermarket .mcb-price{background:#ffd60a;color:#1d1d1f;border-radius:8px;padding:2px 10px}
+body.template-chocolate .mcb-slide{background:linear-gradient(120deg,#3b2418,#5a3826 70%);color:#f6efe6}
+body.template-chocolate .mcb-head,body.template-chocolate .mcb-price{color:#e2c48a}
+body.template-premium .mcb{background:#1f2937;border-color:#374151}
+body.template-premium .mcb-slide{color:#f9fafb;background:linear-gradient(120deg,color-mix(in srgb,var(--brand) 30%,#1f2937),#1f2937 70%)}
