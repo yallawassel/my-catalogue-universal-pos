@@ -323,7 +323,7 @@
 <label class="av-opt"><input type="checkbox" id="avQty"><span><b>Show how many are left</b><small>e.g. "12 in stock"</small></span></label>
 <label class="av-opt av-low"><span><b>Low stock warning at</b><small>0 = off</small></span><input type="number" id="avLow" min="0" step="1" value="0"></label>
 </div>
-<div class="av-tools">
+<div class="av-auto"><label class="av-opt av-auto-opt"><input type="checkbox" id="avAuto"><span><b>🔁 Reduce stock automatically with online orders</b><small>A new order holds the stock right away (customers can't buy what's already ordered). When you mark the order <b>Delivered</b> it leaves your stock; <b>Cancelled</b> gives it back.</small></span></label><div id="avUnits"></div></div><div class="av-tools">
 <input id="avSearch" type="search" placeholder="Search products">
 <select id="avFilter"><option value="all">All products</option><option value="out_of_stock">Sold out</option><option value="low_stock">Low stock</option><option value="in_stock">In stock</option><option value="unknown">Stock not tracked</option></select>
 <span class="av-sum" id="avSum"></span>
