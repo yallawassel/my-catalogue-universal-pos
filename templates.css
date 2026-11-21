@@ -434,3 +434,15 @@ body.template-wholesale .mc-sale-badge{top:2px;left:2px;font-size:10px;padding:3
 .L-fab.mc-out-btn:after{content:'✕';font-size:16px}
 body.template-luxury .mc-stock-tag,body.template-fashion .mc-stock-tag{transform:translate(-50%,-50%);border-radius:0;font-weight:600;letter-spacing:.2em}
 body.template-electronics .addbtn.mc-out-btn,body.template-luxury .addbtn.mc-out-btn,body.template-premium .addbtn.mc-out-btn{background:#1f2937!important;color:#9ca3af!important;border-color:#374151!important}
+
+/* =====================================================================
+   v16 — price on request (quote.js)
+   ===================================================================== */
+.mc-quote-note{font-size:13px;font-weight:700;color:var(--brand,#7c3aed);margin:6px 0}
+.mc-quote-acts{display:flex;flex-direction:column;gap:6px;margin-top:8px;grid-column:1/-1}
+.addbtn.mc-quote-btn{background:transparent!important;color:var(--brand,#7c3aed)!important;border:1.5px dashed var(--brand,#7c3aed)!important;box-shadow:none!important;width:100%;margin:0!important}
+.addbtn.mc-quote-btn:hover{background:color-mix(in srgb,var(--brand,#7c3aed) 10%,transparent)!important}
+.mc-ask{display:block;text-align:center;font-size:12.5px;font-weight:700;color:#15803d;text-decoration:none;padding:4px}
+.mc-ask:before{content:'';display:inline-block;width:8px;height:8px;border-radius:50%;background:#22c55e;margin-right:6px;vertical-align:1px}
+.mc-q{color:var(--brand,#7c3aed)}
+body.template-luxury .addbtn.mc-quote-btn,body.template-fashion .addbtn.mc-quote-btn{border-style:solid!important;border-radius:0!important;text-transform:uppercase;letter-spacing:.12em;font-size:11px}

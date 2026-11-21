@@ -337,3 +337,11 @@ body.mc-admin #resetPanel,body.mc-admin #createPanel{max-width:560px;margin:60px
 .av-form{margin:14px 0 0;max-width:420px}
 @media(max-width:900px){.av-row{grid-template-columns:30px 1fr}.av-head{display:none}.av-count,.av-seg{grid-column:2}}
 .av-bulk[hidden]{display:none}
+.av-auto{margin:0 0 14px}
+.av-auto-opt{border-color:#c7d2fe;background:#eef2ff}
+.av-auto-opt b b,.av-auto-opt small b{display:inline}
+.av-units{margin-top:10px;border:1px solid #fde68a;background:#fffbeb;border-radius:14px;padding:12px}
+.av-unit{display:flex;flex-wrap:wrap;gap:6px;align-items:center;padding:6px 0;border-top:1px solid #fde68a;font-size:13px}
+.av-unit input{width:70px;padding:6px 8px!important}
+.av-un-name{font-weight:700;min-width:180px;flex:1 1 180px}
+.av-ok{color:#047857;font-weight:700;font-size:13px;margin:8px 0 0}

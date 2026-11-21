@@ -6,7 +6,7 @@
   const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const toast = (m, e) => (A().setStatus ? A().setStatus(m, e) : alert(m));
   const PAGE = 60;
-  let stock = new Map(), settings = null, shown = PAGE, sel = new Set(), loadedFor = '';
+  let stock = new Map(), settings = null, shown = PAGE, sel = new Set(), loadedFor = '', units = [];
   const LBL = { out_of_stock: 'Sold out', low_stock: 'Low stock', in_stock: 'In stock', unknown: 'Not tracked' };
 
   function status(p) {
@@ -27,6 +27,9 @@
     ]);
     settings = st.data || { show_on_catalogue: true, hide_out_of_stock: false, block_out_of_stock_orders: true, low_stock_threshold: 0, show_quantity: false };
     stock = new Map((av.data || []).map(r => [r.product_id, r]));
+    const un = await MC.fetchAll(() => MC.sb.from('mc_saas_product_units').select('id,product_id,unit_name,conversion_to_base,is_base_unit,conversion_configured').eq('business_id', b.id).eq('is_active', true));
+    units = un.data || [];
+    $('avAuto').checked = !!settings.reservations_enabled;
     $('avShow').checked = !!settings.show_on_catalogue; $('avHide').checked = !!settings.hide_out_of_stock;
     $('avBlock').checked = settings.block_out_of_stock_orders !== false; $('avQty').checked = !!settings.show_quantity;
     $('avLow').value = Number(settings.low_stock_threshold || 0);
@@ -36,7 +39,15 @@
     const q = $('avSearch').value.trim().toLowerCase(), f = $('avFilter').value;
     return (A().products || []).filter(p => (!q || [p.name, p.category, p.sku, p.barcode].join(' ').toLowerCase().includes(q)) && (f === 'all' || status(p) === f));
   }
+  function renderUnits() {
+    const prods = new Map((A().products || []).map(p => [p.id, p]));
+    const base = new Map(units.filter(u => u.is_base_unit).map(u => [u.product_id, u.unit_name]));
+    const todo = units.filter(u => !u.is_base_unit && !u.conversion_configured && prods.has(u.product_id));
+    if (!todo.length) { $('avUnits').innerHTML = $('avAuto').checked ? '<p class="av-ok">✅ All selling units are ready — online orders reduce stock correctly.</p>' : ''; return; }
+    $('avUnits').innerHTML = `<div class="av-units"><b>⚠️ ${todo.length} product${todo.length === 1 ? ' has' : 's have'} a second unit without a size</b><p class="hint" style="margin:2px 0 8px">Tell us how they relate so orders in that unit reduce the right amount. Orders in the main unit already work.</p>${todo.slice(0, 50).map(u => { const p = prods.get(u.product_id), bn = base.get(u.product_id) || p.label1 || 'unit'; return `<div class="av-unit" data-un="${esc(u.id)}"><span class="av-un-name">${esc(p.name)}</span><span>1 ${esc(bn)} =</span><input type="number" min="0" step="any" data-un-a placeholder="?" aria-label="How many ${esc(u.unit_name)} in 1 ${esc(bn)}"><span>${esc(u.unit_name)}</span><span class="hint">or</span><span>1 ${esc(u.unit_name)} =</span><input type="number" min="0" step="any" data-un-b placeholder="?" aria-label="How many ${esc(bn)} in 1 ${esc(u.unit_name)}"><span>${esc(bn)}</span><button type="button" class="btn" data-un-save="${esc(u.id)}">Save</button></div>`; }).join('')}</div>`;
+  }
   function render() {
+    renderUnits();
     const all = A().products || [], list = rows();
     const counts = all.reduce((m, p) => (m[status(p)] = (m[status(p)] || 0) + 1, m), {});
     $('avSum').innerHTML = ['out_of_stock', 'low_stock', 'in_stock', 'unknown'].filter(k => counts[k]).map(k => `<span class="av-chip ${k}">${LBL[k]} ${counts[k]}</span>`).join('');
@@ -93,6 +104,23 @@
     if (e.target.id === 'avAll') { rows().slice(0, shown).forEach(p => e.target.checked ? sel.add(p.id) : sel.delete(p.id)); render(); return; }
     const c = e.target.closest('[data-av-sel]'); if (c) { c.checked ? sel.add(c.dataset.avSel) : sel.delete(c.dataset.avSel); $('avBulk').hidden = !sel.size; $('avSelCount').textContent = sel.size + ' selected'; }
   });
+  $('avAuto').addEventListener('change', guard(async () => {
+    const on = $('avAuto').checked;
+    const r = await MC.sb.rpc('mc_saas_set_auto_stock', { p_business_id: A().biz.id, p_enabled: on });
+    if (r.error) { $('avAuto').checked = !on; throw r.error; }
+    settings.reservations_enabled = on; render();
+    toast(on ? `✅ Online orders now reduce stock.${r.data ? ' ' + r.data + ' open order(s) are now holding stock.' : ''}` : 'Automatic stock reduction is off.');
+  }));
+  $('avUnits').addEventListener('click', guard(async e => {
+    const b = e.target.closest('[data-un-save]'); if (!b) return;
+    const row = b.closest('[data-un]'), a = Number(row.querySelector('[data-un-a]').value), c = Number(row.querySelector('[data-un-b]').value);
+    const conv = c > 0 ? c : a > 0 ? 1 / a : NaN;
+    if (!(conv > 0)) throw Error('Type one of the two numbers, e.g. 1 Box = 12 Packet.');
+    const r = await MC.sb.rpc('mc_saas_set_unit_conversion', { p_business_id: A().biz.id, p_unit_id: b.dataset.unSave, p_conversion_to_base: conv });
+    if (r.error) throw r.error;
+    const u = units.find(x => x.id === b.dataset.unSave); if (u) { u.conversion_configured = true; u.conversion_to_base = conv; }
+    render(); toast('✅ Unit size saved.');
+  }));
   $('avBulk').addEventListener('click', guard(async e => { const b = e.target.closest('[data-av-bulk]'); if (!b) return; const ids = [...sel]; await setAvail(ids, b.dataset.avBulk); sel.clear(); render(); }));
 
   const prev = window.mcPageHooks && window.mcPageHooks.stock;
