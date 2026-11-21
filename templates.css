@@ -402,3 +402,19 @@ body.template-chocolate .mcb-slide{background:linear-gradient(120deg,#3b2418,#5a
 body.template-chocolate .mcb-head,body.template-chocolate .mcb-price{color:#e2c48a}
 body.template-premium .mcb{background:#1f2937;border-color:#374151}
 body.template-premium .mcb-slide{color:#f9fafb;background:linear-gradient(120deg,color-mix(in srgb,var(--brand) 30%,#1f2937),#1f2937 70%)}
+
+/* =====================================================================
+   v14 — special prices (sales.js)
+   ===================================================================== */
+.mc-was{font-weight:500;opacity:.6;text-decoration:line-through;text-decoration-thickness:1.5px;font-size:.82em;margin-right:2px}
+.priceChoice.active .mc-was{opacity:.8}
+.mc-sale-badge{position:absolute;top:8px;left:8px;z-index:2;background:#e11d48;color:#fff;font:800 12px/1 system-ui,sans-serif;padding:6px 8px;border-radius:999px;box-shadow:0 4px 12px rgba(225,29,72,.35);letter-spacing:.02em;pointer-events:none}
+.product.mc-on-sale{position:relative}
+.mc-sale-until{font-size:11.5px;font-weight:700;color:#e11d48;margin:2px 0 4px}
+.mcb-img{position:relative}
+.L-sm-mini .mc-sale-badge{top:4px;left:4px;font-size:10px;padding:4px 6px}
+.L-tag .mc-was{font-size:.75em}
+body.template-luxury .mc-sale-badge,body.template-fashion .mc-sale-badge{border-radius:0;background:#111;box-shadow:none;letter-spacing:.1em}
+body.template-luxury .mc-sale-badge{background:var(--brand);color:#0e0e0e}
+body.template-supermarket .mc-sale-badge{top:auto;bottom:8px;left:auto;right:6px}
+body.template-wholesale .mc-sale-badge{top:2px;left:2px;font-size:10px;padding:3px 5px;border-radius:4px}
