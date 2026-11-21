@@ -418,3 +418,19 @@ body.template-luxury .mc-sale-badge,body.template-fashion .mc-sale-badge{border-
 body.template-luxury .mc-sale-badge{background:var(--brand);color:#0e0e0e}
 body.template-supermarket .mc-sale-badge{top:auto;bottom:8px;left:auto;right:6px}
 body.template-wholesale .mc-sale-badge{top:2px;left:2px;font-size:10px;padding:3px 5px;border-radius:4px}
+
+/* =====================================================================
+   v15 — stock on the catalogue (stock.js)
+   ===================================================================== */
+.product.mc-out{position:relative}
+.product.mc-out img,.product.mc-out .placeholder,.mc-out .mcb-img img,.L-sm-mini.mc-out img{filter:grayscale(1);opacity:.55}
+.product.mc-out .priceChoice{opacity:.6}
+.mc-stock-tag{position:absolute;z-index:3;left:50%;top:50%;transform:translate(-50%,-50%) rotate(-8deg);background:rgba(17,17,17,.88);color:#fff;font:800 13px/1 system-ui,sans-serif;letter-spacing:.12em;text-transform:uppercase;padding:9px 14px;border-radius:6px;pointer-events:none;white-space:nowrap}
+.mc-stock-line{font-size:11.5px;font-weight:700;margin:2px 0 4px;display:flex;align-items:center;gap:5px}
+.mc-stock-line:before{content:'';width:7px;height:7px;border-radius:50%;background:currentColor}
+.mc-stock-line.out{color:#6b7280}.mc-stock-line.low{color:#d97706}.mc-stock-line.ok{color:#059669}
+.addbtn.mc-out-btn,.addbtn.mc-out-btn:hover{background:#e5e7eb!important;color:#6b7280!important;border-color:#e5e7eb!important;cursor:not-allowed;box-shadow:none!important;transform:none}
+.L-fab.mc-out-btn{font-size:0!important}
+.L-fab.mc-out-btn:after{content:'✕';font-size:16px}
+body.template-luxury .mc-stock-tag,body.template-fashion .mc-stock-tag{transform:translate(-50%,-50%);border-radius:0;font-weight:600;letter-spacing:.2em}
+body.template-electronics .addbtn.mc-out-btn,body.template-luxury .addbtn.mc-out-btn,body.template-premium .addbtn.mc-out-btn{background:#1f2937!important;color:#9ca3af!important;border-color:#374151!important}
