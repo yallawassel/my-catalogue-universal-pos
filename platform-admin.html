@@ -56,4 +56,14 @@ $('crFilter').onchange=loadAll;$('crRefresh').onclick=loadAll;
 sb.auth.onAuthStateChange((ev,session)=>{if(session)setTimeout(loadAll,300);else $('credits').classList.add('hidden')});
 sb.auth.getSession().then(r=>{if(r.data.session)loadAll()});
 })();
+</script><script>
+(()=>{if(!window.MC||!MC.sb)return;const sb=MC.sb,esc=MC.esc;
+async function decorate(){const r=await sb.rpc('mc_saas_platform_business_modules');if(r.error)return;const m=new Map((r.data||[]).map(x=>[x.business_id,x]));
+document.querySelectorAll('article.biz[data-id]').forEach(card=>{if(card.querySelector('.mods'))return;const x=m.get(card.dataset.id);if(!x)return;
+const plan=x.pos_enabled&&x.catalogue_enabled?'Bundle: Catalogue + POS':x.pos_enabled?'POS only':x.catalogue_enabled?'Catalogue only':'Nothing active';
+const div=document.createElement('div');div.className='mods';div.innerHTML='<hr><h3>Products in the plan</h3><p class="hint">'+plan+(x.pos_sales_30d?' · '+x.pos_sales_30d+' POS sales in 30 days':'')+'</p><label style="display:flex;gap:8px;align-items:center"><input type="checkbox" data-mod-cat '+(x.catalogue_enabled?'checked':'')+' style="width:auto"> 🛍️ Online catalogue</label><label style="display:flex;gap:8px;align-items:center"><input type="checkbox" data-mod-pos '+(x.pos_enabled?'checked':'')+' style="width:auto"> 🧾 POS (point of sale)</label><button data-mod-save>Save plan products</button>';
+card.appendChild(div);
+div.querySelector('[data-mod-save]').onclick=async()=>{const st=document.getElementById('status');const c=div.querySelector('[data-mod-cat]').checked,p=div.querySelector('[data-mod-pos]').checked;const q=await sb.rpc('mc_saas_platform_set_modules',{p_business_id:card.dataset.id,p_catalogue:c,p_pos:p});if(st){st.textContent=q.error?q.error.message:'Plan products saved.';st.className='status'+(q.error?' error':'')}div.querySelector('.hint').textContent=p&&c?'Bundle: Catalogue + POS':p?'POS only':c?'Catalogue only':'Nothing active'}})}
+new MutationObserver(()=>{clearTimeout(window.__modT);window.__modT=setTimeout(decorate,300)}).observe(document.body,{childList:true,subtree:true});
+})();
 </script></body></html>

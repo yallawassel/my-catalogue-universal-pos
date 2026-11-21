@@ -1,0 +1,240 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>My Catalogue POS</title>
+<meta name="theme-color" content="#14112e">
+<link rel="manifest" href="./pos.webmanifest">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="pos.css">
+</head>
+<body>
+<!-- ============ SIGN IN ============ -->
+<section id="vLogin" class="screen center" hidden>
+  <div class="auth-card">
+    <div class="brand"><span class="logo-dot">P</span><div><b>My Catalogue POS</b><small>Sell in store — connected to your catalogue</small></div></div>
+    <form id="loginForm" autocomplete="on">
+      <label for="lEmail">Email</label><input id="lEmail" type="email" autocomplete="username" required>
+      <label for="lPass">Password</label><input id="lPass" type="password" autocomplete="current-password" required>
+      <button class="btn primary big" type="submit">Sign in</button>
+    </form>
+    <button class="btn ghost" id="lMagic" type="button">Email me a sign-in link</button>
+    <p class="muted small" id="lMsg">Use the same account as your catalogue admin.</p>
+  </div>
+</section>
+
+<!-- ============ BUSINESS PICK ============ -->
+<section id="vBiz" class="screen center" hidden>
+  <div class="auth-card"><h2>Choose a business</h2><div id="bizList" class="list"></div><button class="btn ghost" data-signout type="button">Sign out</button></div>
+</section>
+
+<!-- ============ POS NOT ACTIVE ============ -->
+<section id="vInactive" class="screen center" hidden>
+  <div class="auth-card"><h2>POS not active</h2><p id="inactiveMsg" class="muted">The POS plan is not active for this business. Contact the platform owner to activate it.</p><button class="btn ghost" data-signout type="button">Sign out</button></div>
+</section>
+
+<!-- ============ CASHIER PIN ============ -->
+<section id="vPin" class="screen center" hidden>
+  <div class="auth-card pin-card">
+    <div class="brand"><span class="logo-dot" id="pinLogo">P</span><div><b id="pinBiz">Business</b><small>Enter your cashier PIN</small></div></div>
+    <div class="pin-dots" id="pinDots" aria-live="polite"></div>
+    <div class="pin-pad" id="pinPad">
+      <button type="button" data-k="1">1</button><button type="button" data-k="2">2</button><button type="button" data-k="3">3</button>
+      <button type="button" data-k="4">4</button><button type="button" data-k="5">5</button><button type="button" data-k="6">6</button>
+      <button type="button" data-k="7">7</button><button type="button" data-k="8">8</button><button type="button" data-k="9">9</button>
+      <button type="button" data-k="C" aria-label="Clear">C</button><button type="button" data-k="0">0</button><button type="button" data-k="OK" class="ok" aria-label="Enter">✓</button>
+    </div>
+    <p class="err" id="pinErr"></p>
+    <button class="btn ghost" id="pinOwner" type="button">Continue as owner</button>
+  </div>
+</section>
+
+<!-- ============ OPEN SHIFT ============ -->
+<section id="vShift" class="screen center" hidden>
+  <div class="auth-card">
+    <h2>Open the cash drawer</h2>
+    <p class="muted">Count the money in the drawer before you start selling.</p>
+    <div class="row2"><div><label for="osUsd">Cash in USD</label><input id="osUsd" type="number" min="0" step="0.01" value="0" inputmode="decimal"></div>
+    <div><label for="osLbp">Cash in LBP</label><input id="osLbp" type="number" min="0" step="1000" value="0" inputmode="numeric"></div></div>
+    <button class="btn primary big" id="osGo" type="button">Open shift and start selling</button>
+    <button class="btn ghost" id="osLock" type="button">Switch cashier</button>
+  </div>
+</section>
+
+<!-- ============ APP ============ -->
+<div id="vApp" class="app" hidden>
+  <header class="top">
+    <button class="icon-btn only-mobile" id="navToggle" aria-label="Menu">☰</button>
+    <div class="top-biz"><span class="logo-dot sm" id="topLogo">P</span><b id="topBiz">Business</b></div>
+    <button class="chip" id="topRate" type="button" title="Exchange rate">1$ = <b id="rateVal">—</b> LBP</button>
+    <span class="chip net" id="netState">● Online</span>
+    <span class="chip" id="queueState" hidden></span>
+    <div class="top-right">
+      <span class="chip who" id="topCashier">Owner</span>
+      <button class="btn ghost sm" id="lockBtn" type="button">🔒 Lock</button>
+    </div>
+  </header>
+  <nav class="side" id="sideNav" aria-label="POS">
+    <button data-tab="sell" class="on"><span>🛒</span>Sell</button>
+    <button data-tab="sales"><span>🧾</span>Sales</button>
+    <button data-tab="orders"><span>📥</span>Online orders <i class="badge" id="ordersBadge" hidden></i></button>
+    <button data-tab="customers"><span>👥</span>Customers</button>
+    <button data-tab="cash" data-role="manager"><span>💵</span>Cash &amp; expenses</button>
+    <button data-tab="reports" data-role="manager"><span>📊</span>Reports</button>
+    <button data-tab="shift"><span>🗄️</span>Shift / Z report</button>
+    <button data-tab="settings" data-role="manager"><span>⚙️</span>Settings</button>
+    <a href="admin.html" class="side-link" id="adminLink" data-role="manager"><span>🛍️</span>Catalogue admin</a>
+  </nav>
+
+  <main class="main">
+    <!-- SELL -->
+    <section class="tab on" id="tab-sell">
+      <div class="sell">
+        <div class="sell-left">
+          <div class="scan-row">
+            <input id="scan" type="search" placeholder="Scan barcode or search products…" autocomplete="off" aria-label="Scan barcode or search">
+            <button class="btn" id="customItem" type="button" title="Add an item that is not in the list">＋ Item</button>
+          </div>
+          <div class="cats" id="cats"></div>
+          <div class="grid" id="grid"></div>
+          <button class="btn ghost" id="moreProducts" type="button" hidden>Show more</button>
+        </div>
+        <aside class="cart" id="cart">
+          <div class="cart-head">
+            <button class="icon-btn only-mobile" id="cartBack" type="button" aria-label="Back to products">←</button>
+            <button class="cust-btn" id="custBtn" type="button"><span>👤</span><b id="custName">Walk-in customer</b><small id="custBal"></small></button>
+            <button class="icon-btn" id="clearCart" type="button" title="Clear cart" aria-label="Clear cart">🗑</button>
+          </div>
+          <div class="order-tag" id="orderTag" hidden></div>
+          <div class="lines" id="lines"></div>
+          <div class="totals">
+            <div><span>Subtotal</span><b id="tSub">$0.00</b></div>
+            <div class="disc-row"><button class="link" id="discBtn" type="button">＋ Discount</button><b id="tDisc">—</b></div>
+            <div id="tTaxRow" hidden><span id="tTaxLbl">Tax</span><b id="tTax">$0.00</b></div>
+            <div class="grand"><span>Total</span><b id="tTotal">$0.00</b></div>
+            <div class="lbp"><span>in LBP</span><b id="tTotalLbp">0 LBP</b></div>
+          </div>
+          <button class="btn pay" id="payBtn" type="button" disabled>Pay</button>
+        </aside>
+        <button class="cart-fab only-mobile" id="cartFab" type="button"><span id="fabCount">0</span> items · <b id="fabTotal">$0.00</b> — View cart</button>
+      </div>
+    </section>
+
+    <!-- SALES -->
+    <section class="tab" id="tab-sales">
+      <div class="tab-head"><h2>Sales</h2><div class="tools"><input id="salesSearch" type="search" placeholder="Invoice, customer, product"><input id="salesDate" type="date"><button class="btn" id="salesRefresh" type="button">↻</button></div></div>
+      <div class="table" id="salesList"></div>
+    </section>
+
+    <!-- ORDERS -->
+    <section class="tab" id="tab-orders">
+      <div class="tab-head"><h2>Online orders from your catalogue</h2><div class="tools"><button class="btn" id="ordersRefresh" type="button">↻ Refresh</button></div></div>
+      <p class="muted">Charge an online order here when the customer pays or picks it up. The order is marked delivered automatically.</p>
+      <div class="cards" id="ordersList"></div>
+    </section>
+
+    <!-- CUSTOMERS -->
+    <section class="tab" id="tab-customers">
+      <div class="tab-head"><h2>Customers &amp; debts</h2><div class="tools"><input id="custSearch" type="search" placeholder="Name or phone"><select id="custFilter"><option value="all">All</option><option value="debt">With debt</option></select><button class="btn primary" id="custAdd" type="button">＋ New customer</button></div></div>
+      <div class="kpis" id="custKpis"></div>
+      <div class="table" id="custList"></div>
+    </section>
+
+    <!-- CASH -->
+    <section class="tab" id="tab-cash">
+      <div class="tab-head"><h2>Cash &amp; expenses</h2><div class="tools"><input id="cashFrom" type="date"><input id="cashTo" type="date"><button class="btn" id="cashRefresh" type="button">↻</button></div></div>
+      <div class="entry-card">
+        <div class="seg" id="ceKind" role="radiogroup" aria-label="Type">
+          <button type="button" data-v="expense" class="on">🧾 Expense</button><button type="button" data-v="income">💰 Other income</button><button type="button" data-v="cash_in">⬇️ Cash in</button><button type="button" data-v="cash_out">⬆️ Cash out</button>
+        </div>
+        <div class="row4">
+          <div><label for="ceCat">Category</label><input id="ceCat" list="ceCats" placeholder="e.g. Rent, Electricity, Salaries"><datalist id="ceCats"></datalist></div>
+          <div><label for="ceUsd">Amount USD</label><input id="ceUsd" type="number" min="0" step="0.01" inputmode="decimal"></div>
+          <div><label for="ceLbp">Amount LBP</label><input id="ceLbp" type="number" min="0" step="1000" inputmode="numeric"></div>
+          <div><label for="ceDate">Date</label><input id="ceDate" type="date"></div>
+        </div>
+        <div class="row2"><div><label for="ceNote">Note</label><input id="ceNote" placeholder="Optional"></div>
+        <label class="check"><input type="checkbox" id="ceDrawer" checked> Paid from / into the cash drawer</label></div>
+        <button class="btn primary" id="ceSave" type="button">Save</button>
+      </div>
+      <div class="kpis" id="cashKpis"></div>
+      <div class="table" id="cashList"></div>
+    </section>
+
+    <!-- REPORTS -->
+    <section class="tab" id="tab-reports">
+      <div class="tab-head"><h2>Reports</h2>
+        <div class="tools">
+          <select id="rpPreset"><option value="today">Today</option><option value="yesterday">Yesterday</option><option value="week">This week</option><option value="month" selected>This month</option><option value="lastmonth">Last month</option><option value="year">This year</option><option value="custom">Custom</option></select>
+          <input id="rpFrom" type="date"><input id="rpTo" type="date">
+          <select id="rpCashier"><option value="">All cashiers</option></select>
+          <button class="btn" id="rpRun" type="button">Show</button>
+        </div>
+      </div>
+      <div class="export-bar">
+        <button class="btn" id="rpXlsx" type="button">📗 Excel</button>
+        <button class="btn" id="rpPdf" type="button">📕 PDF</button>
+        <button class="btn" id="rpShare" type="button">📤 Share</button>
+        <button class="btn" id="rpEmail" type="button">✉️ Email</button>
+        <button class="btn" id="rpPrint" type="button">🖨️ Print</button>
+      </div>
+      <div id="report" class="report"></div>
+    </section>
+
+    <!-- SHIFT -->
+    <section class="tab" id="tab-shift">
+      <div class="tab-head"><h2>Shift &amp; end of day</h2></div>
+      <div id="shiftBox"></div>
+      <h3>Previous shifts</h3>
+      <div class="table" id="shiftList"></div>
+    </section>
+
+    <!-- SETTINGS -->
+    <section class="tab" id="tab-settings">
+      <div class="tab-head"><h2>Settings</h2></div>
+      <div class="settings-grid">
+        <div class="card">
+          <h3>Money &amp; receipts</h3>
+          <div class="row2"><div><label for="stRate">1 USD = ? LBP</label><input id="stRate" type="number" min="1" step="100"></div>
+          <div><label for="stRound">Round LBP to</label><select id="stRound"><option value="1">1</option><option value="100">100</option><option value="500">500</option><option value="1000">1,000</option><option value="5000">5,000</option><option value="10000">10,000</option></select></div></div>
+          <div class="row2"><div><label for="stTax">Tax / VAT %</label><input id="stTax" type="number" min="0" max="100" step="0.01"></div>
+          <div><label for="stPrefix">Invoice prefix</label><input id="stPrefix" maxlength="10"></div></div>
+          <label for="stHeader">Receipt header (address, phone, VAT no.)</label><textarea id="stHeader" rows="3"></textarea>
+          <label for="stFooter">Receipt footer</label><input id="stFooter">
+          <div class="row2"><div><label for="stPaper">Receipt printer</label><select id="stPaper"><option value="80">80 mm</option><option value="58">58 mm</option><option value="a4">A4 invoice</option></select></div>
+          <label class="check"><input type="checkbox" id="stAutoPrint"> Print receipt automatically after each sale</label></div>
+          <button class="btn primary" id="stSave" type="button">Save settings</button>
+        </div>
+        <div class="card">
+          <h3>Cashiers</h3>
+          <p class="muted small">Each cashier opens the POS with a PIN. Managers can do returns, see reports and change settings.</p>
+          <div id="cashierList" class="list"></div>
+          <div class="row4 cashier-form">
+            <div><label for="caName">Name</label><input id="caName"></div>
+            <div><label for="caPin">PIN (4–8 digits)</label><input id="caPin" inputmode="numeric" maxlength="8" autocomplete="off"></div>
+            <div><label for="caRole">Role</label><select id="caRole"><option value="cashier">Cashier</option><option value="manager">Manager</option></select></div>
+            <div><label>&nbsp;</label><button class="btn primary" id="caSave" type="button">Add cashier</button></div>
+          </div>
+          <input type="hidden" id="caId">
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<!-- ============ MODAL ============ -->
+<div class="modal" id="modal" hidden><div class="sheet" role="dialog" aria-modal="true" aria-labelledby="mTitle"><div class="sheet-head"><h3 id="mTitle"></h3><button class="icon-btn" id="mClose" type="button" aria-label="Close">✕</button></div><div id="mBody" class="sheet-body"></div></div></div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<iframe id="printFrame" title="print" aria-hidden="true" tabindex="-1"></iframe>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="saas.js"></script>
+<script src="pos-core.js"></script>
+<script src="pos-print.js"></script>
+<script src="pos-sell.js"></script>
+<script src="pos-office.js"></script>
+<script src="pos-reports.js"></script>
+</body>
+</html>
