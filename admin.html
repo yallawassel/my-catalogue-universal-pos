@@ -855,12 +855,13 @@ $('importJson').onchange=async e=>{
   if(!rows.length&&!importedCategoryPhotos.size)throw Error('No new products or category photos to import. '+duplicates+' duplicate(s) were found by product name or barcode.');
   if(!confirm('Import '+rows.length+' new product(s) and update '+importedCategoryPhotos.size+' category photo(s) in '+biz.company_name+'? '+duplicates+' duplicate(s) will be skipped. Existing products will not be deleted.'))return;
   let saved=0,failed=0,photos=0;const errors=[];
+  const importBatch=window.mcStartImport?await mcStartImport('json',e.target.files?.[0]?.name):null;
   for(let i=0;i<rows.length;i++){
    const r=rows[i];
    try{
     let image='';if(r.photo){image=await uploadImportedPhoto(String(r.photo),r.name);if(image)photos++}
     const p={business_id:biz.id,name:r.name,category:r.category,description:r.description,image,barcode:r.barcode,label1:r.label1,price1:r.price1,label2:r.label2,price2:r.price2,sort_order:r.sort_order,is_active:r.isActive,updated_at:new Date().toISOString()};
-    if(r.sku&&!products.some(x=>String(x.sku||'').trim().toLowerCase()===r.sku.toLowerCase()))p.sku=r.sku;if(r.posProductId)p.pos_product_id=r.posProductId;const ins=await sb.from('mc_saas_products').insert(p);if(ins.error)throw ins.error;
+    if(r.sku&&!products.some(x=>String(x.sku||'').trim().toLowerCase()===r.sku.toLowerCase()))p.sku=r.sku;if(r.posProductId)p.pos_product_id=r.posProductId;if(importBatch)p.import_batch=importBatch;const ins=await sb.from('mc_saas_products').insert(p);if(ins.error)throw ins.error;
     saved++;if(r.barcode)knownCodes.add(norm(r.barcode));knownNames.add(norm(r.name));
     setStatus('Importing '+(i+1)+'/'+rows.length+': '+r.name+' · '+saved+' saved, '+failed+' failed');await new Promise(resolve=>requestAnimationFrame(()=>resolve()));
    }catch(err){failed++;errors.push(r.name+': '+err.message)}
@@ -878,7 +879,7 @@ $('importJson').onchange=async e=>{
     categoryPhotosSaved++;
    }catch(err){categoryPhotoErrors.push(category+': '+err.message)}
   }
-  await loadProducts();await loadCategoryImages();setStatus('JSON import finished: '+saved+' products saved, '+failed+' failed, '+photos+' embedded product photo(s) uploaded, '+categoryPhotosSaved+' category photo(s) saved. '+duplicates+' duplicate(s) skipped.'+(errors.length?' Product error: '+errors[0]:'')+(categoryPhotoErrors.length?' Category photo error: '+categoryPhotoErrors[0]:''),failed>0||categoryPhotoErrors.length>0);
+  await loadProducts();await loadCategoryImages();setStatus('JSON import finished: '+saved+' products saved'+(importBatch?' (you can undo it in Recent imports below)':'')+', '+failed+' failed, '+photos+' embedded product photo(s) uploaded, '+categoryPhotosSaved+' category photo(s) saved. '+duplicates+' duplicate(s) skipped.'+(errors.length?' Product error: '+errors[0]:'')+(categoryPhotoErrors.length?' Category photo error: '+categoryPhotoErrors[0]:''),failed>0||categoryPhotoErrors.length>0);
  }catch(err){setStatus('Import failed: '+err.message,true)}finally{e.target.value=''}
 };
 // Bulk Excel/CSV import with assisted photo matching. Uses the existing product schema and business-scoped storage.
@@ -1054,7 +1055,7 @@ $('runBulkImport').onclick=async()=>{
  bulkState.busy=true;$('runBulkImport').disabled=true;let updated=0,added=0,failed=0,photoCount=0;const failures=[];let jobId=null;
  try{
   const job=await sb.from('mc_saas_sync_jobs').insert({business_id:biz.id,source_type:'file',sync_mode:mode,status:'running',markup_pct:markup,rows_total:chosen.length}).select('id').single();
-  if(job.error)throw Error('Synchronization database migration is required. Run POS_SYNC_MIGRATION.sql in Supabase first. Details: '+job.error.message);jobId=job.data.id;
+  if(job.error)throw Error('Synchronization database migration is required. Run POS_SYNC_MIGRATION.sql in Supabase first. Details: '+job.error.message);jobId=job.data.id;const importBatch=window.mcStartImport?await mcStartImport('sync',$('bulkSheet')?.files?.[0]?.name,jobId):null;
   for(let i=0;i<chosen.length;i++){
    const row=chosen[i];
    try{
@@ -1082,7 +1083,7 @@ $('runBulkImport').onclick=async()=>{
       updated++;
     }else{
       if(mode!=='full')throw Error('No existing product match.');
-      payload.is_active=true;const ins=await sb.from('mc_saas_products').insert(payload).select('id').single();if(ins.error)throw ins.error;if(jobId){const log=await sb.from('mc_saas_sync_changes').insert({business_id:biz.id,job_id:jobId,product_id:ins.data.id,match_method:'new product',old_values:{},new_values:payload});if(log.error)throw log.error;}added++;
+      payload.is_active=true;if(importBatch)payload.import_batch=importBatch;const ins=await sb.from('mc_saas_products').insert(payload).select('id').single();if(ins.error)throw ins.error;if(jobId){const log=await sb.from('mc_saas_sync_changes').insert({business_id:biz.id,job_id:jobId,product_id:ins.data.id,match_method:'new product',old_values:{},new_values:payload});if(log.error)throw log.error;}added++;
     }
     setStatus(`Synchronizing ${i+1}/${chosen.length}: ${row.name||row.barcode||row.sku||row.posProductId} · ${updated} updated, ${added} added, ${failed} failed`);
    }catch(err){failed++;failures.push(`${row.name||row.barcode||row.sku||row.posProductId}: ${err.message}`)}
@@ -1280,5 +1281,5 @@ sessionLoad().catch(e=>setStatus(e.message,true));
 <script src="photo-match.js"></script>
 <script src="photo-studio.js"></script>
 <script src="admin-pro.js"></script>
-<script src="ai-pro.js"></script><script src="templates.js"></script><script src="design-studio.js"></script><script src="banner-admin.js"></script><script src="sale-admin.js"></script><script src="stock-admin.js"></script><script src="pieces-admin.js"></script><script src="shop-admin.js"></script>
+<script src="ai-pro.js"></script><script src="templates.js"></script><script src="design-studio.js"></script><script src="banner-admin.js"></script><script src="sale-admin.js"></script><script src="stock-admin.js"></script><script src="pieces-admin.js"></script><script src="shop-admin.js"></script><script src="import-undo.js"></script>
 </body></html>

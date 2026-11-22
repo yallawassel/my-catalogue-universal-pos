@@ -30,3 +30,6 @@
 .an-cols .sh-card{margin:0}
 .an-li{display:flex;justify-content:space-between;gap:8px;padding:6px 0;border-bottom:1px solid #f3f4f6}
 .an-copy{display:flex;gap:8px;margin:6px 0}.an-copy input{flex:1;min-width:0}
+.iu-row{display:grid;grid-template-columns:1fr auto auto;gap:12px;align-items:center;padding:10px 0;border-bottom:1px solid #f1f1f4}
+.iu-row small{display:block;color:#6b7280}.iu-row.off{opacity:.55}.iu-n{font-weight:700;white-space:nowrap}
+@media(max-width:640px){.iu-row{grid-template-columns:1fr auto}.iu-n{grid-column:1/-1;grid-row:2}}
