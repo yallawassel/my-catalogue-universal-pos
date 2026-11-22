@@ -44,7 +44,7 @@
     const base = new Map(units.filter(u => u.is_base_unit).map(u => [u.product_id, u.unit_name]));
     const todo = units.filter(u => !u.is_base_unit && !u.conversion_configured && prods.has(u.product_id));
     if (!todo.length) { $('avUnits').innerHTML = $('avAuto').checked ? '<p class="av-ok">✅ All selling units are ready — online orders reduce stock correctly.</p>' : ''; return; }
-    $('avUnits').innerHTML = `<div class="av-units"><b>⚠️ ${todo.length} product${todo.length === 1 ? ' has' : 's have'} a second unit without a size</b><p class="hint" style="margin:2px 0 8px">Tell us how they relate so orders in that unit reduce the right amount. Orders in the main unit already work.</p>${todo.slice(0, 50).map(u => { const p = prods.get(u.product_id), bn = base.get(u.product_id) || p.label1 || 'unit'; return `<div class="av-unit" data-un="${esc(u.id)}"><span class="av-un-name">${esc(p.name)}</span><span>1 ${esc(bn)} =</span><input type="number" min="0" step="any" data-un-a placeholder="?" aria-label="How many ${esc(u.unit_name)} in 1 ${esc(bn)}"><span>${esc(u.unit_name)}</span><span class="hint">or</span><span>1 ${esc(u.unit_name)} =</span><input type="number" min="0" step="any" data-un-b placeholder="?" aria-label="How many ${esc(bn)} in 1 ${esc(u.unit_name)}"><span>${esc(bn)}</span><button type="button" class="btn" data-un-save="${esc(u.id)}">Save</button></div>`; }).join('')}</div>`;
+    $('avUnits').innerHTML = `<div class="av-units"><b>⚠️ ${todo.length} unit${todo.length === 1 ? '' : 's'} without a size in pieces</b><p class="hint" style="margin:2px 0 8px">Stock is counted in pieces. Tell us how many pieces are in each unit so sales in that unit take the right amount out of stock.</p>${todo.slice(0, 60).map(u => { const p = prods.get(u.product_id), bn = base.get(u.product_id) || 'Piece'; return `<div class="av-unit" data-un="${esc(u.id)}"><span class="av-un-name">${esc(p.name)}</span><span>1 ${esc(u.unit_name)} =</span><input type="number" min="0" step="any" data-un-b placeholder="?" aria-label="How many ${esc(bn)} in 1 ${esc(u.unit_name)}"><span>${esc(bn)}</span><button type="button" class="btn" data-un-save="${esc(u.id)}">Save</button></div>`; }).join('')}</div>`;
   }
   // units a product can be counted in: base unit (factor 1) + second units with a known size, biggest first
   function unitsOf(p) {
@@ -144,9 +144,8 @@
   }));
   $('avUnits').addEventListener('click', guard(async e => {
     const b = e.target.closest('[data-un-save]'); if (!b) return;
-    const row = b.closest('[data-un]'), a = Number(row.querySelector('[data-un-a]').value), c = Number(row.querySelector('[data-un-b]').value);
-    const conv = c > 0 ? c : a > 0 ? 1 / a : NaN;
-    if (!(conv > 0)) throw Error('Type one of the two numbers, e.g. 1 Box = 12 Packet.');
+    const row = b.closest('[data-un]'), conv = Number(row.querySelector('[data-un-b]').value);
+    if (!(conv > 0)) throw Error('Type how many pieces are in this unit, e.g. 1 Box = 500 Piece.');
     const r = await MC.sb.rpc('mc_saas_set_unit_conversion', { p_business_id: A().biz.id, p_unit_id: b.dataset.unSave, p_conversion_to_base: conv });
     if (r.error) throw r.error;
     const u = units.find(x => x.id === b.dataset.unSave); if (u) { u.conversion_configured = true; u.conversion_to_base = conv; }

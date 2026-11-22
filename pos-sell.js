@@ -12,7 +12,7 @@
   function stockBadge(p) {
     if (!P.stock.has(p.id)) return '';
     const q = P.stock.get(p.id);
-    return q <= 0 ? '<span class="stk out">Out</span>' : `<span class="stk ${q <= 5 ? 'low' : ''}">${Math.floor(q)}</span>`;
+    return q <= 0 ? '<span class="stk out">Out</span>' : `<span class="stk ${q <= 5 ? 'low' : ''}" title="Pieces in stock">${Math.floor(q)} pc</span>`;
   }
   function priceTxt(p) {
     if (p.p1 != null) return P.fmt(p.p1) + (p.was1 ? `<s>${P.fmt(p.was1)}</s>` : '');
@@ -271,7 +271,6 @@
     const cust = c.customer && P.customers.find(x => x.id === c.customer.id);
     if (cust && pay.pd) { cust.balance = P.r2(Number(cust.balance) + pay.pd); P.save('customers', P.customers); }
     // local stock view
-    c.lines.forEach(l => { if (l.product_id && P.stock.has(l.product_id) && l.unit_index === 1) P.stock.set(l.product_id, P.stock.get(l.product_id) - l.qty); });
     const sale = {
       ...payload, kind: 'sale', invoice_label: res.data.invoice_label, offline: !!res.offline, cashier_name: P.cashier ? P.cashier.name : 'Owner',
       customer_name: c.customer ? c.customer.name : '', subtotal: t.sub, tax: t.tax, vat_rate: t.vat ? t.rate : 0, prices_include_vat: !!t.incl, total: t.total, change_usd: pay.chg.usd,
