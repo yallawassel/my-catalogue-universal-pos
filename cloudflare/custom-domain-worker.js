@@ -1,6 +1,6 @@
 /* My Catalogue — Cloudflare Worker for client custom domains.
    Serves the catalogue app (hosted on GitHub Pages) under the client's own domain,
-   e.g. https://petitbon.store keeps "petitbon.store" in the address bar.
+   e.g. https://petitbon.shop keeps "petitbon.shop" in the address bar.
    The app reads the hostname and opens the matching catalogue (mc_saas_custom_domains, verified + active).
 
    Setup (once per Cloudflare account):
@@ -14,15 +14,16 @@
 const ORIGIN = 'https://yallawassel.github.io';
 const BASE = '/my-catalogue-universal-pos';
 // Only the public catalogue is served on client domains; the admin and POS stay on the platform address.
+// Extra domains that forward to a client's main domain.
+const REDIRECTS = { 'petitebon.store': 'petitbon.shop' };
 const BLOCKED = /^\/(admin|platform-admin|pos|orders|driver-tracking)\.html$/i;
 
 export default {
   async fetch(request) {
     const url = new URL(request.url);
-    if (url.hostname.startsWith('www.')) {
-      url.hostname = url.hostname.slice(4);
-      return Response.redirect(url.toString(), 301);
-    }
+    const host = url.hostname.replace(/^www\./, '');
+    if (REDIRECTS[host]) { url.hostname = REDIRECTS[host]; return Response.redirect(url.toString(), 301); }
+    if (url.hostname !== host) { url.hostname = host; return Response.redirect(url.toString(), 301); }
     let path = url.pathname === '/' ? '/index.html' : url.pathname;
     if (BLOCKED.test(path)) return Response.redirect(ORIGIN + BASE + path + url.search, 302);
     if (path === '/robots.txt') return new Response('User-agent: *\nAllow: /\n', { headers: { 'content-type': 'text/plain' } });
