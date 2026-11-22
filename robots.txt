@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /admin.html
+Disallow: /platform-admin.html
+Disallow: /pos.html
+Disallow: /orders.html
