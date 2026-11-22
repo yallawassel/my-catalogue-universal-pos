@@ -5,3 +5,7 @@ verify_jwt = true
 # not by a user JWT, so the gateway JWT check is disabled for this function only.
 [functions.mc-pos-connector]
 verify_jwt = false
+
+# Public sitemap for Google (read-only, published catalogues only).
+[functions.mc-sitemap]
+verify_jwt = false

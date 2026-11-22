@@ -28,7 +28,7 @@
   })();
 
   /* ------------------------------ navigation ----------------------------- */
-  const TITLES = { dashboard: 'Dashboard', settings: 'Business settings', design: 'Storefront design', domain: 'Custom domain', product: 'Add / edit product', sync: 'Excel / CSV synchronization', catphotos: 'Category photos', catorder: 'Category order', products: 'Products', tools: 'Orders & tools', pos: 'POS setup checker', stock: 'Stock & units', ai: 'AI Studio', data: 'Import & Export', studio: 'Photo Studio', connector: 'Live POS connector' };
+  const TITLES = { dashboard: 'Dashboard', settings: 'Business settings', design: 'Storefront design', domain: 'Custom domain', product: 'Add / edit product', sync: 'Excel / CSV synchronization', catphotos: 'Category photos', catorder: 'Category order', products: 'Products', tools: 'Orders & tools', pos: 'POS setup checker', stock: 'Stock & units', ai: 'AI Studio', data: 'Import & Export', studio: 'Photo Studio', connector: 'Live POS connector', shop: 'Delivery, discounts & payments', analytics: 'Visitors & sales' };
   const LEGACY = ['settings', 'design', 'domain', 'product', 'sync', 'catphotos', 'catorder', 'products', 'tools', 'pos', 'stock', 'ai'];
   const hooks = {};
   let current = 'dashboard';
