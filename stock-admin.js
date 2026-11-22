@@ -46,6 +46,25 @@
     if (!todo.length) { $('avUnits').innerHTML = $('avAuto').checked ? '<p class="av-ok">✅ All selling units are ready — online orders reduce stock correctly.</p>' : ''; return; }
     $('avUnits').innerHTML = `<div class="av-units"><b>⚠️ ${todo.length} product${todo.length === 1 ? ' has' : 's have'} a second unit without a size</b><p class="hint" style="margin:2px 0 8px">Tell us how they relate so orders in that unit reduce the right amount. Orders in the main unit already work.</p>${todo.slice(0, 50).map(u => { const p = prods.get(u.product_id), bn = base.get(u.product_id) || p.label1 || 'unit'; return `<div class="av-unit" data-un="${esc(u.id)}"><span class="av-un-name">${esc(p.name)}</span><span>1 ${esc(bn)} =</span><input type="number" min="0" step="any" data-un-a placeholder="?" aria-label="How many ${esc(u.unit_name)} in 1 ${esc(bn)}"><span>${esc(u.unit_name)}</span><span class="hint">or</span><span>1 ${esc(u.unit_name)} =</span><input type="number" min="0" step="any" data-un-b placeholder="?" aria-label="How many ${esc(bn)} in 1 ${esc(u.unit_name)}"><span>${esc(bn)}</span><button type="button" class="btn" data-un-save="${esc(u.id)}">Save</button></div>`; }).join('')}</div>`;
   }
+  // units a product can be counted in: base unit (factor 1) + second units with a known size, biggest first
+  function unitsOf(p) {
+    const list = units.filter(u => u.product_id === p.id && (u.is_base_unit || u.conversion_configured)).map(u => ({ id: u.id, name: u.unit_name, f: Number(u.conversion_to_base) || 1, base: u.is_base_unit }));
+    if (!list.some(u => u.base)) list.unshift({ id: 'base', name: p.label1 || 'Unit', f: 1, base: true });
+    return list.sort((a, b) => b.f - a.f);
+  }
+  const nice = v => Math.round(v * 1000) / 1000;
+  function breakdown(p, q) {
+    const us = unitsOf(p); if (us.length < 2) return `${nice(q)} ${esc(us[0].name)}`;
+    let rest = q; const parts = [];
+    us.forEach((u, i) => { const n = i === us.length - 1 ? nice(rest / u.f) : Math.floor(rest / u.f + 1e-9); if (n) parts.push(`${n} ${esc(u.name)}`); rest = nice(rest - n * u.f); });
+    return parts.join(' + ') || `0 ${esc(us[0].name)}`;
+  }
+  function countCell(p, s) {
+    const us = unitsOf(p), missing = units.some(u => u.product_id === p.id && !u.is_base_unit && !u.conversion_configured);
+    const now = s && s.stock_initialized ? `<small class="av-now">Now: <b>${breakdown(p, Number(s.physical_qty_base))}</b></small>` : '<small class="av-now">Not counted yet</small>';
+    return `${now}<div class="av-units-in">${us.map(u => `<label class="av-uin"><input type="number" min="0" step="any" placeholder="0" data-av-q="${esc(p.id)}" data-f="${u.f}" aria-label="${esc(u.name)}"><span>${esc(u.name)}</span></label>`).join('<span class="av-plus">+</span>')}</div>
+      <div class="av-acts"><button type="button" class="btn" data-av-save="${esc(p.id)}" title="Replace the stock with this count">Set count</button><button type="button" class="btn" data-av-recv="${esc(p.id)}" title="Add goods received to the stock">＋ Received</button></div>${missing ? '<small class="av-miss">A unit has no size yet — set it above to count in it</small>' : ''}`;
+  }
   function render() {
     renderUnits();
     const all = A().products || [], list = rows();
@@ -57,7 +76,7 @@
       const res = s && Number(s.reserved_qty_base) > 0 ? `<small>${Number(s.reserved_qty_base)} reserved by orders</small>` : (s && s.last_pos_sync_at ? `<small>POS ${new Date(s.last_pos_sync_at).toLocaleDateString()}</small>` : '');
       return `<div class="av-row ${st}" data-av-id="${esc(p.id)}"><label><input type="checkbox" data-av-sel="${esc(p.id)}" ${sel.has(p.id) ? 'checked' : ''} aria-label="Select ${esc(p.name)}"></label>
         <div class="av-prod">${p.image ? `<img src="${esc(p.image)}" alt="" loading="lazy">` : '<span class="ph"></span>'}<div><b>${esc(p.name)}</b><small>${esc(p.category || '')} · <span class="av-chip ${st}">${LBL[st]}</span></small></div></div>
-        <div class="av-count"><input type="number" min="0" step="1" value="${qty}" placeholder="—" data-av-count="${esc(p.id)}" aria-label="Stock count for ${esc(p.name)}"><button type="button" class="btn" data-av-save="${esc(p.id)}">Save</button>${res}</div>
+        <div class="av-count">${countCell(p, s)}${res}</div>
         <div class="av-seg" role="group" aria-label="Availability for ${esc(p.name)}">${[['auto', '🔄 Auto'], ['in_stock', '✅ Available'], ['out_of_stock', '⛔ Sold out']].map(([k, t]) => `<button type="button" class="${av === k ? 'on' : ''}" data-av-set="${k}" data-av-pid="${esc(p.id)}" aria-pressed="${av === k}">${t}</button>`).join('')}</div></div>`;
     }).join('') : '<p class="hint">No products match.</p>';
     $('avMore').hidden = list.length <= shown;
@@ -70,15 +89,26 @@
     render();
     toast(`✅ ${ids.length} product${ids.length === 1 ? '' : 's'}: ${value === 'out_of_stock' ? 'sold out' : value === 'in_stock' ? 'always available' : 'follow stock count'}.`);
   }
-  async function saveCount(id) {
-    const input = document.querySelector(`[data-av-count="${CSS.escape(id)}"]`); if (!input) return;
-    const v = input.value.trim(); if (v === '') return toast('Type the number of pieces you have, then press Save.', true);
-    const q = Number(v); if (!Number.isFinite(q) || q < 0) return toast('Stock must be zero or more.', true);
-    const r = await MC.sb.rpc('mc_saas_set_stock_count', { p_business_id: A().biz.id, p_product_id: id, p_quantity_base: q, p_note: null });
+  function enteredBase(id) {
+    const ins = [...document.querySelectorAll(`[data-av-q="${CSS.escape(id)}"]`)];
+    if (!ins.some(i => i.value.trim() !== '')) return null;
+    let q = 0;
+    for (const i of ins) { const v = i.value.trim() === '' ? 0 : Number(i.value); if (!Number.isFinite(v) || v < 0) throw Error('Quantities must be zero or more.'); q += v * Number(i.dataset.f); }
+    return Math.round(q * 1e6) / 1e6;
+  }
+  async function saveCount(id, receive) {
+    const p = (A().products || []).find(x => x.id === id);
+    const q = enteredBase(id);
+    if (q === null) return toast(receive ? 'Type how many you received (in any unit), then press ＋ Received.' : 'Type how many you have (in any unit), then press Set count.', true);
+    if (receive && q <= 0) return toast('Received quantity must be more than zero.', true);
+    const r = receive
+      ? await MC.sb.rpc('mc_saas_receive_stock', { p_business_id: A().biz.id, p_product_id: id, p_quantity_base: q, p_note: null })
+      : await MC.sb.rpc('mc_saas_set_stock_count', { p_business_id: A().biz.id, p_product_id: id, p_quantity_base: q, p_note: null });
     if (r.error) throw r.error;
     const s = stock.get(id) || { product_id: id, reserved_qty_base: 0 };
-    s.physical_qty_base = q; s.stock_initialized = true; s.available_qty_base = Math.max(0, q - Number(s.reserved_qty_base || 0)); stock.set(id, s);
-    render(); toast(`✅ Stock saved: ${q}.${q === 0 ? ' This product now shows as sold out.' : ''}`);
+    const newQ = receive ? Number(r.data) : q;
+    s.physical_qty_base = newQ; s.stock_initialized = true; s.available_qty_base = Math.max(0, newQ - Number(s.reserved_qty_base || 0)); stock.set(id, s);
+    render(); toast(`✅ ${receive ? 'Received ' + breakdown(p, q) + '. ' : ''}Stock now: ${breakdown(p, newQ)}.${newQ === 0 ? ' This product now shows as sold out.' : ''}`);
   }
   async function saveSettings() {
     const b = A().biz; if (!b) return;
@@ -98,8 +128,9 @@
   $('avTable').addEventListener('click', guard(async e => {
     const set = e.target.closest('[data-av-set]'); if (set) return setAvail([set.dataset.avPid], set.dataset.avSet);
     const sv = e.target.closest('[data-av-save]'); if (sv) return saveCount(sv.dataset.avSave);
+    const rv = e.target.closest('[data-av-recv]'); if (rv) return saveCount(rv.dataset.avRecv, true);
   }));
-  $('avTable').addEventListener('keydown', guard(async e => { const i = e.target.closest('[data-av-count]'); if (i && e.key === 'Enter') { e.preventDefault(); await saveCount(i.dataset.avCount); } }));
+  $('avTable').addEventListener('keydown', guard(async e => { const i = e.target.closest('[data-av-q]'); if (i && e.key === 'Enter') { e.preventDefault(); await saveCount(i.dataset.avQ); } }));
   $('avTable').addEventListener('change', e => {
     if (e.target.id === 'avAll') { rows().slice(0, shown).forEach(p => e.target.checked ? sel.add(p.id) : sel.delete(p.id)); render(); return; }
     const c = e.target.closest('[data-av-sel]'); if (c) { c.checked ? sel.add(c.dataset.avSel) : sel.delete(c.dataset.avSel); $('avBulk').hidden = !sel.size; $('avSelCount').textContent = sel.size + ' selected'; }

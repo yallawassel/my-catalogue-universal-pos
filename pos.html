@@ -112,7 +112,8 @@
           <div class="totals">
             <div><span>Subtotal</span><b id="tSub">$0.00</b></div>
             <div class="disc-row"><button class="link" id="discBtn" type="button">＋ Discount</button><b id="tDisc">—</b></div>
-            <div id="tTaxRow" hidden><span id="tTaxLbl">Tax</span><b id="tTax">$0.00</b></div>
+            <label class="vat-toggle" id="vatToggle" hidden><input type="checkbox" id="vatOn"> <span>VAT invoice</span></label>
+            <div id="tTaxRow" hidden><span id="tTaxLbl">VAT</span><b id="tTax">$0.00</b></div>
             <div class="grand"><span>Total</span><b id="tTotal">$0.00</b></div>
             <div class="lbp"><span>in LBP</span><b id="tTotalLbp">0 LBP</b></div>
           </div>
@@ -199,8 +200,13 @@
           <h3>Money &amp; receipts</h3>
           <div class="row2"><div><label for="stRate">1 USD = ? LBP</label><input id="stRate" type="number" min="1" step="100"></div>
           <div><label for="stRound">Round LBP to</label><select id="stRound"><option value="1">1</option><option value="100">100</option><option value="500">500</option><option value="1000">1,000</option><option value="5000">5,000</option><option value="10000">10,000</option></select></div></div>
-          <div class="row2"><div><label for="stTax">Tax / VAT %</label><input id="stTax" type="number" min="0" max="100" step="0.01"></div>
-          <div><label for="stPrefix">Invoice prefix</label><input id="stPrefix" maxlength="10"></div></div>
+          <div class="vat-box">
+            <div class="row2"><div><label for="stVatMode">VAT</label><select id="stVatMode"><option value="off">No VAT</option><option value="optional">Optional — cashier chooses on each sale</option><option value="always">On every sale</option></select></div>
+            <div><label for="stTax">VAT rate %</label><input id="stTax" type="number" min="0" max="100" step="0.01" placeholder="11"></div></div>
+            <div class="row2"><div><label for="stVatNo">VAT number (printed on tax invoices)</label><input id="stVatNo" maxlength="40"></div>
+            <label class="check"><input type="checkbox" id="stVatIncl"> Prices already include VAT</label></div>
+          </div>
+          <div class="row2"><div><label for="stPrefix">Invoice prefix</label><input id="stPrefix" maxlength="10"></div><div></div></div>
           <label for="stHeader">Receipt header (address, phone, VAT no.)</label><textarea id="stHeader" rows="3"></textarea>
           <label for="stFooter">Receipt footer</label><input id="stFooter">
           <div class="row2"><div><label for="stPaper">Receipt printer</label><select id="stPaper"><option value="80">80 mm</option><option value="58">58 mm</option><option value="a4">A4 invoice</option></select></div>

@@ -253,12 +253,13 @@
   /* ================= SETTINGS ================= */
   function fillSettings() {
     const s = P.settings || {};
-    $('stRate').value = s.lbp_rate || ''; $('stRound').value = String(s.round_lbp || 1000); $('stTax').value = s.tax_rate || 0; $('stPrefix').value = s.invoice_prefix || 'INV';
+    $('stRate').value = s.lbp_rate || ''; $('stRound').value = String(s.round_lbp || 1000); $('stTax').value = s.tax_rate || ''; $('stVatMode').value = s.vat_mode || 'off'; $('stVatIncl').checked = !!s.prices_include_vat; $('stVatNo').value = s.vat_number || ''; $('stPrefix').value = s.invoice_prefix || 'INV';
     $('stHeader').value = s.receipt_header || ''; $('stFooter').value = s.receipt_footer || ''; $('stPaper').value = P.device.paper || '80'; $('stAutoPrint').checked = !!P.device.autoPrint;
     drawCashiers();
   }
   $('stSave').onclick = async () => {
-    const row = { business_id: P.biz.id, lbp_rate: P.num($('stRate').value) || 89500, round_lbp: Number($('stRound').value), tax_rate: P.num($('stTax').value), invoice_prefix: $('stPrefix').value.trim().slice(0, 10) || 'INV', receipt_header: $('stHeader').value.trim(), receipt_footer: $('stFooter').value.trim(), updated_at: new Date().toISOString() };
+    if ($('stVatMode').value !== 'off' && !(P.num($('stTax').value) > 0)) return P.toast('Enter the VAT rate (for example 11).', true);
+    const row = { business_id: P.biz.id, lbp_rate: P.num($('stRate').value) || 89500, round_lbp: Number($('stRound').value), tax_rate: P.num($('stTax').value), vat_mode: $('stVatMode').value, prices_include_vat: $('stVatIncl').checked, vat_number: $('stVatNo').value.trim(), invoice_prefix: $('stPrefix').value.trim().slice(0, 10) || 'INV', receipt_header: $('stHeader').value.trim(), receipt_footer: $('stFooter').value.trim(), updated_at: new Date().toISOString() };
     P.device = { paper: $('stPaper').value, autoPrint: $('stAutoPrint').checked }; P.save('device', P.device);
     const r = await sb.from('mc_saas_pos_settings').upsert(row, { onConflict: 'business_id' });
     if (r.error) return P.err(r.error);
