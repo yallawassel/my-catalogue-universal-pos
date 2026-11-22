@@ -471,7 +471,43 @@ Headers:
   });
 
   /* ------------------------------ Quick shoot (phone) ------------------------------ */
-  const qs = { list: [], i: 0, file: null, blob: null, busy: false };
+  const qs = { list: [], i: 0, file: null, blob: null, busy: false, scan: false, done: 0, index: null };
+  const qsNorm = v => (window.MCScan ? MCScan.norm(v) : String(v || '').trim().toUpperCase());
+  async function qsBuildIndex() {
+    const idx = new Map(), add = (code, p) => { const k = qsNorm(code); if (k && !idx.has(k)) idx.set(k, p); };
+    (A().products || []).forEach(p => { add(p.barcode, p); add(p.sku, p); add(p.pos_product_id, p); });
+    try {
+      const ids = new Map((A().products || []).map(p => [p.id, p]));
+      const r = await MC.sb.from('mc_saas_product_units').select('product_id,barcode').eq('business_id', A().biz.id).not('barcode', 'is', null);
+      (r.data || []).forEach(u => ids.get(u.product_id) && add(u.barcode, ids.get(u.product_id)));
+    } catch (_) {}
+    return idx;
+  }
+  function qsPick(p) {
+    if (window.MCScan) MCScan.close();
+    qs.list = [p]; qs.i = 0; $('qsRun').classList.remove('hidden'); qsShow();
+    if (p.image) toast('This product already has a photo — take a new one to replace it, or Skip.');
+  }
+  function qsFind(code, typed) {
+    const p = qs.index && qs.index.get(qsNorm(code));
+    if (p) { qsPick(p); return true; }
+    if (!typed) return false;
+    const q = code.toLowerCase(), hits = (A().products || []).filter(x => String(x.name || '').toLowerCase().includes(q)).slice(0, 8);
+    const box = document.getElementById('mcsHint');
+    if (hits.length === 1) { qsPick(hits[0]); return true; }
+    if (!hits.length) return false;
+    if (box) {
+      box.innerHTML = '<b>Choose the product:</b>' + hits.map(h => `<button type="button" data-qs-pick="${esc(h.id)}">${esc(h.name)}${h.image ? ' ✓' : ''}</button>`).join('');
+      box.onclick = e => { const b = e.target.closest('[data-qs-pick]'); if (b) { const h = hits.find(x => String(x.id) === b.dataset.qsPick); box.innerHTML = ''; if (h) qsPick(h); } };
+      MCScan.msg(hits.length + ' products match “' + code + '”. Tap the right one below.');
+    }
+    return true;
+  }
+  function qsScanNext() {
+    $('qsRun').classList.add('hidden');
+    MCScan.open({ title: 'Scan a product' + (qs.done ? ' · ' + qs.done + ' photographed' : ''), onCode: qsFind,
+      hint: '', onClose: () => { qs.scan = false; A().loadProducts(); toast(qs.done ? '✅ ' + qs.done + ' photo(s) saved. Scan mode closed.' : 'Scan mode closed.'); } });
+  }
   function qsFillCats() {
     const cs = $('qsCategory'); if (!cs) return; const prev = cs.value;
     const cats = [...new Set((A().products || []).map(catOf))].sort();
@@ -482,15 +518,29 @@ Headers:
     const p = qs.list[qs.i]; qs.file = null; qs.blob = null;
     $('qsSave').disabled = true; $('qsOriginal').disabled = true; $('qsBefore').removeAttribute('src');
     const c = $('qsAfter'); c.getContext('2d').clearRect(0, 0, c.width, c.height); $('qsAfterCap').textContent = 'Pro photo ✨';
+    if (!p && qs.scan) { qsScanNext(); return; }
     if (!p) { $('qsRun').classList.add('hidden'); toast('🎉 Quick shoot finished — all products in this list are done.'); A().loadProducts(); return; }
     $('qsName').textContent = p.name;
     $('qsMeta').textContent = [catOf(p), p.barcode, p.price1 != null ? MC.money(p.price1, A().biz.currency) + ' / ' + (p.label1 || '') : ''].filter(Boolean).join(' · ');
-    $('qsCount').textContent = `${qs.i + 1} / ${qs.list.length}`;
+    $('qsCount').textContent = qs.scan ? '🔍 scanned' : `${qs.i + 1} / ${qs.list.length}`;
+    $('qsSkip').textContent = qs.scan ? '🔍 Scan next' : '⏭ Skip';
     $('qsBar').style.width = Math.round(100 * qs.i / qs.list.length) + '%';
     if (p.image) $('qsBefore').src = p.image;
     $('qsShoot').textContent = '📷 Take photo';
   }
-  on('qsStart', () => {
+  $('qsMode') && $('qsMode').addEventListener('change', () => {
+    const scan = $('qsMode').value === 'scan';
+    $('qsScope').closest('div').style.display = scan ? 'none' : ''; $('qsCategory').closest('div').style.display = scan ? 'none' : '';
+    $('qsModeHint').textContent = scan ? 'Walk along the shelves in any order with your phone: scan a barcode, the product appears, take the photo, save, and scan the next. If a product has no barcode, type part of its name.' : 'The app shows each product name in turn. Good when products have no barcode.';
+  });
+  on('qsStart', async () => {
+    if ($('qsMode') && $('qsMode').value === 'scan') {
+      if (!window.MCScan) throw Error('Scanner not loaded — refresh the page.');
+      qs.scan = true; qs.done = 0; qs.list = []; qs.i = 0; qs.index = await qsBuildIndex();
+      if (!qs.index.size) toast('No barcodes found in your products — you can still type part of a product name in the scanner.', true);
+      qsScanNext(); return;
+    }
+    qs.scan = false;
     const cat = $('qsCategory').value, missing = $('qsScope').value === 'missing';
     qs.list = (A().products || []).filter(p => (!missing || !p.image) && (!cat || catOf(p) === cat))
       .sort((a, b) => catOf(a).localeCompare(catOf(b)) || (a.sort_order || 0) - (b.sort_order || 0));
@@ -513,14 +563,14 @@ Headers:
   });
   async function qsSaveFile(file) {
     if (qs.busy) return; qs.busy = true; $('qsSave').disabled = true; $('qsOriginal').disabled = true;
-    try { await A().replaceProductImage(qs.list[qs.i].id, file); toast('✅ Saved: ' + qs.list[qs.i].name); qs.i++; qsShow(); }
+    try { await A().replaceProductImage(qs.list[qs.i].id, file); toast('✅ Saved: ' + qs.list[qs.i].name); if (qs.scan) qs.done++; qs.i++; qsShow(); }
     catch (e) { toast('Could not save: ' + e.message, true); $('qsSave').disabled = !qs.blob; $('qsOriginal').disabled = !qs.file; }
     finally { qs.busy = false; }
   }
   on('qsSave', () => qs.blob && qsSaveFile(new File([qs.blob], 'studio.' + (qs.blob.type === 'image/webp' ? 'webp' : 'jpg'), { type: qs.blob.type })));
   on('qsOriginal', () => qs.file && qsSaveFile(qs.file));
   on('qsSkip', () => { qs.i++; qsShow(); });
-  on('qsStop', () => { $('qsRun').classList.add('hidden'); qs.list = []; A().loadProducts(); toast('Quick shoot stopped. Your saved photos are in the catalogue.'); });
+  on('qsStop', () => { $('qsRun').classList.add('hidden'); qs.list = []; qs.scan = false; if (window.MCScan) MCScan.close(); A().loadProducts(); toast('Quick shoot stopped. Your saved photos are in the catalogue.'); });
 
   // admin.html may have finished loading the business before this file arrived.
   if (window.MCAdmin && window.MCAdmin.biz) onReady();
