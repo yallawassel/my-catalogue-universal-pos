@@ -30,6 +30,7 @@
     'Please choose': 'يرجى اختيار', 'Please choose your delivery area.': 'يرجى اختيار منطقة التوصيل.', 'Order status': 'حالة الطلب',
     'New': 'جديد', 'Confirmed': 'مؤكد', 'Preparing': 'قيد التحضير', 'On the way': 'في الطريق', 'Delivered': 'تم التسليم', 'Cancelled': 'ملغى',
     'Order not found. Check the link you received.': 'الطلب غير موجود. تحقّق من الرابط.', 'Back to the catalogue': 'العودة إلى الكتالوج',
+    'Sold out': 'نفد', 'from': 'ابتداءً من', 'Menu': 'القائمة', 'Delivery': 'التوصيل', 'Pickup available': 'استلام من المحل', 'Free delivery': 'توصيل مجاني', 'Order on WhatsApp': 'اطلب على واتساب',
     'Bank transfer': 'تحويل مصرفي', 'Card / online payment': 'بطاقة / دفع أونلاين', 'Whish Money': 'Whish Money', 'OMT': 'OMT', 'Quantity': 'الكمية'
   };
   const RX = [
@@ -313,10 +314,10 @@
     ev('visit', null, visitRef());
     let st; $('search') && $('search').addEventListener('input', () => { clearTimeout(st); st = setTimeout(() => { const q = $('search').value.trim(); if (q.length > 1) ev('search', null, q.slice(0, 60)); }, 1500); });
     try { const r = await MC.sb.from('mc_saas_delivery_zones').select('id,name,name_ar,fee,free_over,min_order,eta,sort_order').eq('business_id', biz.id).eq('is_active', true).order('sort_order').order('name'); zones = r.data || []; } catch (_) { zones = []; }
-    buildCheckout(); translate($('cartModal'));
+    buildCheckout(); translate($('cartModal')); document.dispatchEvent(new CustomEvent('mc:zones', { detail: zones }));
     const q = new URLSearchParams(location.search);
     if (q.get('order') && q.get('t')) showTrack(q.get('order'), q.get('t'));
     else if (q.get('p')) { history.replaceState({ mcView: 'home' }, '', (() => { const u = new URL(location.href); u.searchParams.delete('p'); return u.href; })()); open(q.get('p'), true); }
   });
-  window.MCShopPlus = { localize, open, needsOptions, ev, totals, orderExtras, waLines, done, t, get lang() { return lang; } };
+  window.MCShopPlus = { get zones() { return zones; }, localize, open, needsOptions, ev, totals, orderExtras, waLines, done, t, get lang() { return lang; } };
 })();
