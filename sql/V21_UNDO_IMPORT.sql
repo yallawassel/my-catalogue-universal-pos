@@ -1,0 +1,5 @@
+-- V21: "Recent imports" with Undo. Applied to project mkodburhxdrvfacytovb as migration v21_undo_import.
+-- Tables: mc_saas_import_batches (+ products.import_batch). RPCs: mc_saas_start_import, mc_saas_import_summary, mc_saas_undo_import.
+-- Undo: safety copy into mc_backup.manual_snapshots, restores products changed by an Excel sync (old_values in mc_saas_sync_changes),
+-- deletes products the import added, restores category photos/order captured at the start, removes empty categories the import created.
+-- See the migration in Supabase (supabase_migrations.schema_migrations, name v21_undo_import) for the full SQL.
