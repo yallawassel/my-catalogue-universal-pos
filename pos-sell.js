@@ -75,11 +75,15 @@
     renderCart(true);
   }
   P.addProduct = addProduct;
+  P.vatOn = () => { const st = P.settings || {}, rate = Number(st.tax_rate || 0); if (!rate) return false; return st.vat_mode === 'always' || (st.vat_mode === 'optional' && !!P.cart.vat); };
   function totals() {
     const sub = P.r2(P.cart.lines.reduce((s, l) => s + Math.max(0, l.qty * l.price - (l.discount || 0)), 0));
     const disc = P.r2(Math.min(sub, P.cart.discountPct != null ? sub * P.cart.discountPct / 100 : (P.cart.discount || 0)));
-    const tax = P.r2((sub - disc) * Number(P.settings?.tax_rate || 0) / 100);
-    return { sub, disc, tax, total: P.r2(sub - disc + tax) };
+    const rate = Number(P.settings?.tax_rate || 0), vat = P.vatOn(), incl = !!P.settings?.prices_include_vat;
+    if (!vat) return { sub, disc, tax: 0, total: P.r2(sub - disc), vat: false, rate: 0 };
+    if (incl) { const total = P.r2(sub - disc); return { sub, disc, tax: P.r2(total - total / (1 + rate / 100)), total, vat: true, rate, incl }; }
+    const tax = P.r2((sub - disc) * rate / 100);
+    return { sub, disc, tax, total: P.r2(sub - disc + tax), vat: true, rate, incl };
   }
   P.totals = totals;
   function renderCart(bump) {
@@ -93,7 +97,9 @@
     if (bump) { const last = $('lines').lastElementChild; if (last) last.scrollIntoView({ block: 'nearest' }); }
     $('tSub').textContent = P.fmt(t.sub);
     $('tDisc').textContent = t.disc ? '−' + P.fmt(t.disc) + (c.discountPct != null ? ` (${c.discountPct}%)` : '') : '—';
-    $('tTaxRow').hidden = !t.tax; $('tTax').textContent = P.fmt(t.tax); $('tTaxLbl').textContent = `Tax ${Number(P.settings?.tax_rate || 0)}%`;
+    const vm = P.settings?.vat_mode, vr = Number(P.settings?.tax_rate || 0);
+    $('vatToggle').hidden = !(vm === 'optional' && vr > 0); $('vatOn').checked = !!c.vat;
+    $('tTaxRow').hidden = !t.vat; $('tTax').textContent = P.fmt(t.tax); $('tTaxLbl').textContent = `VAT ${vr}%${t.incl ? ' (included)' : ''}`;
     $('tTotal').textContent = P.fmt(t.total); $('tTotalLbp').textContent = P.fmtL(P.ceilLbp(t.total));
     $('payBtn').disabled = !c.lines.length; $('payBtn').textContent = c.lines.length ? 'Pay ' + P.fmt(t.total) : 'Pay';
     $('custName').textContent = c.customer ? c.customer.name : 'Walk-in customer';
@@ -149,7 +155,7 @@
     };
   };
   $('clearCart').onclick = async () => { if (!P.cart.lines.length || await P.confirm('Clear the cart?', 'Remove all items from this sale?', 'Clear')) { resetCart(); } };
-  function resetCart() { P.cart = { lines: [], discount: 0, discountPct: null, customer: null, order_id: null, order_label: '', note: '' }; renderCart(); }
+  function resetCart() { P.cart = { lines: [], discount: 0, discountPct: null, customer: null, order_id: null, order_label: '', note: '', vat: false }; renderCart(); }
   P.resetCart = resetCart;
   $('customItem').onclick = () => {
     const b = P.modal('Add an item', `<label for="ciName">Item name</label><input id="ciName" placeholder="e.g. Service, Delivery"><div class="row2"><div><label for="ciPrice">Price USD</label><input id="ciPrice" type="number" step="0.01" min="0" inputmode="decimal"></div><div><label for="ciQty">Quantity</label><input id="ciQty" type="number" step="any" min="0" value="1" inputmode="decimal"></div></div><div class="sheet-foot"><button class="btn primary" type="button" id="ciOk">Add</button></div>`);
@@ -159,6 +165,7 @@
       P.cart.lines.push({ key: P.uuid(), product_id: null, name, unit: 'Unit', unit_index: 1, qty, price, discount: 0 }); P.close(); renderCart(true);
     };
   };
+  $('vatOn').onchange = () => { P.cart.vat = $('vatOn').checked; renderCart(); };
   $('cartFab').onclick = () => $('cart').classList.add('open');
   $('cartBack').onclick = () => $('cart').classList.remove('open');
 
@@ -256,7 +263,7 @@
     const t = totals(), c = P.cart;
     const payload = {
       client_uuid: P.uuid(), shift_id: P.shift?.id || null, cashier_id: P.cashier ? P.cashier.id : null, customer_id: c.customer ? c.customer.id : null,
-      order_id: c.order_id || null, rate: P.rate(), discount: t.disc, paid_usd: pay.pu, paid_lbp: pay.pl, paid_card: pay.pc, credit_amount: pay.pd,
+      order_id: c.order_id || null, rate: P.rate(), discount: t.disc, vat: t.vat, paid_usd: pay.pu, paid_lbp: pay.pl, paid_card: pay.pc, credit_amount: pay.pd,
       change_lbp: pay.chg.lbp, note: pay.note || (c.order_label ? c.order_label : ''), created_at: new Date().toISOString(),
       items: c.lines.map(l => ({ product_id: l.product_id, name: l.name, unit: l.unit, unit_index: l.unit_index, qty: l.qty, price: l.price, discount: l.discount || 0, barcode: l.barcode || '', category: l.category || '' }))
     };
@@ -267,7 +274,7 @@
     c.lines.forEach(l => { if (l.product_id && P.stock.has(l.product_id) && l.unit_index === 1) P.stock.set(l.product_id, P.stock.get(l.product_id) - l.qty); });
     const sale = {
       ...payload, kind: 'sale', invoice_label: res.data.invoice_label, offline: !!res.offline, cashier_name: P.cashier ? P.cashier.name : 'Owner',
-      customer_name: c.customer ? c.customer.name : '', subtotal: t.sub, tax: t.tax, total: t.total, change_usd: pay.chg.usd,
+      customer_name: c.customer ? c.customer.name : '', subtotal: t.sub, tax: t.tax, vat_rate: t.vat ? t.rate : 0, prices_include_vat: !!t.incl, total: t.total, change_usd: pay.chg.usd,
       customer_balance: cust ? cust.balance : null, payment_method: pay.pd && !(pay.pu || pay.pl || pay.pc) ? 'credit' : pay.pc && !(pay.pu || pay.pl) && !pay.pd ? 'card' : 'cash',
       items: payload.items.map(i => ({ ...i, line_total: P.r2(i.qty * i.price - i.discount) })), id: res.data.id
     };
