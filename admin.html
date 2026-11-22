@@ -485,6 +485,7 @@
   <h3>📷 Quick shoot — photograph products one by one (phone)</h3>
   <p class="hint" style="margin-top:-4px">Take a photo of each product with your phone camera. The background is removed automatically for free and the photo is framed like a studio shot. Tap <b>Save &amp; next</b> and the next product appears.</p>
   <div class="grid">
+   <div style="grid-column:1/-1"><label for="qsMode">How do you want to go?</label><select id="qsMode"><option value="list">📋 One by one from the list (Take photo → Next)</option><option value="scan">🔍 Scan the barcode on the shelf, then take the photo</option></select><small class="hint" id="qsModeHint">The app shows each product name in turn. Good when products have no barcode.</small></div>
    <div><label for="qsScope">Which products?</label><select id="qsScope"><option value="missing">Products without a photo</option><option value="all">All products</option></select></div>
    <div><label for="qsCategory">Category</label><select id="qsCategory"><option value="">All categories</option></select></div>
   </div>
@@ -1281,5 +1282,5 @@ sessionLoad().catch(e=>setStatus(e.message,true));
 <script src="photo-match.js"></script>
 <script src="photo-studio.js"></script>
 <script src="admin-pro.js"></script>
-<script src="ai-pro.js"></script><script src="templates.js"></script><script src="design-studio.js"></script><script src="banner-admin.js"></script><script src="sale-admin.js"></script><script src="stock-admin.js"></script><script src="pieces-admin.js"></script><script src="shop-admin.js"></script><script src="import-undo.js"></script>
+<script src="ai-pro.js"></script><script src="templates.js"></script><script src="design-studio.js"></script><script src="banner-admin.js"></script><script src="sale-admin.js"></script><script src="stock-admin.js"></script><script src="pieces-admin.js"></script><script src="shop-admin.js"></script><script src="import-undo.js"></script><script src="scan.js"></script>
 </body></html>
