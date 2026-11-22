@@ -117,6 +117,36 @@
     product: (ctx, o) => `<article class="product L-be-card">${pic(ctx, o)}<div class="body"><span class="L-eyebrow">${ctx.esc(o.p.category || '')}</span><div class="name">${ctx.esc(o.p.name)}</div><div class="L-price">${selPrice(ctx, o)}</div>${o.options.length > 1 ? units(ctx, o, 'L-pills') : ''}<div class="L-row">${qty(o, 'L-mini')}${add(o, 'Add to bag', 'L-grow')}</div></div></article>`
   };
 
+  /* ---------- Restaurant & delivery: delivery-app menu (cover + logo, info chips, sticky menu tabs,
+     every section on one page, dish rows with photo on the side and a quick + button) ---------- */
+  const rsId = c => 'rs-' + String(c).toLowerCase().replace(/[^a-z0-9؀-ۿ]+/g, '-').replace(/^-|-$/g, '');
+  function rsDish(ctx, p) {
+    const v = [[p.price1, p.was1], [p.price2, p.was2]].filter(x => x[0] !== null && x[0] !== undefined && String(x[0]).trim() !== '' && Number.isFinite(Number(x[0])));
+    const low = v.length ? v.reduce((m, x) => Number(x[0]) < Number(m[0]) ? x : m) : null;
+    const many = v.length > 1 || (Array.isArray(p.options) && p.options.length);
+    const price = low ? `<span class="L-rs-price">${many ? '<small>from</small> ' : ''}${ctx.fmt(low[0])}${low[1] ? ` <s>${ctx.fmt(low[1])}</s>` : ''}</span>` : '<span class="L-rs-price ask">Price on request</span>';
+    return `<div class="L-rs-dish${p.soldOut ? ' out' : ''}" data-rs-open="${ctx.esc(p.id)}" role="button" tabindex="0">
+      <div class="L-rs-txt"><b class="name">${ctx.esc(p.name)}</b>${p.description ? `<p>${ctx.esc(p.description)}</p>` : ''}${price}${p.soldOut ? '<span class="L-rs-out">Sold out</span>' : ''}</div>
+      <div class="L-rs-ph">${p.image ? img(ctx, p.image, p.name) : `<span class="L-rs-ph0">${ctx.esc(p.name.slice(0, 1))}</span>`}${p.soldOut ? '' : `<button type="button" class="L-rs-add" data-rs-add="${ctx.esc(p.id)}" aria-label="Add ${ctx.esc(p.name)}">${IC.plus}</button>`}<i class="L-rs-q" data-rs-q="${ctx.esc(p.id)}" hidden></i></div></div>`;
+  }
+  L.restaurant = {
+    hero: (ctx, cats) => {
+      const h = heroImage(ctx), b = ctx.biz;
+      return `<div class="L-rs-hero"><div class="L-rs-cover">${h ? `<img src="${ctx.esc(h)}" alt="" aria-hidden="true">` : ''}</div>
+        <div class="L-rs-head">${b.logo_url ? `<img class="L-rs-logo" src="${ctx.esc(b.logo_url)}" alt="">` : `<span class="L-rs-logo L-rs-logo0">${ctx.esc((b.company_name || '?').slice(0, 1))}</span>`}
+        <div><h2>${ctx.esc(b.company_name)}</h2>${b.description ? `<p>${ctx.esc(b.description)}</p>` : ''}</div></div>
+        <div class="L-rs-info" id="rsInfo"></div></div>
+        <nav class="L-rs-tabs" id="rsTabs" aria-label="Menu">${cats.map(c => `<a href="#${rsId(c)}" data-rs-tab="${rsId(c)}">${ctx.esc(c)}</a>`).join('')}</nav>`;
+    },
+    title: 'Menu',
+    grid: 'L-rs-menu',
+    category: (ctx, c) => {
+      const items = ctx.products.filter(p => (p.category || 'Products') === c);
+      return `<section class="L-rs-sec" id="${rsId(c)}"><h3>${ctx.esc(c)} <small>${items.length}</small></h3><div class="L-rs-list">${items.map(p => rsDish(ctx, p)).join('')}</div></section>`;
+    },
+    product: (ctx, o) => `<article class="product L-rs-one">${rsDish(ctx, o.p)}</article>`
+  };
+
   window.MCLayouts = {
     get: key => L[key] || null,
     hero(key, ctx, cats) { const l = L[key]; return l && l.hero ? l.hero(ctx, cats) : ''; },
