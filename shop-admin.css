@@ -65,3 +65,12 @@ body.mcs-open{overflow:hidden}
 .ct-b{align-self:flex-start;font-size:12px;font-weight:800;border-radius:999px;padding:2px 8px;background:#eef2ff;color:#3730a3}
 .ct-b.auto{background:#dcfce7;color:#166534}.ct-b.check{background:#fef9c3;color:#854d0e}.ct-b.low{background:#fee2e2;color:#991b1b}.ct-b.ok{background:#dcfce7;color:#166534}
 @media(max-width:700px){.ct-row{grid-template-columns:auto 1fr}.ct-src{grid-column:1/-1}}
+
+/* v26: hide a product from the catalogue */
+.mc-show-toggle{display:flex;gap:10px;align-items:flex-start;padding:10px 12px;margin:0 0 10px;border:1px solid #dfe5e1;border-radius:12px;background:#f7faf8;cursor:pointer}
+.mc-show-toggle input{width:20px;height:20px;margin-top:2px;flex:none}
+.mc-show-toggle span{display:flex;flex-direction:column;gap:2px}
+.mc-show-toggle small{color:#6b746e;font-weight:400}
+.item.mc-hidden-item{opacity:.62;position:relative}
+.item.mc-hidden-item:hover{opacity:1}
+.mc-hidden-pill{position:absolute;top:8px;left:8px;z-index:2;background:#2f3a34;color:#fff;font-size:12px;font-weight:700;padding:3px 9px;border-radius:999px}
