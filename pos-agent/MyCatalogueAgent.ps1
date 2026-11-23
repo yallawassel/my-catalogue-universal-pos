@@ -219,7 +219,17 @@ function Sync-Photos($rows, [bool]$isDry) {
   $sent = 0; $kept = 0; $failed = 0
   foreach ($t in ($todo | Select-Object -First 150)) {
     try {
-      $bytes = Get-PhotoBytes $t.path
+      $bytes = $null
+      try { $bytes = Get-PhotoBytes $t.path } catch {
+        # Windows could not open it (e.g. a WebP picture, or a file with the wrong extension):
+        # send the original file as it is when it is a JPEG / PNG / WebP of reasonable size
+        $raw = [IO.File]::ReadAllBytes($t.path)
+        $isWebp = $raw.Length -gt 12 -and $raw[8] -eq 0x57 -and $raw[9] -eq 0x45 -and $raw[10] -eq 0x42 -and $raw[11] -eq 0x50
+        $isJpg = $raw.Length -gt 3 -and $raw[0] -eq 0xFF -and $raw[1] -eq 0xD8
+        $isPng = $raw.Length -gt 3 -and $raw[0] -eq 0x89 -and $raw[1] -eq 0x50
+        if (($isWebp -or $isJpg -or $isPng) -and $raw.Length -le 2900000) { $bytes = $raw }
+        else { throw ("this picture format cannot be read (" + [IO.Path]::GetFileName($t.path) + "). Save it again as JPG in AntiSoft.") }
+      }
       $res = Post-Connector @{ action = 'photo'; pos_product_id = $t.id; hash = $t.hash; image_base64 = [Convert]::ToBase64String($bytes) }
       if ($res.status -eq 'updated' -or $res.status -eq 'unchanged') { $sent++; $state[$t.id] = $t.hash }
       elseif ($res.status -eq 'kept') { $kept++; $state[$t.id] = $t.hash }
