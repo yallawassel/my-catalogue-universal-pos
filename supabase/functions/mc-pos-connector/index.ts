@@ -100,14 +100,27 @@ Deno.serve(async (req) => {
   const adjust = (v: number | null) => (v === null ? null : round2(v * (1 + markup / 100)));
 
   // Load catalogue identifiers once.
-  const { data: products, error: pErr } = await admin.from("mc_saas_products")
-    .select("id,name,category,barcode,sku,pos_product_id,label1,price1,label2,price2,pieces1,pieces2,sort_order").eq("business_id", biz.id).limit(50000);
-  if (pErr) return json({ error: "Could not read catalogue: " + pErr.message }, 500);
-  type P = NonNullable<typeof products>[number];
+  // The API returns at most 1000 rows per request, so read in pages (a catalogue can have thousands).
+  async function readAll(table: string, cols: string) {
+    const rows: any[] = [];
+    for (let from = 0; from < 200000; from += 1000) {
+      const { data, error } = await admin.from(table).select(cols).eq("business_id", biz!.id).order("id").range(from, from + 999);
+      if (error) return { data: null, error };
+      rows.push(...(data || []));
+      if (!data || data.length < 1000) break;
+    }
+    return { data: rows, error: null };
+  }
+  const { data: products, error: pErr } = await readAll("mc_saas_products", "id,name,category,barcode,sku,pos_product_id,label1,price1,label2,price2,pieces1,pieces2,sort_order");
+  if (pErr || !products) return json({ error: "Could not read catalogue: " + (pErr?.message || "unknown") }, 500);
+  type P = { id: string; name: string; category: string; barcode: string; sku: string; pos_product_id: string; label1: string; price1: number | null; label2: string; price2: number | null; pieces1: number | null; pieces2: number | null; sort_order: number };
   let units: { id: string; product_id: string; unit_name: string; barcode: string; is_base_unit: boolean; conversion_configured: boolean; is_active: boolean; selling_price: number | null }[] = [];
-  const u = await admin.from("mc_saas_product_units").select("id,product_id,unit_name,barcode,is_base_unit,conversion_configured,is_active,selling_price").eq("business_id", biz.id).limit(100000);
+  const u = await readAll("mc_saas_product_units", "id,product_id,unit_name,barcode,is_base_unit,conversion_configured,is_active,selling_price");
   const unitsInstalled = !u.error;
   if (!u.error) units = u.data || [];
+  // current stock, so unchanged quantities are not written again on every run
+  const st = includeStock ? await readAll("mc_saas_product_stock", "id,product_id,physical_qty_base,stock_initialized") : { data: [], error: null };
+  const stockNow = new Map<string, number>((st.data || []).filter((x: any) => x.stock_initialized).map((x: any) => [x.product_id, Number(x.physical_qty_base)]));
 
   const byBarcode = multiMap<any>(products || [], (p) => key(p.barcode));
   const byPosId = multiMap<any>(products || [], (p) => str(p.pos_product_id));
@@ -195,7 +208,8 @@ Deno.serve(async (req) => {
         const qty = Math.max(0, stock);
         // with a full unit set the POS quantity is in its base unit = the catalogue's main stock unit
         const su = unitSet ? baseUnit.get(product.id) : (unit || baseUnit.get(product.id));
-        if (su && (su.is_base_unit || su.conversion_configured)) { stockOps.push({ unit_id: su.id, qty, i }); stockNote = "stock " + qty + " " + su.unit_name + (stock < 0 ? " (POS shows " + stock + ")" : ""); }
+        if (su && su.is_base_unit && stockNow.get(product.id) === qty) stockNote = "stock " + qty + " (no change)";
+        else if (su && (su.is_base_unit || su.conversion_configured)) { stockOps.push({ unit_id: su.id, qty, i }); stockNote = "stock " + qty + " " + su.unit_name + (stock < 0 ? " (POS shows " + stock + ")" : ""); }
         else stockNote = "stock skipped: unit conversion not verified";
       }
       const changed = JSON.stringify(payload) !== before || unitPriceUpdates.length !== unitCountBefore;
@@ -287,10 +301,12 @@ Deno.serve(async (req) => {
   // stock for products created in this run (their base unit is made by a database trigger)
   if (newStock.size && created.length) {
     const ids = created.map((c) => c.id);
-    for (let s = 0; s < ids.length; s += 500) {
-      const { data: bu } = await admin.from("mc_saas_product_units").select("id,product_id").eq("business_id", biz.id).eq("is_base_unit", true).in("product_id", ids.slice(s, s + 500));
+    // small chunks: a long id list makes the request URL too long and the lookup fails
+    for (let s = 0; s < ids.length; s += 100) {
+      const { data: bu, error: buErr } = await admin.from("mc_saas_product_units").select("id,product_id").eq("business_id", biz.id).eq("is_base_unit", true).in("product_id", ids.slice(s, s + 100));
+      if (buErr) errors.push("Stock for new products: " + buErr.message);
       const unitOf = new Map((bu || []).map((x) => [x.product_id, x.id]));
-      for (const c of created.slice(s, s + 500)) {
+      for (const c of created.slice(s, s + 100)) {
         const q = newStock.get(c.pos_product_id ? "pos:" + c.pos_product_id : "bc:" + key(c.barcode));
         const uid = unitOf.get(c.id);
         if (q !== undefined && uid) stockOps.push({ unit_id: uid, qty: q, i: -1 });

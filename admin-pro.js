@@ -185,7 +185,7 @@
   });
   on('dcExportBackup', async () => {
     const biz = A().biz; let units = [];
-    try { const u = await sb().from('mc_saas_product_units').select('*').eq('business_id', biz.id); if (!u.error) units = u.data || []; } catch (_) { }
+    try { const u = await MC.fetchAll(() => sb().from('mc_saas_product_units').select('*').eq('business_id', biz.id).order('id')); if (!u.error) units = u.data || []; } catch (_) { }
     const cats = (A().categoryRows || []).slice().sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0));
     const data = {
       format: 'my-catalogue-backup', version: 8, exported_at: new Date().toISOString(),
@@ -478,7 +478,7 @@ Headers:
     (A().products || []).forEach(p => { add(p.barcode, p); add(p.sku, p); add(p.pos_product_id, p); });
     try {
       const ids = new Map((A().products || []).map(p => [p.id, p]));
-      const r = await MC.sb.from('mc_saas_product_units').select('product_id,barcode').eq('business_id', A().biz.id).not('barcode', 'is', null);
+      const r = await MC.fetchAll(() => MC.sb.from('mc_saas_product_units').select('product_id,barcode').eq('business_id', A().biz.id).not('barcode', 'is', null).order('id'));
       (r.data || []).forEach(u => ids.get(u.product_id) && add(u.barcode, ids.get(u.product_id)));
     } catch (_) {}
     return idx;
