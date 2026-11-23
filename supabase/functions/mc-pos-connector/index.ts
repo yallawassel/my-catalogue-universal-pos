@@ -84,7 +84,39 @@ Deno.serve(async (req) => {
     await touch();
     return json({ ok: true, business: { name: biz.company_name, slug: biz.slug, currency: biz.currency }, key: { name: k.name, permission: k.permission } });
   }
-  if (action !== "sync") return json({ error: "Unsupported action. Use 'ping' or 'sync'." }, 400);
+  if (action === "photo") {
+    // One product photo from the POS (e.g. AntiSoft item picture), already resized by the agent.
+    // A photo the business set in the catalogue itself is kept unless replace=true.
+    if (k.permission === "price") return json({ error: "This key can only update prices." }, 403);
+    const posId = str(body.pos_product_id, 80), hash = str(body.hash, 80).replace(/[^a-zA-Z0-9]/g, "").slice(0, 16) || "x";
+    const b64 = String(body.image_base64 || "");
+    if (!posId || !b64) return json({ error: "pos_product_id and image_base64 are required." }, 400);
+    let bytes: Uint8Array;
+    try { const bin = atob(b64); bytes = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i); } catch { return json({ error: "Invalid image data." }, 400); }
+    if (bytes.length < 200 || bytes.length > 3_000_000) return json({ error: "Image must be between 200 bytes and 3 MB." }, 413);
+    const isJpg = bytes[0] === 0xff && bytes[1] === 0xd8, isPng = bytes[0] === 0x89 && bytes[1] === 0x50, isWebp = bytes[8] === 0x57 && bytes[9] === 0x45;
+    if (!isJpg && !isPng && !isWebp) return json({ error: "Only JPEG, PNG or WebP images are accepted." }, 415);
+    const { data: found, error: fErr } = await admin.from("mc_saas_products").select("id,name,image").eq("business_id", biz.id).eq("pos_product_id", posId).limit(2);
+    if (fErr) return json({ error: fErr.message }, 500);
+    if (!found || !found.length) return json({ ok: false, status: "not_found" });
+    if (found.length > 1) return json({ ok: false, status: "duplicate_pos_id" });
+    const prod = found[0], cur = str(prod.image, 2000);
+    const fromPos = cur.includes("/pos-photos/");
+    if (cur && !fromPos && body.replace !== true) return json({ ok: true, status: "kept", name: prod.name });
+    const ext = isJpg ? "jpg" : isPng ? "png" : "webp";
+    const path = `${biz.id}/pos-photos/${posId.replace(/[^a-zA-Z0-9_-]/g, "_")}-${hash}.${ext}`;
+    const up = await admin.storage.from("mc-saas-images").upload(path, bytes, { contentType: "image/" + (isJpg ? "jpeg" : ext), upsert: true });
+    if (up.error) return json({ error: "Upload failed: " + up.error.message }, 500);
+    const url = admin.storage.from("mc-saas-images").getPublicUrl(path).data.publicUrl;
+    if (url === cur) return json({ ok: true, status: "unchanged", name: prod.name });
+    const { error: uErr } = await admin.from("mc_saas_products").update({ image: url, updated_at: new Date().toISOString() }).eq("id", prod.id).eq("business_id", biz.id);
+    if (uErr) return json({ error: uErr.message }, 500);
+    // remove the previous POS photo file so storage does not fill up
+    if (fromPos) { const m = cur.split("/mc-saas-images/")[1]; if (m && m !== path) await admin.storage.from("mc-saas-images").remove([decodeURIComponent(m.split("?")[0])]); }
+    await touch();
+    return json({ ok: true, status: "updated", name: prod.name });
+  }
+  if (action !== "sync") return json({ error: "Unsupported action. Use 'ping', 'sync' or 'photo'." }, 400);
 
   const items = Array.isArray(body.items) ? (body.items as Item[]) : null;
   if (!items) return json({ error: "'items' must be an array." }, 400);

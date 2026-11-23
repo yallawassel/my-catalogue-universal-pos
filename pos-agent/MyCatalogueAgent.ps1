@@ -174,6 +174,62 @@ function Map-Rows($rows) {
   return ,$items
 }
 
+# ---------- product photos from the POS (e.g. AntiSoft Pics\PicsItem) ----------
+function Get-PhotoBytes([string]$path) {
+  # resize to max 1200 px and save as JPEG (white background), so the catalogue stays fast
+  Add-Type -AssemblyName System.Drawing
+  $img = [System.Drawing.Image]::FromFile($path)
+  try {
+    $s = [Math]::Min(1.0, 1200.0 / [Math]::Max($img.Width, $img.Height))
+    $w = [Math]::Max(1, [int]($img.Width * $s)); $h = [Math]::Max(1, [int]($img.Height * $s))
+    $bmp = New-Object System.Drawing.Bitmap $w, $h
+    $g = [System.Drawing.Graphics]::FromImage($bmp)
+    $g.Clear([System.Drawing.Color]::White)
+    $g.InterpolationMode = [System.Drawing.Drawing2D.InterpolationMode]::HighQualityBicubic
+    $g.DrawImage($img, 0, 0, $w, $h); $g.Dispose()
+    $codec = [System.Drawing.Imaging.ImageCodecInfo]::GetImageEncoders() | Where-Object { $_.MimeType -eq 'image/jpeg' }
+    $ep = New-Object System.Drawing.Imaging.EncoderParameters 1
+    $ep.Param[0] = New-Object System.Drawing.Imaging.EncoderParameter ([System.Drawing.Imaging.Encoder]::Quality), ([long]84)
+    $ms = New-Object IO.MemoryStream
+    $bmp.Save($ms, $codec, $ep); $bmp.Dispose()
+    return ,$ms.ToArray()
+  } finally { $img.Dispose() }
+}
+function Sync-Photos($rows, [bool]$isDry) {
+  if ($cfg.syncPhotos -eq $false) { return }
+  $col = if ($cfg.columns.pic) { $cfg.columns.pic } else { 'Pic' }
+  $folder = if ($cfg.photosFolder) { $cfg.photosFolder } else { 'C:\Program Files\AntiSoft\Pics\PicsItem' }
+  $idCol = $cfg.columns.posProductId
+  $withPic = @($rows | Where-Object { $p = Col $_ $col; $p -and -not ($p -is [DBNull]) -and ([string]$p).Trim() -ne '' })
+  if ($withPic.Count -eq 0) { return }
+  $stateFile = Join-Path $logDir 'photos-sent.json'
+  $state = @{}
+  if (Test-Path $stateFile) { try { (Get-Content $stateFile -Raw -Encoding UTF8 | ConvertFrom-Json).PSObject.Properties | ForEach-Object { $state[$_.Name] = [string]$_.Value } } catch {} }
+  $todo = New-Object System.Collections.ArrayList; $missing = 0
+  foreach ($r in $withPic) {
+    $id = Txt (Col $r $idCol); $pic = ([string](Col $r $col)).Trim()
+    if (-not $id) { continue }
+    $path = if ([IO.Path]::IsPathRooted($pic)) { $pic } else { Join-Path $folder ([IO.Path]::GetFileName($pic)) }
+    if (-not (Test-Path -LiteralPath $path)) { $missing++; continue }
+    $hash = (Get-FileHash -LiteralPath $path -Algorithm SHA1).Hash.Substring(0, 16)
+    if ($state[$id] -ne $hash) { [void]$todo.Add(@{ id = $id; path = $path; hash = $hash }) }
+  }
+  Log ("Photos: " + $withPic.Count + " item(s) have a picture, " + $todo.Count + " new or changed" + $(if ($missing) { ", $missing file(s) not found in $folder" } else { '' }))
+  if ($isDry -or $todo.Count -eq 0) { return }
+  $sent = 0; $kept = 0; $failed = 0
+  foreach ($t in ($todo | Select-Object -First 150)) {
+    try {
+      $bytes = Get-PhotoBytes $t.path
+      $res = Post-Connector @{ action = 'photo'; pos_product_id = $t.id; hash = $t.hash; image_base64 = [Convert]::ToBase64String($bytes) }
+      if ($res.status -eq 'updated' -or $res.status -eq 'unchanged') { $sent++; $state[$t.id] = $t.hash }
+      elseif ($res.status -eq 'kept') { $kept++; $state[$t.id] = $t.hash }
+      else { $failed++ }
+    } catch { $failed++; Log ("  ! photo for item " + $t.id + ": " + $_.Exception.Message) 'Red' }
+  }
+  ([pscustomobject]$state) | ConvertTo-Json -Compress | Set-Content -Path $stateFile -Encoding UTF8
+  Log ("Photos: $sent uploaded, $kept kept (catalogue already has its own photo), $failed not done") 'Cyan'
+}
+
 # ---------- main ----------
 try {
   if (-not $cfg.connectorKey -or $cfg.connectorKey -notmatch '^mcpos_') { throw "Put your connector key in config.json (connectorKey)." }
@@ -194,6 +250,9 @@ try {
   Log ("Prepared " + $items.Count + " item(s)")
   # on a dry run also save exactly what would be sent (units, prices, sizes, stock) for checking
   if ($isDry) { $items | ForEach-Object { [pscustomobject]$_ } | Export-Csv -Path (Join-Path $logDir 'last-items.csv') -NoTypeInformation -Encoding UTF8 }
+
+  # pictures first: they are checked file by file, so they are not covered by the 'unchanged' skip below
+  try { Sync-Photos $rows $isDry } catch { Log ("Photos skipped: " + $_.Exception.Message) 'Yellow' }
 
   # Skip unchanged data on scheduled runs (saves bandwidth & server work)
   $stateFile = Join-Path $logDir 'last-sent.hash'
