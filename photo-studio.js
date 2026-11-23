@@ -104,10 +104,12 @@
     for (let c = 0; c < 3; c++) { lo[c] = pct(hist[c], 0.008); hi[c] = pct(hist[c], 0.992); }
     // Use a shared stretch to avoid colour casts, but keep it gentle.
     const L = Math.min(...lo), H = Math.max(...hi);
-    const range = Math.max(40, H - L), gain = Math.min(1.45, 255 / range), off = L;
+    // Stretch around the middle so very light (white) or very dark products keep their brightness.
+    const range = Math.max(40, H - L), gain = Math.min(1.45, 255 / range), span = (H - L) * gain;
+    const mid = (L + H) / 2, target = Math.min(255 - span / 2, Math.max(span / 2, mid));
     const sat = mode === 'vivid' ? 1.22 : 1.08, contrast = mode === 'vivid' ? 1.08 : 1.03;
     for (let p = 0, i = 0; i < d.length; p++, i += 4) {
-      let r = (d[i] - off) * gain, g = (d[i + 1] - off) * gain, b = (d[i + 2] - off) * gain;
+      let r = (d[i] - mid) * gain + target, g = (d[i + 1] - mid) * gain + target, b = (d[i + 2] - mid) * gain + target;
       const l = 0.299 * r + 0.587 * g + 0.114 * b;
       r = l + (r - l) * sat; g = l + (g - l) * sat; b = l + (b - l) * sat;
       r = (r - 128) * contrast + 128 + 3; g = (g - 128) * contrast + 128 + 3; b = (b - 128) * contrast + 128 + 3;
@@ -147,8 +149,20 @@
     try { data = wctx.getImageData(0, 0, w, h); } catch (e) { throw new Error('This photo is stored on a server that blocks editing. Upload the original file instead.'); }
     const d = data.data;
     const { bg, uniformity } = analyseBorder(d, w, h);
-    let alpha = null, box = { x: 0, y: 0, w, h }, bgRemoved = false;
-    if (o.background !== 'keep' && uniformity > 0.5) {
+    let alpha = null, box = { x: 0, y: 0, w, h }, bgRemoved = false, method = '';
+    // 1) free on-device AI (works on busy backgrounds); falls back to the colour method below
+    if (o.background !== 'keep' && o.ai !== false && window.MCCutout) {
+      try {
+        const a = await MCCutout.mask(work, o.onStatus);
+        let fg = 0, top = h, bottom = -1, left = w, right = -1;
+        for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) if (a[y * w + x] > 0.5) { fg++; if (y < top) top = y; if (y > bottom) bottom = y; if (x < left) left = x; if (x > right) right = x; }
+        const share = fg / (w * h);
+        if (share > 0.02 && share < 0.97 && bottom - top > h * 0.05 && right - left > w * 0.05) {
+          alpha = a; box = { x: left, y: top, w: right - left + 1, h: bottom - top + 1 }; bgRemoved = true; method = 'ai';
+        }
+      } catch (e) { console.warn('AI background removal unavailable:', e.message); }
+    }
+    if (!bgRemoved && o.background !== 'keep' && uniformity > 0.5) {
       const mask = backgroundMask(d, w, h, bg, Number(o.tolerance) || 34);
       const fb = foregroundBox(mask, w, h);
       let bgShare = 0; for (let i = 0; i < mask.length; i++) bgShare += mask[i];
@@ -157,7 +171,7 @@
         alpha = new Float32Array(w * h);
         for (let i = 0; i < alpha.length; i++) alpha[i] = mask[i] ? 0 : 1;
         alpha = featherAlpha(alpha, w, h, 2);
-        box = fb; bgRemoved = true;
+        box = fb; bgRemoved = true; method = 'colour';
       }
     }
     enhance(d, alpha, o.enhance);
@@ -190,7 +204,7 @@
     }
     ctx.drawImage(work, box.x, box.y, box.w, box.h, dx, dy, dw, dh);
     ctx.restore();
-    return { canvas: out, blob: await toBlob(out), bgRemoved };
+    return { canvas: out, blob: await toBlob(out), bgRemoved, method };
   }
 
   const EMOJI = [

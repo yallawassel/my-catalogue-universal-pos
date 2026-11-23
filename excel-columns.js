@@ -14,7 +14,7 @@
   // field -> canonical key used by the importer, exact aliases, "contains" hints, words that disqualify
   const FIELDS = [
     { f: 'barcode', key: 'Barcode', label: 'Barcode',
-      exact: ['barcode', 'bar code', 'ean', 'ean 13', 'upc', 'gtin', 'code barre', 'code barres', 'codebarre', 'باركود', 'الباركود', 'رمز الباركود', 'item barcode', 'unit barcode'],
+      exact: ['barcode', 'bar code', 'ean', 'ean 13', 'upc', 'gtin', 'code barre', 'code barres', 'codebarre', 'باركود', 'الباركود', 'رمز الباركود', 'item barcode', 'unit barcode', 'barcodes', 'item barcodes', 'the units', 'units barcodes'],
       has: ['barcode', 'bar code', 'باركود', 'ean'] },
     { f: 'posProductId', key: 'POS Product ID', label: 'POS product ID',
       exact: ['pos product id', 'pos id', 'product id', 'item id', 'itemid', 'item no', 'item number', 'item num', 'external id', 'رقم الصنف', 'رقم الماده', 'رقم المنتج', 'id'] },
@@ -24,8 +24,10 @@
       exact: ['label 2', 'label2', 'unit 2', 'unit2', 'second unit', 'packaging 2', 'price unit 2', 'الوحده 2', 'وحده 2'] },
     { f: 'price2', key: 'Price2', label: 'Price 2',
       exact: ['price 2', 'price2', 'second price', 'unit price 2', 'sale price 2', 'سعر 2', 'السعر 2'] },
+    { f: 'costPrice', key: 'Cost', label: 'Cost price (not shown to customers)',
+      exact: ['cost', 'cost price', 'unit cost', 'avg cost', 'average cost', 'purchase price', 'buy price', 'buying price', 'last cost', 'prix achat', 'prix d achat', 'prix de revient', 'الكلفه', 'كلفه', 'سعر الكلفه', 'التكلفه', 'سعر الشراء'] },
     { f: 'price1', key: 'Price1', label: 'Price (selling)',
-      exact: ['price 1', 'price1', 'price', 'selling price', 'sale price', 'sales price', 'unit price', 'retail price', 'wholesale price', 'sell price', 'prix', 'prix vente', 'prix de vente', 'السعر', 'سعر', 'سعر البيع', 'سعر المبيع', 'سعر المفرق', 'سعر الجمله', 'سعر الوحده'],
+      exact: ['price 1', 'price1', 'price', 'sel price', 'selprice', 'sell price 1', 'selling price', 'sale price', 'sales price', 'unit price', 'retail price', 'wholesale price', 'sell price', 'prix', 'prix vente', 'prix de vente', 'السعر', 'سعر', 'سعر البيع', 'سعر المبيع', 'سعر المفرق', 'سعر الجمله', 'سعر الوحده'],
       has: ['price', 'prix', 'سعر'], not: ['cost', 'purchase', 'buy', 'achat', 'شراء', 'كلفه', 'تكلفه', 'old', 'previous', 'قديم', '2'] },
     { f: 'label1', key: 'Label1', label: 'Unit (e.g. Piece)',
       exact: ['label 1', 'label1', 'unit 1', 'unit1', 'first unit', 'unit', 'uom', 'unit name', 'unite', 'unit of measure', 'الوحده', 'وحده', 'وحده القياس'],
@@ -94,8 +96,37 @@
       });
       if (best >= 0) { mapping.name = best; mapping._nameGuessed = true; }
     }
+    // 5) "Price" next to a clearer selling-price column (e.g. AntiSoft: "Sel Price" + "Price"):
+    //    the plain one is the cost, the selling one is what customers pay.
+    const SELL = ['sel price', 'selprice', 'sell price', 'selling price', 'sale price', 'sales price', 'retail price', 'prix vente', 'prix de vente', 'سعر البيع', 'سعر المبيع', 'سعر المفرق'].map(norm);
+    if (mapping.price1 !== undefined && ['price', 'prix', 'سعر', 'السعر'].map(norm).includes(norm(headers[mapping.price1]))) {
+      const sell = headers.findIndex((h, k) => k !== mapping.price1 && SELL.includes(norm(h)));
+      if (sell >= 0) { if (mapping.costPrice === undefined) mapping.costPrice = mapping.price1; mapping.price1 = sell; }
+    }
+    if (mapping.price1 !== undefined && mapping.costPrice === undefined && SELL.includes(norm(headers[mapping.price1]))) {
+      const taken = new Set(Object.values(mapping));
+      const plain = headers.findIndex((h, k) => !taken.has(k) && ['price', 'prix', 'سعر', 'السعر'].map(norm).includes(norm(h)));
+      if (plain >= 0) mapping.costPrice = plain;
+    }
+    // 6) no barcode title, but a column full of barcode-looking numbers (one or more, separated by ;)
+    if (mapping.barcode === undefined) {
+      const taken = new Set(Object.entries(mapping).filter(([k]) => !k.startsWith('_')).map(([, v]) => v));
+      const sample = aoa.slice(headerRow + 1, headerRow + 201);
+      let best = -1, bestShare = 0;
+      headers.forEach((h, k) => {
+        if (taken.has(k)) return;
+        const vals = sample.map(r => String((r || [])[k] ?? '').trim()).filter(v => v && !/^[;,|\s]+$/.test(v));
+        if (vals.length < 3) return;
+        const share = vals.filter(v => /^[;,|\s]*\d{6,14}([;,|\s]+\d{6,14})*[;,|\s]*$/.test(v)).length / vals.length;
+        if (share > 0.6 && share > bestShare) { bestShare = share; best = k; }
+      });
+      if (best >= 0) mapping.barcode = best;
+    }
     return mapping;
   }
+
+  // "3260874181;", ";9999981", "62870425;62870426" -> first real code
+  const cleanBarcode = v => (String(v ?? '').split(/[;,|\s]+/).map(x => x.trim()).find(Boolean) || '');
 
   const isTotalRow = cells => cells.some(c => /^(total|totals|grand total|sum|المجموع|الاجمالي|الإجمالي|مجموع)\b/i.test(String(c).trim()));
 
@@ -117,6 +148,7 @@
       if (isTotalRow(cells) && mapping.name !== undefined && !String(cells[mapping.barcode] ?? '').trim()) continue;
       const obj = { __row: r + 1 };
       for (const d of FIELDS) if (mapping[d.f] !== undefined) obj[d.key] = cells[mapping[d.f]] ?? '';
+      if (obj.Barcode !== undefined) obj.Barcode = cleanBarcode(obj.Barcode);
       rows.push(obj);
     }
     const samples = headers.map((_, k) => { const v = aoa.slice(headerRow + 1).map(r => String((r || [])[k] ?? '').trim()).find(Boolean); return v || ''; });
@@ -130,5 +162,5 @@
     return best;
   }
 
-  window.MCCols = { read, bestSheet, norm };
+  window.MCCols = { read, bestSheet, norm, cleanBarcode };
 })();
