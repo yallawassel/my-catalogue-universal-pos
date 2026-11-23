@@ -6,6 +6,7 @@
 --   Price1 / Price2   = AntiSoft selling price of that unit (empty = no price in AntiSoft = "price on request")
 --   Barcode           = barcode of Unit1 (falls back to the item's first barcode)
 --   Stock             = AntiSoft current quantity, in the main unit (negative is shown as sold out)
+--   Pic               = picture file name set in AntiSoft (Pics\\PicsItem folder), uploaded by the agent
 WITH U AS (
     -- the item's main (base) unit
     SELECT v.ItemID, LTRIM(RTRIM(ISNULL(v.UnitFileName, ''))) AS UName, CAST(1 AS float) AS Qty,
@@ -41,7 +42,8 @@ SELECT
     CASE s.P2 WHEN 'bx' THEN bx.UName WHEN 'pk' THEN pk.UName WHEN 'nx' THEN nx.UName END AS Unit2,
     CASE s.P2 WHEN 'bx' THEN bx.Price WHEN 'pk' THEN pk.Price WHEN 'nx' THEN nx.Price END AS Price2,
     CASE s.P2 WHEN 'bx' THEN bx.Qty   WHEN 'pk' THEN pk.Qty   WHEN 'nx' THEN nx.Qty   END AS Pieces2,
-    v.CurrentQte                                      AS Stock
+    v.CurrentQte                                      AS Stock,
+    (SELECT TOP 1 NULLIF(LTRIM(RTRIM(f.ItemPic)), '') FROM dbo.ItemFile AS f WHERE f.ItemID = v.ItemID) AS Pic
 FROM dbo.VItemFile AS v
 CROSS APPLY (SELECT TOP 1 * FROM U WHERE U.ItemID = v.ItemID AND U.IsExtra = 0) AS b
 OUTER APPLY (SELECT TOP 1 * FROM U WHERE U.ItemID = v.ItemID AND U.IsExtra = 1
