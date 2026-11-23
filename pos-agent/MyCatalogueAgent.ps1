@@ -192,6 +192,8 @@ try {
   # unit-only rows only carry a price for an extra packaging barcode
   foreach ($it in $items) { if ($it.unit_only) { $it.Remove('unit_only'); $it.name = '' } }
   Log ("Prepared " + $items.Count + " item(s)")
+  # on a dry run also save exactly what would be sent (units, prices, sizes, stock) for checking
+  if ($isDry) { $items | ForEach-Object { [pscustomobject]$_ } | Export-Csv -Path (Join-Path $logDir 'last-items.csv') -NoTypeInformation -Encoding UTF8 }
 
   # Skip unchanged data on scheduled runs (saves bandwidth & server work)
   $stateFile = Join-Path $logDir 'last-sent.hash'
