@@ -1199,8 +1199,8 @@ $('confirmUnitConversionImport').onclick=async()=>{
 async function loadStockPanel(){
  if(!biz)return;
  const [u,s,settings]=await Promise.all([
-  sb.from('mc_saas_product_units').select('*').eq('business_id',biz.id).order('product_id').order('is_base_unit',{ascending:false}).order('unit_name'),
-  sb.from('mc_saas_stock_availability').select('*').eq('business_id',biz.id),
+  MC.fetchAll(()=>sb.from('mc_saas_product_units').select('*').eq('business_id',biz.id).order('product_id').order('is_base_unit',{ascending:false}).order('unit_name').order('id')),
+  MC.fetchAll(()=>sb.from('mc_saas_stock_availability').select('*').eq('business_id',biz.id).order('product_id')),
   sb.from('mc_saas_stock_settings').select('reservations_enabled').eq('business_id',biz.id).maybeSingle()
  ]);
  if(u.error)throw u.error;if(s.error)throw s.error;if(settings.error)throw settings.error;

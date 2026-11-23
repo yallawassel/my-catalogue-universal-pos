@@ -8,7 +8,7 @@
     try {
       const [st, rows] = await Promise.all([
         MC.sb.rpc('mc_saas_public_stock_settings', { p_business_id: biz.id }),
-        MC.sb.rpc('mc_saas_public_stock', { p_business_id: biz.id })
+        (MC.fetchAll ? MC.fetchAll(() => MC.sb.rpc('mc_saas_public_stock', { p_business_id: biz.id }).order('product_id')) : MC.sb.rpc('mc_saas_public_stock', { p_business_id: biz.id }))
       ]);
       if (!st.error && st.data && st.data[0]) settings = st.data[0];
       if (rows.error) return products;
