@@ -51,3 +51,17 @@ body.mcs-open{overflow:hidden}
 .mcs-hint{padding:0 14px 14px;display:flex;flex-wrap:wrap;gap:8px;max-height:30vh;overflow:auto}
 .mcs-hint b{width:100%}
 .mcs-hint button{border:0;border-radius:10px;padding:10px 12px;background:#fff;color:#111;font-weight:700;text-align:start}
+/* v25 copy photos from another catalogue */
+.ct-tabs{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0}
+.ct-list{display:grid;gap:8px;margin-top:10px}
+.ct-row{display:grid;grid-template-columns:auto 1fr 1.4fr;gap:10px;align-items:center;padding:8px;border:1px solid #eee;border-radius:12px;background:#fff}
+.ct-row.done{opacity:.6;background:#f0fdf4}
+.ct-on input{width:22px;height:22px}
+.ct-mine b{display:block;font-size:14px}.ct-mine small{color:#6b7280}
+.ct-src{display:flex;gap:8px;align-items:center;min-width:0}
+.ct-src img,.ct-ph{width:64px;height:64px;object-fit:contain;border-radius:10px;background:#f6f6f8;flex:0 0 auto;display:grid;place-items:center}
+.ct-src>div{display:flex;flex-direction:column;gap:4px;min-width:0;flex:1}
+.ct-src select{width:100%;min-width:0}
+.ct-b{align-self:flex-start;font-size:12px;font-weight:800;border-radius:999px;padding:2px 8px;background:#eef2ff;color:#3730a3}
+.ct-b.auto{background:#dcfce7;color:#166534}.ct-b.check{background:#fef9c3;color:#854d0e}.ct-b.low{background:#fee2e2;color:#991b1b}.ct-b.ok{background:#dcfce7;color:#166534}
+@media(max-width:700px){.ct-row{grid-template-columns:auto 1fr}.ct-src{grid-column:1/-1}}
