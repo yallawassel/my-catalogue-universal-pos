@@ -1,4 +1,4 @@
-// My Catalogue — Live POS connector (v8)
+// My Catalogue — Live POS connector (v8, units v4: Packet + Box with sizes from the POS)
 // One-way, read-only-from-POS synchronization endpoint used by the Windows agent,
 // export-folder watcher and any cloud POS / custom integration.
 //
@@ -28,6 +28,7 @@ const MAX_ITEMS = 5000;
 type Item = {
   barcode?: unknown; pos_product_id?: unknown; sku?: unknown; name?: unknown; category?: unknown; description?: unknown;
   unit1?: unknown; price1?: unknown; unit2?: unknown; price2?: unknown; stock_qty?: unknown; active?: unknown;
+  pieces1?: unknown; pieces2?: unknown; unit_only?: unknown;
 };
 
 const str = (v: unknown, max = 200) => String(v ?? "").trim().slice(0, max);
@@ -100,7 +101,7 @@ Deno.serve(async (req) => {
 
   // Load catalogue identifiers once.
   const { data: products, error: pErr } = await admin.from("mc_saas_products")
-    .select("id,name,category,barcode,sku,pos_product_id,label1,price1,label2,price2,sort_order").eq("business_id", biz.id).limit(50000);
+    .select("id,name,category,barcode,sku,pos_product_id,label1,price1,label2,price2,pieces1,pieces2,sort_order").eq("business_id", biz.id).limit(50000);
   if (pErr) return json({ error: "Could not read catalogue: " + pErr.message }, 500);
   type P = NonNullable<typeof products>[number];
   let units: { id: string; product_id: string; unit_name: string; barcode: string; is_base_unit: boolean; conversion_configured: boolean; is_active: boolean; selling_price: number | null }[] = [];
@@ -130,6 +131,12 @@ Deno.serve(async (req) => {
     const name = str(raw.name, 200);
     const p1 = num(raw.price1), p2 = num(raw.price2), stock = num(raw.stock_qty);
     if ([p1, p2].some((v) => v !== null && (Number.isNaN(v) || v < 0))) { out.push({ i, action: "skip", reason: "Invalid price", name }); return; }
+    // how many main (POS base) units each shown unit holds, e.g. Box = 270
+    const pcs = (v: unknown) => { const n = num(v); return n !== null && Number.isFinite(n) && n > 0 ? round2(n) : null; };
+    const pc1 = pcs(raw.pieces1), pc2 = pcs(raw.pieces2);
+    const u1 = str(raw.unit1, 80), u2 = str(raw.unit2, 80);
+    // the POS sends the full unit set (agent query with Unit1/Unit2): it decides labels, prices and sizes
+    const unitSet = mode === "full" && !!u1 && raw.unit_only !== true;
     if (!barcode && !posId && !sku) { out.push({ i, action: "skip", reason: "No barcode, POS ID or SKU", name }); return; }
 
     // 1. unit barcode (multi-barcode products, e.g. AntiSoft packaging units)
@@ -159,7 +166,16 @@ Deno.serve(async (req) => {
         if (String(product![field] ?? "") === String(value)) return;
         old[field as string] = product![field]; payload[field as string] = value; rowChanges[field as string] = value;
       };
-      if (unit && !unit.is_base_unit) {
+      const setOrClear = (field: keyof P, value: unknown) => {
+        const v = value === undefined ? null : value;
+        if (String(product![field] ?? "") === String(v ?? "")) return;
+        old[field as string] = product![field]; payload[field as string] = v; rowChanges[field as string] = v;
+      };
+      if (unitSet) {
+        // e.g. Packet (45) + Box (270). A unit with no POS price becomes "price on request".
+        setOrClear("label1", u1); setOrClear("price1", adjust(p1)); setOrClear("pieces1", pc1);
+        setOrClear("label2", u2); setOrClear("price2", u2 ? adjust(p2) : null); setOrClear("pieces2", u2 ? pc2 : null);
+      } else if (unit && !unit.is_base_unit) {
         // Price for a packaging unit (e.g. Box). Mirror into price2 when it is the product's 2nd label.
         const v = adjust(p1 ?? p2);
         if (v !== null && Number(unit.selling_price ?? NaN) !== v && !unitPriceUpdates.some((x) => x.id === unit!.id)) { unitPriceUpdates.push({ id: unit.id, selling_price: v }); rowChanges[unit.unit_name + " price"] = v; }
@@ -177,7 +193,8 @@ Deno.serve(async (req) => {
       if (includeStock && stock !== null && !Number.isNaN(stock)) {
         // A negative POS quantity (sold before it was received) means nothing on the shelf: show as sold out.
         const qty = Math.max(0, stock);
-        const su = unit || baseUnit.get(product.id);
+        // with a full unit set the POS quantity is in its base unit = the catalogue's main stock unit
+        const su = unitSet ? baseUnit.get(product.id) : (unit || baseUnit.get(product.id));
         if (su && (su.is_base_unit || su.conversion_configured)) { stockOps.push({ unit_id: su.id, qty, i }); stockNote = "stock " + qty + " " + su.unit_name + (stock < 0 ? " (POS shows " + stock + ")" : ""); }
         else stockNote = "stock skipped: unit conversion not verified";
       }
@@ -192,12 +209,13 @@ Deno.serve(async (req) => {
     const newKey = barcode ? "bc:" + key(barcode) : posId ? "pos:" + posId : "sku:" + key(sku);
     if (seenNewKeys.has(newKey)) { out.push({ i, action: "skip", reason: "Repeated in this batch", name }); return; }
     seenNewKeys.add(newKey);
-    const unit1 = str(raw.unit1, 80) || "Piece", unit2 = str(raw.unit2, 80);
+    const unit1 = u1 || "Piece", unit2 = u2;
     maxSort += 1;
     inserts.push({
       business_id: biz.id, name, category: str(raw.category, 120) || "Products", description: str(raw.description, 2000),
       barcode, sku: sku && !(bySku.get(key(sku)) || []).length ? sku : "", pos_product_id: posId,
       label1: unit1, price1: adjust(p1), label2: unit2, price2: unit2 ? adjust(p2) : null,
+      pieces1: pc1, pieces2: unit2 ? pc2 : null,
       sort_order: maxSort, is_active: raw.active === false ? false : true, updated_at: new Date().toISOString(),
     });
     if (includeStock && stock !== null && !Number.isNaN(stock)) newStock.set(posId ? "pos:" + posId : "bc:" + key(barcode), Math.max(0, stock));
@@ -216,7 +234,7 @@ Deno.serve(async (req) => {
 
   if (dryRun) {
     await touch({ ...summary, at: new Date().toISOString() });
-    return json({ ok: true, summary, rows: out.slice(0, 1000), truncated: out.length > 1000 });
+    return json({ ok: true, summary, rows: out.slice(0, 5000), truncated: out.length > 5000 });
   }
 
   // ---------- apply ----------
@@ -295,5 +313,5 @@ Deno.serve(async (req) => {
   }).eq("id", jobId);
   if (k.connection_id) await admin.from("mc_saas_pos_connections").update({ last_sync_at: now, connection_status: errors.length ? "error" : "ready", last_error: errors[0] || "" }).eq("id", k.connection_id);
   await touch(final);
-  return json({ ok: errors.length === 0, summary: final, job_id: jobId, errors: errors.slice(0, 50), rows: out.slice(0, 1000), truncated: out.length > 1000 });
+  return json({ ok: errors.length === 0, summary: final, job_id: jobId, errors: errors.slice(0, 50), rows: out.slice(0, 5000), truncated: out.length > 5000 });
 });
