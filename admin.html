@@ -256,7 +256,7 @@
   <button class="btn" id="rematchPhotos" type="button">🧠 Re-run smart photo matching</button>
 </div>
 <div id="bulkPhotoSummary" class="hint" style="margin-top:8px" aria-live="polite"></div>
-<p class="hint">For safety, only rows with a barcode are selected automatically. Rows without a barcode can still be selected manually after review.</p>
+<p class="hint">For safety, only rows with a barcode or POS product ID are selected automatically (all rows when your catalogue is new). Other rows can still be selected manually after review.</p>
 <div id="bulkSummary" class="hint" style="margin-top:10px" aria-live="polite"></div>
 <div id="bulkPreview" style="overflow-x:auto;margin-top:12px"></div>
 <div id="photoPicker" class="hidden" style="position:fixed;inset:0;background:#10231dcc;z-index:9999;padding:16px;overflow:auto">
@@ -903,6 +903,7 @@ function mapBulkRow(raw,i){
   const label2=String(getCell(raw,['label2','unit2','unit 2','second unit','packaging 2','price unit 2'])||'').trim();
   const price2=numBulk(getCell(raw,['price2','price 2','second price','unit price 2','retail price','sale price 2']));
   const description=String(getCell(raw,['description','details','specification','specifications','size','notes'])||'').trim();
+  const costPrice=numBulk(getCell(raw,['cost']));
   // Match normalized Excel headings (underscores and punctuation become spaces).
   const sortRaw=getCell(raw,['display order','display order number','displayorder','sort order','sort order number','position','order']);
   // Explicit Excel order is 1-based. If blank/missing, append after existing products
@@ -913,7 +914,7 @@ function mapBulkRow(raw,i){
   const photoCell=String(getCell(raw,['photo','image','image filename','photo filename','image file','photo file','picture'])||'').trim();
   const imageUrl=String(getCell(raw,['photo url','image url','image_url','photo_url'])||'').trim();
   const photoName=/^https?:\/\//i.test(photoCell)?'':photoCell;
-  return {rowNo:i+2,name,category,barcode,sku,posProductId,label1,price1,label2,price2,hasPrice1,hasPrice2,hasLabel2,description,photoName,imageUrl,sortOrder,photo:null,matchType:'',selected:products.length===0?!!name:!!barcode,problem:''};
+  return {rowNo:i+2,name,category,barcode,sku,posProductId,costPrice,label1,price1,label2,price2,hasPrice1,hasPrice2,hasLabel2,description,photoName,imageUrl,sortOrder,photo:null,matchType:'',selected:products.length<5?!!name:!!(barcode||posProductId),problem:''};
 }
 function photoScore(row,file){ // used by the photo picker ranking
  if(window.MCMatch)return Math.round(100*MCMatch.scorePair({name:row.name,barcode:row.barcode,sku:row.sku,posProductId:row.posProductId,photoName:row.photoName},file).score);
@@ -1073,6 +1074,7 @@ $('runBulkImport').onclick=async()=>{
       payload.label1=row.label1||match?.label1||'Box';payload.label2=row.hasLabel2?row.label2:(match?.label2||'');
       if(row.hasPrice1&&row.price1!==null)payload.price1=price(row.price1);
       if(row.hasPrice2&&row.price2!==null)payload.price2=price(row.price2);
+      if(row.costPrice!==null&&Number.isFinite(row.costPrice)&&row.costPrice>=0)payload.cost_price=row.costPrice;
       if(!match)payload.sort_order=Number.isFinite(row.sortOrder)?row.sortOrder:(products.reduce((m,p)=>Math.max(m,Number(p.sort_order)||-1),-1)+1+added);
       if(row.imageUrl)payload.image=row.imageUrl;
       if(row.photo){const optimized=await optimizeImage(row.photo);const ext=optimized.type==='image/webp'?'webp':'jpg';const path=biz.id+'/'+crypto.randomUUID()+'.'+ext;const up=await sb.storage.from('mc-saas-images').upload(path,optimized,{upsert:false,contentType:optimized.type});if(up.error)throw Error('Photo upload failed: '+up.error.message);payload.image=sb.storage.from('mc-saas-images').getPublicUrl(path).data.publicUrl;photoCount++}
@@ -1280,7 +1282,7 @@ sessionLoad().catch(e=>setStatus(e.message,true));
 </script>
 <script src="excel-columns.js"></script>
 <script src="photo-match.js"></script>
-<script src="photo-studio.js"></script>
+<script src="ai-cutout.js"></script><script src="photo-studio.js"></script>
 <script src="admin-pro.js"></script>
 <script src="ai-pro.js"></script><script src="templates.js"></script><script src="design-studio.js"></script><script src="banner-admin.js"></script><script src="sale-admin.js"></script><script src="stock-admin.js"></script><script src="pieces-admin.js"></script><script src="shop-admin.js"></script><script src="import-undo.js"></script><script src="scan.js"></script>
 </body></html>

@@ -553,11 +553,11 @@ Headers:
     qs.file = f; $('qsBefore').src = window.MCMatch ? MCMatch.thumb(f) : URL.createObjectURL(f);
     $('qsShoot').disabled = true; $('qsShoot').textContent = '✨ Making it pro…';
     try {
-      const res = await MCStudio.process(f, studioOpts());
+      const res = await MCStudio.process(f, { ...studioOpts(), onStatus: t => { $('qsAfterCap').textContent = t; $('qsShoot').textContent = '✨ ' + t; } });
       const c = $('qsAfter'), ctx = c.getContext('2d'); ctx.clearRect(0, 0, c.width, c.height); ctx.drawImage(res.canvas, 0, 0, c.width, c.height);
       qs.blob = res.blob; $('qsSave').disabled = false; $('qsOriginal').disabled = false;
-      $('qsAfterCap').textContent = res.bgRemoved ? 'Background removed ✨' : 'Framed (background too busy to remove)';
-      if (!res.bgRemoved) toast('Background was too busy to remove. Retake on a plain surface, or save it framed.');
+      $('qsAfterCap').textContent = res.bgRemoved ? (res.method === 'ai' ? 'Background removed by AI ✨' : 'Background removed ✨') : 'Framed (background could not be removed)';
+      if (!res.bgRemoved) toast('The background could not be removed. Retake with the product in the middle, or save it framed.');
     } catch (e) { toast('Could not process this photo: ' + e.message + ' — you can still use the original.', true); $('qsOriginal').disabled = false; }
     finally { $('qsShoot').disabled = false; $('qsShoot').textContent = '🔄 Retake photo'; }
   });

@@ -22,3 +22,17 @@ test('shop-plus loads and exposes its API', () => {
   assert.equal(w.MCShopPlus.needsOptions({ options: [] }), false);
   assert.equal(w.MCShopPlus.t('Send'), 'Send'); // English by default
 });
+
+test('AntiSoft inventory export: selling price, cost and barcode list are recognised', () => {
+  const ctx = { window: {} }; vm.createContext(ctx);
+  vm.runInContext(readFileSync(new URL('../excel-columns.js', import.meta.url), 'utf8'), ctx);
+  const c = ctx.window.MCCols.read([
+    ['Item ID', 'Item Name', 'Currency', 'Unit File', 'Sel Price', 'The Units', 'Total Qty', 'Price', 'Total', 'Item Code'],
+    [1, 'SOMO CONTAINER 500CC', 'USD', 'PCS', 0.25, '3260874181;', 225, 0.157, 35.3, ''],
+    [2, 'NAYLON BAG 45', 'USD', 'PKTS', 2.25, ';6287042530649', -13, 1.75, -22.7, ''],
+    [3, 'PAPER BAG WHITE', 'USD', 'PKTS', 8, ';', 5, 5.25, 26.2, 'C229']
+  ]);
+  assert.equal(c.rows[0].Price1, 0.25); assert.equal(c.rows[0].Cost, 0.157);
+  assert.equal(c.rows[0].Barcode, '3260874181'); assert.equal(c.rows[1].Barcode, '6287042530649'); assert.equal(c.rows[2].Barcode, '');
+  assert.equal(c.rows[0]['POS Product ID'], 1); assert.equal(c.rows[2].SKU, 'C229');
+});
