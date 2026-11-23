@@ -142,6 +142,8 @@ function Map-Rows($rows) {
       unit2          = Txt (Col $r $c.unit2)
       price2         = Num (Col $r $c.price2)
       unit_factor    = Num (Col $r $c.unitFactor)
+      pieces1        = Num (Col $r $(if ($c.pieces1) { $c.pieces1 } else { 'Pieces1' }))
+      pieces2        = Num (Col $r $(if ($c.pieces2) { $c.pieces2 } else { 'Pieces2' }))
     }
     if ($cfg.includeStock) { $item.stock_qty = Num (Col $r $c.stock) }
     if ($item.barcode -or $item.pos_product_id -or $item.sku) { [void]$items.Add($item) }
