@@ -58,21 +58,28 @@
 
   function prepFile(f, i) {
     const n = normalize(f.name), toks = tokensOf(n);
-    return { i, n, c: n.replace(/\s+/g, ''), toks, tokSet: new Set(toks), nums: numbersOf(toks), tri: trigrams(toks.join(' ')) };
+    // whole words of the file name as typed (split only on spaces, _ - . etc., NOT between letters and digits),
+    // so "file_0000000062c4a8" never "contains" the POS ID 622 or 62
+    const raw = String(f.name || '').toLowerCase().replace(/\.[a-z0-9]{2,5}$/, '');
+    const words = raw.split(/[^\p{L}\p{N}]+/u).filter(Boolean);
+    return { i, n, c: n.replace(/\s+/g, ''), raw, words: new Set(words), toks, tokSet: new Set(toks), nums: numbersOf(toks), tri: trigrams(toks.join(' ')) };
   }
   function prepItem(it) {
     const n = normalize(it.name), toks = tokensOf(n);
     return { it, n, toks, nums: numbersOf(toks), tri: trigrams(toks.join(' ')),
       ids: [['photoName', it.photoName, 1.0, 'Excel photo name'], ['barcode', it.barcode, 0.99, 'barcode in file name'], ['sku', it.sku, 0.97, 'SKU in file name'], ['pos', it.posProductId, 0.95, 'POS ID in file name']]
-        .map(([k, v, w, why]) => ({ k, c: compact(v), w, why })).filter(x => x.c && (x.k === 'photoName' || x.c.length >= 3)) };
+        .map(([k, v, w, why]) => ({ k, c: compact(v), w, why })).filter(x => x.c) };
   }
 
   function scorePair(p, f) {
     // 1. identifiers
     for (const id of p.ids) {
       if (id.k === 'photoName') { if (f.c === id.c) return { score: 1, reason: id.why }; continue; }
-      if (f.c === id.c || f.tokSet.has(id.c)) return { score: id.w, reason: id.why };
-      if (id.c.length >= 6 && f.c.includes(id.c)) return { score: id.w - 0.03, reason: id.why };
+      if (f.c === id.c) return { score: id.w, reason: id.why };
+      if (id.c.length < 3) continue; // very short codes (e.g. POS ID 24) only when the file is named exactly "24.jpg"
+      if (f.words.has(id.c)) return { score: id.w, reason: id.why };
+      // long codes (barcodes) inside a longer name, e.g. "IMG_6223001234567_front" — never inside a random hash
+      if (id.c.length >= 8 && /^\d+$/.test(id.c) && new RegExp('(^|[^0-9a-f])' + id.c + '([^0-9a-f]|$)').test(f.raw)) return { score: id.w - 0.03, reason: id.why };
     }
     if (!p.toks.length || !f.toks.length) return { score: 0, reason: '' };
     // 2. name similarity
