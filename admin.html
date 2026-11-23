@@ -1051,10 +1051,11 @@ $('runBulkImport').onclick=async()=>{
  if(!Number.isFinite(markup)||markup < -100||markup>1000){setStatus('Markup/discount must be between -100% and 1000%.',true);return}
  const newRows=chosen.filter(r=>!findSyncMatch(r).product);
  const skuCounts=new Map();chosen.forEach(r=>{const k=normBulk(r.sku);if(k)skuCounts.set(k,(skuCounts.get(k)||0)+1)});
- const repeatedSku=[...skuCounts].find(([,n])=>n>1);if(repeatedSku){setStatus('The Excel file contains duplicate SKU '+repeatedSku[0]+'. Each product must have a unique SKU.',true);return}
+ const repeatedSkus=[...skuCounts].filter(([,n])=>n>1).map(([k])=>k);const dupNote=repeatedSkus.length?` Note: ${repeatedSkus.length} SKU(s) appear on more than one row (${repeatedSkus.slice(0,3).join(', ')}${repeatedSkus.length>3?'…':''}); the first product keeps the SKU and the others are saved without it.`:'';
  if(mode==='price'&&newRows.length){setStatus('Price-only mode cannot add new products. Switch to full product sync or deselect unmatched rows.',true);return}
- if(!confirm(`Confirm ${mode==='price'?'price-only':'full product'} synchronization for ${chosen.length} row(s)? ${newRows.length} new product(s) will be added. Online prices will be updated using ${markup}% adjustment. No products will be deleted.`))return;
- bulkState.busy=true;$('runBulkImport').disabled=true;let updated=0,added=0,failed=0,photoCount=0;const failures=[];let jobId=null;
+ if(!confirm(`Confirm ${mode==='price'?'price-only':'full product'} synchronization for ${chosen.length} row(s)? ${newRows.length} new product(s) will be added. Online prices will be updated using ${markup}% adjustment. No products will be deleted.${dupNote}`))return;
+ bulkState.busy=true;$('runBulkImport').disabled=true;let updated=0,added=0,failed=0,photoCount=0,skuSkipped=0;const failures=[];let jobId=null;
+ const skuOwner=new Map();products.forEach(p=>{const k=String(p.sku||'').trim().toLowerCase();if(k)skuOwner.set(k,p.id)});
  try{
   const job=await sb.from('mc_saas_sync_jobs').insert({business_id:biz.id,source_type:'file',sync_mode:mode,status:'running',markup_pct:markup,rows_total:chosen.length}).select('id').single();
   if(job.error)throw Error('Synchronization database migration is required. Run POS_SYNC_MIGRATION.sql in Supabase first. Details: '+job.error.message);jobId=job.data.id;const importBatch=window.mcStartImport?await mcStartImport('sync',$('bulkSheet')?.files?.[0]?.name,jobId):null;
@@ -1079,6 +1080,7 @@ $('runBulkImport').onclick=async()=>{
       if(row.imageUrl)payload.image=row.imageUrl;
       if(row.photo){const optimized=await optimizeImage(row.photo);const ext=optimized.type==='image/webp'?'webp':'jpg';const path=biz.id+'/'+crypto.randomUUID()+'.'+ext;const up=await sb.storage.from('mc-saas-images').upload(path,optimized,{upsert:false,contentType:optimized.type});if(up.error)throw Error('Photo upload failed: '+up.error.message);payload.image=sb.storage.from('mc-saas-images').getPublicUrl(path).data.publicUrl;photoCount++}
     }
+    if(payload.sku){const k=String(payload.sku).trim().toLowerCase(),owner=skuOwner.get(k);if(owner&&owner!==(match&&match.id)){delete payload.sku;skuSkipped++}else skuOwner.set(k,match?match.id:'new:'+i)}
     if(match){
       const old={price1:match.price1,price2:match.price2,name:match.name,category:match.category,description:match.description,label1:match.label1,label2:match.label2};
       const upd=await sb.from('mc_saas_products').update(payload).eq('id',match.id).eq('business_id',biz.id);if(upd.error)throw upd.error;if(mode!=='price')await syncOptionalSecondaryUnit(match.id,match.label2,payload.label2);
@@ -1093,7 +1095,7 @@ $('runBulkImport').onclick=async()=>{
   }
   if(jobId){const done=await sb.from('mc_saas_sync_jobs').update({status:failed?'completed_with_errors':'completed',rows_updated:updated,rows_added:added,rows_failed:failed,completed_at:new Date().toISOString(),error_summary:failures.slice(0,10)}).eq('id',jobId).eq('business_id',biz.id);if(done.error)throw done.error;}
   await loadProducts();
-  setStatus(`Synchronization finished: ${updated} updated · ${added} added · ${failed} failed · ${photoCount} photos uploaded.${failures.length?' First error: '+failures[0]:''}`,failed>0);
+  setStatus(`Synchronization finished: ${updated} updated · ${added} added · ${failed} failed · ${photoCount} photos uploaded.${skuSkipped?` ${skuSkipped} product(s) saved without SKU because the same SKU belongs to another product.`:''}${failures.length?' First error: '+failures[0]:''}`,failed>0);
   setBulkSummary(`Completed: ${updated} updated · ${added} added · ${failed} failed. Your online catalogue now reflects the imported POS prices.`);
   $('syncConfirm').checked=false;
  }catch(e){setStatus('Synchronization stopped: '+e.message,true)}
