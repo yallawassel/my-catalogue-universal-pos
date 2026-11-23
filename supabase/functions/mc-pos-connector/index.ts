@@ -122,6 +122,7 @@ Deno.serve(async (req) => {
   const inserts: Record<string, unknown>[] = [];
   const stockOps: { unit_id: string; qty: number; i: number }[] = [];
   const seenNewKeys = new Set<string>();
+  const newStock = new Map<string, number>(); // pos id / barcode of a new product -> stock to set right after it is created
   let maxSort = (products || []).reduce((m, p) => Math.max(m, Number(p.sort_order) || 0), 0);
 
   items.forEach((raw, i) => {
@@ -173,9 +174,11 @@ Deno.serve(async (req) => {
         if (!str(product.sku) && sku && !(bySku.get(key(sku)) || []).length) set("sku", sku);
       }
       let stockNote = "";
-      if (includeStock && stock !== null && !Number.isNaN(stock) && stock >= 0) {
+      if (includeStock && stock !== null && !Number.isNaN(stock)) {
+        // A negative POS quantity (sold before it was received) means nothing on the shelf: show as sold out.
+        const qty = Math.max(0, stock);
         const su = unit || baseUnit.get(product.id);
-        if (su && (su.is_base_unit || su.conversion_configured)) { stockOps.push({ unit_id: su.id, qty: stock, i }); stockNote = "stock " + stock + " " + su.unit_name; }
+        if (su && (su.is_base_unit || su.conversion_configured)) { stockOps.push({ unit_id: su.id, qty, i }); stockNote = "stock " + qty + " " + su.unit_name + (stock < 0 ? " (POS shows " + stock + ")" : ""); }
         else stockNote = "stock skipped: unit conversion not verified";
       }
       const changed = JSON.stringify(payload) !== before || unitPriceUpdates.length !== unitCountBefore;
@@ -197,6 +200,7 @@ Deno.serve(async (req) => {
       label1: unit1, price1: adjust(p1), label2: unit2, price2: unit2 ? adjust(p2) : null,
       sort_order: maxSort, is_active: raw.active === false ? false : true, updated_at: new Date().toISOString(),
     });
+    if (includeStock && stock !== null && !Number.isNaN(stock)) newStock.set(posId ? "pos:" + posId : "bc:" + key(barcode), Math.max(0, stock));
     out.push({ i, action: "new", name });
   });
 
@@ -206,7 +210,7 @@ Deno.serve(async (req) => {
     added: out.filter((r) => r.action === "new").length,
     unchanged: out.filter((r) => r.action === "unchanged").length,
     skipped: out.filter((r) => r.action === "skip").length,
-    stock_updates: stockOps.length, stock_available: unitsInstalled,
+    stock_updates: stockOps.length + newStock.size, stock_available: unitsInstalled,
     errors: 0,
   };
 
@@ -225,6 +229,17 @@ Deno.serve(async (req) => {
   const now = new Date().toISOString();
   let updated = 0, added = 0;
   const changeLog: Record<string, unknown>[] = [];
+  const created: { id: string; pos_product_id: string; barcode: string }[] = [];
+  // runs that add products appear in Admin → Recent imports, so they can be undone like an Excel import
+  let importBatch: string | null = null;
+  if (inserts.length) {
+    const { data: cats } = await admin.from("mc_saas_categories").select("name,image_url,sort_order").eq("business_id", biz.id);
+    const { data: b } = await admin.from("mc_saas_import_batches").insert({
+      business_id: biz.id, kind: "sync", file_name: "Live POS connector · " + k.name, sync_job_id: jobId, categories_before: cats || [],
+    }).select("id").single();
+    importBatch = b?.id || null;
+    if (importBatch) for (const row of inserts) row.import_batch = importBatch;
+  }
 
   for (const [id, x] of updates) {
     const { error } = await admin.from("mc_saas_products").update({ ...x.payload, updated_at: now }).eq("id", id).eq("business_id", biz.id);
@@ -238,16 +253,30 @@ Deno.serve(async (req) => {
   }
   for (let s = 0; s < inserts.length; s += 500) {
     const chunk = inserts.slice(s, s + 500);
-    const { data, error } = await admin.from("mc_saas_products").insert(chunk).select("id,name");
+    const { data, error } = await admin.from("mc_saas_products").insert(chunk).select("id,name,pos_product_id,barcode");
     if (error) {
       // fall back to one-by-one so one bad row does not block the rest
       for (const row of chunk) {
-        const r = await admin.from("mc_saas_products").insert(row).select("id").single();
-        if (r.error) errors.push(`${row.name}: ${r.error.message}`); else { added++; if (changeLog.length < 2000) changeLog.push({ business_id: biz.id, job_id: jobId, product_id: r.data.id, match_method: "connector: new product", old_values: {}, new_values: row }); }
+        const r = await admin.from("mc_saas_products").insert(row).select("id,pos_product_id,barcode").single();
+        if (r.error) errors.push(`${row.name}: ${r.error.message}`); else { added++; created.push(r.data as any); if (changeLog.length < 2000) changeLog.push({ business_id: biz.id, job_id: jobId, product_id: r.data.id, match_method: "connector: new product", old_values: {}, new_values: row }); }
       }
     } else {
       added += (data || []).length;
+      for (const d of data || []) created.push(d as any);
       for (const d of data || []) if (changeLog.length < 2000) changeLog.push({ business_id: biz.id, job_id: jobId, product_id: d.id, match_method: "connector: new product", old_values: {}, new_values: { name: d.name } });
+    }
+  }
+  // stock for products created in this run (their base unit is made by a database trigger)
+  if (newStock.size && created.length) {
+    const ids = created.map((c) => c.id);
+    for (let s = 0; s < ids.length; s += 500) {
+      const { data: bu } = await admin.from("mc_saas_product_units").select("id,product_id").eq("business_id", biz.id).eq("is_base_unit", true).in("product_id", ids.slice(s, s + 500));
+      const unitOf = new Map((bu || []).map((x) => [x.product_id, x.id]));
+      for (const c of created.slice(s, s + 500)) {
+        const q = newStock.get(c.pos_product_id ? "pos:" + c.pos_product_id : "bc:" + key(c.barcode));
+        const uid = unitOf.get(c.id);
+        if (q !== undefined && uid) stockOps.push({ unit_id: uid, qty: q, i: -1 });
+      }
     }
   }
   let stockDone = 0;
