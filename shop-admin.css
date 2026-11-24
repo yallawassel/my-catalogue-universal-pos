@@ -77,3 +77,11 @@ body.mcs-open{overflow:hidden}
 /* v27: bigger photos and the other catalogue's product name in "Copy photos" */
 .ct-src img,.ct-ph{width:96px;height:96px}
 .ct-their{color:#6b746e;font-size:12px;line-height:1.3}
+
+/* v28: "Sell everything" switch on the Stock page */
+.av-all{display:flex;gap:12px;align-items:flex-start;margin:12px 0;padding:14px 16px;border:2px solid #d7e6dc;border-radius:14px;background:#f6fbf8;cursor:pointer}
+.av-all input{width:22px;height:22px;margin-top:2px;flex:none;accent-color:#14915b}
+.av-all span{display:flex;flex-direction:column;gap:3px}
+.av-all small{color:#5f6b64;font-weight:400;line-height:1.4}
+.av-all.on{border-color:#14915b;background:#e8f7ef}
+#avCard .av-settings input:disabled+span{opacity:.5}

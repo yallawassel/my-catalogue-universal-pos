@@ -33,6 +33,7 @@
     $('avShow').checked = !!settings.show_on_catalogue; $('avHide').checked = !!settings.hide_out_of_stock;
     $('avBlock').checked = settings.block_out_of_stock_orders !== false; $('avQty').checked = !!settings.show_quantity;
     $('avLow').value = Number(settings.low_stock_threshold || 0);
+    syncAll();
     render();
   }
   function rows() {
@@ -118,6 +119,27 @@
     settings = { ...settings, ...row }; render(); toast('✅ Catalogue stock settings saved.');
   }
   const guard = fn => async (...a) => { try { await fn(...a); } catch (e) { toast(e.message || String(e), true); } };
+
+  // "Sell everything": one switch that turns stock off on the catalogue (labels + order blocking) and back on
+  const KEEP = () => 'mc-av-before-' + (A().biz ? A().biz.id : '');
+  function syncAll() {
+    const on = !!settings && !settings.show_on_catalogue && !settings.hide_out_of_stock && settings.block_out_of_stock_orders === false;
+    $('avAll').checked = on; $('avAllWrap').classList.toggle('on', on);
+    document.querySelectorAll('#avCard .av-settings input').forEach(i => { i.disabled = on; });
+  }
+  async function setAll(on) {
+    if (on) {
+      try { localStorage.setItem(KEEP(), JSON.stringify({ s: $('avShow').checked, h: $('avHide').checked, b: $('avBlock').checked })); } catch (_) {}
+      $('avShow').checked = false; $('avHide').checked = false; $('avBlock').checked = false;
+    } else {
+      let prev = null; try { prev = JSON.parse(localStorage.getItem(KEEP()) || 'null'); } catch (_) {}
+      prev = prev && (prev.s || prev.h || prev.b) ? prev : { s: true, h: false, b: true };
+      $('avShow').checked = !!prev.s; $('avHide').checked = !!prev.h; $('avBlock').checked = !!prev.b;
+    }
+    await saveSettings(); syncAll();
+    toast(on ? '🟢 All products are now available on the catalogue (stock ignored).' : '📦 Stock is back on: sold-out products show as sold out again.');
+  }
+  $('avAll').addEventListener('change', guard(() => setAll($('avAll').checked)));
 
   ['avShow', 'avHide', 'avBlock', 'avQty'].forEach(id => $(id).addEventListener('change', guard(saveSettings)));
   $('avLow').addEventListener('change', guard(saveSettings));
