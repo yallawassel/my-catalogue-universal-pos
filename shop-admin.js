@@ -78,6 +78,12 @@
       <div class="sh-card"><h3>📍 Delivery areas</h3><p class="hint">The customer picks an area at checkout; its fee is added to the order. Leave the list empty to take orders without delivery fees.</p>
         <div id="shZones"></div><button type="button" class="btn" id="shAddZone">＋ Add a delivery area</button>
         <label class="sh-check"><input type="checkbox" id="shPickup"> Customers can pick up from the store</label><input id="shPickupAddr" placeholder="Pickup address shown to customers (optional)"></div>
+      <div class="sh-card"><h3>📨 How customers send their order</h3><p class="hint">Tick every way you accept. With more than one, the customer chooses at checkout. Every order is also saved in <b>Orders</b>, whatever the way.</p>
+        <label class="sh-check"><input type="checkbox" id="ocWa"> 💬 WhatsApp <small class="hint">(uses the WhatsApp number in Business settings)</small></label>
+        <label class="sh-check"><input type="checkbox" id="ocCall"> 📞 Phone call — the customer sends the order, then calls you</label><input id="ocPhone" inputmode="tel" placeholder="Phone number customers call, e.g. +964 770 000 0000">
+        <label class="sh-check"><input type="checkbox" id="ocTg"> ✈️ Telegram</label><input id="ocTgUser" placeholder="Telegram username, e.g. mystore (without @)">
+        <label class="sh-check"><input type="checkbox" id="ocIn"> 🛎️ Inside the catalogue — no app needed; the customer gets an order number and a tracking link, you see it in Orders</label>
+        <button type="button" class="btn primary" id="ocSave">Save order options</button></div>
       <div class="sh-card"><h3>💳 Payment methods</h3><p class="hint">Cash on delivery is always offered. Fill the ones you accept — they appear at checkout and in the WhatsApp message.</p>
         <div class="grid"><div><label for="shWhish">Whish Money number</label><input id="shWhish" placeholder="+961 70 000 000"></div><div><label for="shOmt">OMT details</label><input id="shOmt" placeholder="Name + phone for OMT transfer"></div>
         <div><label for="shBank">Bank transfer details</label><input id="shBank" placeholder="Bank, account name, IBAN"></div><div><label for="shLink">Online card payment link</label><input id="shLink" placeholder="https://… (Areeba, Stripe, PayPal link)"></div></div>
@@ -91,6 +97,7 @@
     $('shLang').value = b.default_language === 'ar' ? 'ar' : 'en'; $('shDescAr').value = b.description_ar || '';
     $('shPickup').checked = b.pickup_enabled !== false; $('shPickupAddr').value = b.pickup_address || '';
     $('shWhish').value = pm.whish || ''; $('shOmt').value = pm.omt || ''; $('shBank').value = pm.bank || ''; $('shLink').value = pm.link || '';
+    { const oc = b.order_channels || { whatsapp: true }; $('ocWa').checked = oc.whatsapp !== false; $('ocCall').checked = !!oc.call; $('ocPhone').value = oc.phone || ''; $('ocTg').checked = !!oc.telegram; $('ocTgUser').value = oc.telegram || ''; $('ocIn').checked = !!oc.inapp; $('ocSave').onclick = saveChannels; }
     $('shSave').onclick = saveSettings; $('shAddZone').onclick = () => { zones.push({ id: null, name: '', name_ar: '', fee: 0, free_over: null, min_order: null, eta: '', is_active: true }); drawZones(); };
     $('shZones').addEventListener('click', zoneClick); $('shAddCode').onclick = addCode; $('shCodes').addEventListener('click', codeClick);
     $('shCats').addEventListener('change', async e => { const i = e.target.closest('[data-cat]'); if (!i) return; const r = await sb().rpc('mc_saas_set_category_ar', { p_business_id: b.id, p_name: i.dataset.cat, p_name_ar: i.value }); say(r.error ? r.error.message : '✓ Arabic name saved for ' + i.dataset.cat, !!r.error); });
@@ -160,6 +167,17 @@
     if (r.error) return say(r.error.message, true);
     Object.assign(b, { default_language: $('shLang').value, description_ar: $('shDescAr').value.trim() || null, pay_methods: Object.fromEntries(Object.entries(pm).filter(([, v]) => v)), pickup_enabled: $('shPickup').checked, pickup_address: $('shPickupAddr').value.trim() || null });
     say('✓ Language, pickup and payment methods saved.');
+  }
+
+  async function saveChannels() {
+    const b = biz();
+    const tg = $('ocTgUser').value.trim().replace(/^@/, '');
+    if ($('ocTg').checked && tg.length < 5) return say('Type your Telegram username (at least 5 letters) or untick Telegram.', true);
+    if ($('ocCall').checked && $('ocPhone').value.replace(/[^0-9]/g, '').length < 6) return say('Type the phone number customers should call, or untick Phone call.', true);
+    if ($('ocWa').checked && !String(b.whatsapp || '').replace(/\D/g, '')) say('Tip: add your WhatsApp number in Business settings, otherwise WhatsApp is skipped at checkout.');
+    const r = await sb().rpc('mc_saas_save_order_channels', { p_business_id: b.id, p_channels: { whatsapp: $('ocWa').checked, call: $('ocCall').checked, phone: $('ocPhone').value, telegram: $('ocTg').checked ? tg : '', inapp: $('ocIn').checked } });
+    if (r.error) return say(r.error.message, true);
+    b.order_channels = r.data; say('✓ Order options saved.');
   }
 
   /* ------------------- Visitors & sales page ------------------- */

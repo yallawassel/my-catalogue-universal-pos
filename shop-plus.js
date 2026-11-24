@@ -27,7 +27,12 @@
     'Discount code': 'رمز الخصم', 'Apply': 'تطبيق', 'Payment': 'الدفع', 'Cash on delivery': 'الدفع عند الاستلام', 'Subtotal': 'المجموع الفرعي',
     'Delivery fee': 'رسوم التوصيل', 'Free': 'مجاني', 'Discount': 'الخصم', 'Track my order': 'تتبّع طلبي', 'Pay online now': 'ادفع أونلاين الآن',
     'Options': 'الخيارات', 'Choose…': 'اختر…', 'You may also like': 'قد يعجبك أيضًا', 'Share': 'مشاركة', 'Link copied': 'تم نسخ الرابط', 'Back': 'رجوع',
-    'Please choose': 'يرجى اختيار', 'Please choose your delivery area.': 'يرجى اختيار منطقة التوصيل.', 'Order status': 'حالة الطلب',
+    'Please choose': 'يرجى اختيار',
+    'Send my order by': 'أرسل طلبي عبر', 'WhatsApp': 'واتساب', 'Phone call': 'اتصال هاتفي', 'Telegram': 'تيليغرام', 'Here, on this page': 'هنا من الصفحة',
+    'Send order': 'أرسل الطلب', 'Send order by Telegram': 'أرسل الطلب على تيليغرام', 'Send order, then call': 'أرسل الطلب ثم اتصل',
+    'Order received!': 'تم استلام طلبك!', 'Order number': 'رقم الطلب', 'will contact you on': 'سيتواصل معك على', 'Call the shop now': 'اتصل بالمحل الآن',
+    'Your order is copied. Paste it in the Telegram chat with': 'تم نسخ طلبك. الصقه في محادثة تيليغرام مع', 'and press Send.': 'واضغط إرسال.',
+    'Open Telegram': 'افتح تيليغرام', 'Copy my order again': 'انسخ طلبي مرة ثانية', 'Saving your order…': 'جارٍ حفظ طلبك…', 'Please choose your delivery area.': 'يرجى اختيار منطقة التوصيل.', 'Order status': 'حالة الطلب',
     'New': 'جديد', 'Confirmed': 'مؤكد', 'Preparing': 'قيد التحضير', 'On the way': 'في الطريق', 'Delivered': 'تم التسليم', 'Cancelled': 'ملغى',
     'Order not found. Check the link you received.': 'الطلب غير موجود. تحقّق من الرابط.', 'Back to the catalogue': 'العودة إلى الكتالوج',
     'Sold out': 'نفد', 'from': 'ابتداءً من', 'Menu': 'القائمة', 'Delivery': 'التوصيل', 'Pickup available': 'استلام من المحل', 'Free delivery': 'توصيل مجاني', 'Order on WhatsApp': 'اطلب على واتساب',
@@ -42,7 +47,7 @@
   ];
   const STATUS = ['new', 'confirmed', 'preparing', 'out_for_delivery', 'delivered'];
   const STATUS_LABEL = { new: 'New', confirmed: 'Confirmed', preparing: 'Preparing', out_for_delivery: 'On the way', delivered: 'Delivered', cancelled: 'Cancelled' };
-  let lang = 'en', zones = [], disc = null, pay = 'cash', zone = '', session = '', lastTitle = '', ready = false;
+  let lang = 'en', zones = [], disc = null, pay = 'cash', chan = '', zone = '', session = '', lastTitle = '', ready = false;
   const $ = id => document.getElementById(id);
   const S = () => window.MCShop;
   const t = s => (lang === 'ar' && AR[s]) || s;
@@ -220,6 +225,20 @@
     if (disc) { if (disc.kind === 'percent') d = Math.round(sub * Math.min(100, Number(disc.value)) ) / 100; else if (disc.kind === 'amount') d = Math.min(Number(disc.value), sub); else fee = 0; }
     return { sub, fee, d, total: Math.round((sub - d + fee) * 100) / 100, z };
   }
+  // How the customer sends the order: chosen by the shop in admin (WhatsApp stays the default).
+  function channels() {
+    const b = S().biz, oc = (b.order_channels && typeof b.order_channels === 'object') ? b.order_channels : { whatsapp: true }, out = [];
+    if (oc.whatsapp !== false && String(b.whatsapp || '').replace(/\D/g, '')) out.push('whatsapp');
+    if (oc.call && oc.phone) out.push('call');
+    if (oc.telegram) out.push('telegram');
+    if (oc.inapp) out.push('inapp');
+    return out.length ? out : ['inapp'];
+  }
+  const CH_LABEL = { whatsapp: '💬 WhatsApp', call: '📞 Phone call', telegram: '✈️ Telegram', inapp: '🛎️ Here, on this page' };
+  const CH_BTN = { whatsapp: 'Send order to WhatsApp', call: 'Send order, then call', telegram: 'Send order by Telegram', inapp: 'Send order' };
+  function chLabel(c) { const [ic, ...rest] = CH_LABEL[c].split(' '); return ic + ' ' + t(rest.join(' ')); }
+  function setSendLabel() { const btn = $('sendOrder'); if (btn) btn.textContent = t(CH_BTN[channel()]); }
+  function channel() { const l = channels(); return l.includes(chan) ? chan : l[0]; }
   function buildCheckout() {
     const box = document.querySelector('#cartModal .checkout'); if (!box || $('mcCo')) return;
     const biz = S().biz, pickup = biz.pickup_enabled !== false;
@@ -234,7 +253,10 @@
     zone = zones.length ? '' : 'delivery';
     $('mcZone').onchange = e => { zone = e.target.value; $('mcZoneHint').textContent = zone === 'pickup' && biz.pickup_address ? '📍 ' + biz.pickup_address : ''; const addr = $('address'); if (addr) addr.closest('label').style.display = zone === 'pickup' ? 'none' : ''; totals(); };
     $('mcCodeBtn').onclick = applyCode; $('mcCode').onkeydown = e => { if (e.key === 'Enter') { e.preventDefault(); applyCode(); } };
-    div.addEventListener('change', e => { if (e.target.name === 'mcPay') pay = e.target.value; });
+    div.addEventListener('change', e => { if (e.target.name === 'mcPay') pay = e.target.value; if (e.target.name === 'mcChan') { chan = e.target.value; setSendLabel(); } });
+    const chs = channels(); chan = chs[0];
+    if (chs.length > 1) $('mcSum').insertAdjacentHTML('beforebegin', `<div class="mc-pay mc-chan"><b>${t('Send my order by')}</b>${chs.map((c, i) => `<label class="mc-pay-opt"><input type="radio" name="mcChan" value="${c}" ${i ? '' : 'checked'}> <span>${esc(chLabel(c))}</span></label>`).join('')}</div>`);
+    setSendLabel();
     totals();
   }
   async function applyCode() {
@@ -319,5 +341,5 @@
     if (q.get('order') && q.get('t')) showTrack(q.get('order'), q.get('t'));
     else if (q.get('p')) { history.replaceState({ mcView: 'home' }, '', (() => { const u = new URL(location.href); u.searchParams.delete('p'); return u.href; })()); open(q.get('p'), true); }
   });
-  window.MCShopPlus = { get zones() { return zones; }, localize, open, needsOptions, ev, totals, orderExtras, waLines, done, t, get lang() { return lang; } };
+  window.MCShopPlus = { get zones() { return zones; }, localize, open, needsOptions, ev, totals, orderExtras, waLines, done, t, channel, channels, setSendLabel, get lang() { return lang; } };
 })();
