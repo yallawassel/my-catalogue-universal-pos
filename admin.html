@@ -148,6 +148,7 @@
      <button class="btn glass" type="button" id="mcHowTo">▶️ Watch how Raffi works</button>
     </div>
    </div>
+   <div id="mcAlertsDash" style="margin:14px 0"></div>
    <div class="mc-kpis" id="mcKpis"></div>
    <section class="mc-card" id="productGettingStarted" style="margin-bottom:20px;background:var(--grad-soft)">
     <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:space-between">
@@ -1297,4 +1298,6 @@ sessionLoad().catch(e=>setStatus(e.message,true));
 <script src="ai-pro.js"></script><script src="templates.js"></script><script src="design-studio.js"></script><script src="banner-admin.js"></script><script src="sale-admin.js"></script><script src="stock-admin.js"></script><script src="pieces-admin.js"></script><script src="shop-admin.js"></script><script src="import-undo.js"></script><script src="catalogue-transfer.js"></script><script src="scan.js"></script>
 <div id="mcVideoModal" class="mc-video-modal" hidden><div class="mc-video-box"><button type="button" class="btn ghost" id="mcVideoClose" aria-label="Close">✕</button><video id="mcVideo" controls playsinline preload="none" poster="media/raffi-walkthrough.jpg"><source src="media/raffi-walkthrough.mp4" type="video/mp4"></video><p class="hint">Raffi from A to Z — Arabic &amp; English · رفّي من الألف للياء</p></div></div>
 <script>(()=>{const m=document.getElementById('mcVideoModal'),v=document.getElementById('mcVideo'),b=document.getElementById('mcHowTo');if(!m||!b)return;const close=()=>{m.hidden=true;try{v.pause()}catch(_){}};b.onclick=()=>{m.hidden=false;try{v.play()}catch(_){}};document.getElementById('mcVideoClose').onclick=close;m.onclick=e=>{if(e.target===m)close()};document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!m.hidden)close()})})();</script>
+<script src="alerts.js"></script>
+<script>(()=>{const go=()=>{const b=window.MCAdmin&&MCAdmin.biz;if(!b||!window.MCAlerts){setTimeout(go,800);return}MCAlerts.mount(document.getElementById('mcAlertsDash'),()=>MCAdmin.biz.id)};go()})();</script>
 </body></html>
