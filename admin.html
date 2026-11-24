@@ -1,4 +1,4 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#7c3aed"><title>My Catalogue — Business Admin</title><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script><script src="saas.js"></script><style>
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#0f766e"><link rel="icon" href="raffi-mark.svg" type="image/svg+xml"><title>Raffi — Business Admin</title><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script><script src="saas.js"></script><style>
 *{box-sizing:border-box}body{margin:0;background:#f3f6f3;color:#17231f;font:15px Arial,sans-serif}.oauth-row{margin:12px 0}.oauth{background:#fff;border:1px solid #ccd7ce}header{background:#173f35;color:#fff;padding:20px 16px}header h1{margin:0 0 5px}.wrap{max-width:1000px;margin:auto;padding:14px}.panel{background:#fff;border:1px solid #dfe7df;border-radius:15px;padding:16px;margin-bottom:14px}h2{margin:0 0 12px;font-size:19px}label{display:block;font-weight:700;font-size:13px;margin:10px 0 5px}input,textarea,select{width:100%;padding:12px;border:1px solid #ccd7ce;border-radius:9px;font:inherit;background:#fff}textarea{min-height:72px}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.row{display:flex;gap:8px;flex-wrap:wrap}.row>*{flex:1}.btn{border:0;border-radius:9px;padding:12px 14px;font-weight:800;cursor:pointer;background:#e8eee9;color:#173f35}.primary{background:#236653;color:#fff}.danger{background:#fee2e2;color:#991b1b}.hint{font-size:13px;line-height:1.5;color:#637269}.status{margin:10px 0;padding:10px;border-radius:9px;background:#e8f3eb;white-space:pre-wrap;overflow-wrap:anywhere}.error{background:#fff0ed;color:#a32d20}.hidden{display:none!important}.item{display:grid;grid-template-columns:72px 1fr auto;gap:10px;align-items:center;border:1px solid #e1e7e2;padding:9px;border-radius:11px;margin-top:8px}.item img{width:88px;height:88px;object-fit:contain;background:#fff;border:1px solid #e1e7e2;border-radius:8px}.inlineFields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}.inlineFields input,.inlineFields textarea{min-width:0;padding:8px;font-size:13px}.inlineFields .wide{grid-column:1/-1}.inlineActions{display:flex;gap:5px;flex-wrap:wrap;margin-top:7px}.item{grid-template-columns:92px minmax(0,1fr)}.item .itemActions{grid-column:1/-1;display:flex;gap:6px;flex-wrap:wrap}.item .itemActions button{flex:1}.item .itemPhoto{display:flex;flex-direction:column;gap:6px}.item .itemPhoto input{width:100%;font-size:11px}.duplicateGroup{border:1px solid #f1c7a8;border-radius:10px;padding:10px;margin-top:8px;background:#fffaf5}.duplicateRow{display:grid;grid-template-columns:56px 1fr auto;gap:8px;align-items:center;padding:7px 0;border-top:1px solid #f3e2d5}.duplicateRow img{width:56px;height:56px;object-fit:contain;background:#fff;border-radius:6px}.item small{display:block;color:#68756e;margin-top:5px}.item button{margin:2px}.pill{display:inline-block;background:#e8eee9;border-radius:20px;padding:5px 8px;font-size:12px}.domain{background:#f8faf8;border:1px solid #e1e7e2;padding:10px;border-radius:10px;margin-top:8px;overflow-wrap:anywhere}@media(max-width:560px){.grid{grid-template-columns:1fr}.item{grid-template-columns:64px minmax(0,1fr);gap:8px}.item img{width:64px;height:64px}.inlineFields{grid-template-columns:1fr}.inlineFields .wide{grid-column:auto}.item .itemActions{grid-column:1/-1}.duplicateRow{grid-template-columns:44px 1fr}.duplicateRow img{width:44px;height:44px}.duplicateRow button{grid-column:2}}
 
 /* Shopify-style admin navigation */
@@ -46,7 +46,7 @@
 <section class="mc-auth" id="authPanel">
   <div class="mc-auth-art">
     <div style="position:relative;z-index:1">
-      <div class="mc-logo" style="padding:0 0 30px"><div class="mc-logo-mark">M</div><div><b>My Catalogue</b><small style="color:#fde7f3">PRO · Universal POS</small></div></div>
+      <div class="mc-logo" style="padding:0 0 30px"><div class="mc-logo-mark"><img src="raffi-mark.svg" alt="Raffi"></div><div><b>Raffi <span dir="rtl" lang="ar">رفّي</span></b><small style="color:#fef3c7">Your shop, online · Catalogue + POS</small></div></div>
       <h1>Your products, beautifully online — in minutes.</h1>
       <p>Build a colourful branded catalogue, take WhatsApp orders, sync prices straight from your POS and turn everyday phone photos into studio-quality product shots.</p>
       <div class="mc-feats">
@@ -99,11 +99,11 @@
 <div id="app" class="hidden">
 <div class="mc-shell">
  <aside class="mc-side" id="mcSide" aria-label="Admin navigation">
-  <div class="mc-logo"><div class="mc-logo-mark" id="mcLogoMark">M</div><div><b id="mcBizName">My Catalogue</b><small id="mcBizState">Business admin</small></div></div>
+  <div class="mc-logo"><div class="mc-logo-mark" id="mcLogoMark">M</div><div><b id="mcBizName">Raffi</b><small id="mcBizState">Business admin</small></div></div>
   <div class="mc-nav-group">Overview</div>
-  <button class="mc-nav" data-page="dashboard" style="--c:#7c3aed"><span class="ic">🏠</span>Dashboard</button>
+  <button class="mc-nav" data-page="dashboard" style="--c:#0f766e"><span class="ic">🏠</span>Dashboard</button>
   <div class="mc-nav-group">Catalogue</div>
-  <button class="mc-nav" data-page="products" style="--c:#ec4899"><span class="ic">🗂️</span>Products<span class="badge hidden" id="mcNavProducts"></span></button>
+  <button class="mc-nav" data-page="products" style="--c:#f59e0b"><span class="ic">🗂️</span>Products<span class="badge hidden" id="mcNavProducts"></span></button>
   <button class="mc-nav" data-page="product" style="--c:#f97316"><span class="ic">➕</span>Add product</button>
   <button class="mc-nav" data-page="studio" style="--c:#0ea5e9"><span class="ic">📸</span>Photo Studio<span class="badge hidden" id="mcNavPhotos"></span></button>
   <button class="mc-nav" data-page="catphotos" style="--c:#14b8a6"><span class="ic">🖼️</span>Category photos</button>
@@ -115,8 +115,8 @@
   <button class="mc-nav" data-page="pos" style="--c:#a855f7"><span class="ic">🧭</span>POS setup checker</button>
   <button class="mc-nav" data-page="stock" style="--c:#4f46e5"><span class="ic">📦</span>Stock &amp; units</button>
   <div class="mc-nav-group">Grow</div>
-  <button class="mc-nav" data-page="ai" style="--c:#db2777"><span class="ic">✨</span>AI Studio</button>
-  <button class="mc-nav" data-page="design" style="--c:#8b5cf6"><span class="ic">🎨</span>Storefront design</button>
+  <button class="mc-nav" data-page="ai" style="--c:#d97706"><span class="ic">✨</span>AI Studio</button>
+  <button class="mc-nav" data-page="design" style="--c:#14b8a6"><span class="ic">🎨</span>Storefront design</button>
   <button class="mc-nav" data-page="shop" style="--c:#0d9488"><span class="ic">🚚</span>Delivery &amp; payments</button><button class="mc-nav" data-page="analytics" style="--c:#2563eb"><span class="ic">📈</span>Visitors &amp; sales</button><button class="mc-nav" data-page="tools" style="--c:#06b6d4"><span class="ic">🧾</span>Orders &amp; tools</button>
   <a class="mc-nav" href="pos.html" style="--c:#10b981;text-decoration:none"><span class="ic">💳</span>Open POS (cash register)</a>
   <button class="mc-nav" data-page="domain" style="--c:#22c55e"><span class="ic">🌐</span>Custom domain</button>
@@ -168,10 +168,10 @@
      <button class="mc-tile" type="button" data-page="studio" style="--c:#0ea5e9"><span class="t-ic">📸</span><strong>Photo Studio</strong><small>Auto white background, shadow &amp; framing for all photos.</small></button>
      <button class="mc-tile" type="button" data-page="connector" style="--c:#f43f5e"><span class="t-ic">🔌</span><strong>Live POS connector</strong><small>Prices &amp; products straight from AntiSoft or any POS.</small></button>
      <button class="mc-tile" type="button" data-page="data" style="--c:#10b981"><span class="t-ic">💾</span><strong>Backup &amp; export</strong><small>Excel, CSV and full JSON backups in one click.</small></button>
-     <button class="mc-tile" type="button" data-page="design" style="--c:#8b5cf6"><span class="t-ic">🎨</span><strong>Storefront design</strong><small>Pick one of 8 templates and your brand colour.</small></button>
+     <button class="mc-tile" type="button" data-page="design" style="--c:#14b8a6"><span class="t-ic">🎨</span><strong>Storefront design</strong><small>Pick one of 8 templates and your brand colour.</small></button>
      <a class="mc-tile" href="orders.html" style="--c:#06b6d4;text-decoration:none"><span class="t-ic">🧾</span><strong>Orders</strong><small>See WhatsApp orders and update their status.</small></a>
      <a class="mc-tile" href="quotation.html" style="--c:#f59e0b;text-decoration:none"><span class="t-ic">📄</span><strong>Quotations</strong><small>Build client price quotes and print to PDF.</small></a>
-     <button class="mc-tile" type="button" data-page="ai" style="--c:#db2777"><span class="t-ic">✨</span><strong>AI assistant</strong><small>Write descriptions, translate and get ideas.</small></button>
+     <button class="mc-tile" type="button" data-page="ai" style="--c:#d97706"><span class="t-ic">✨</span><strong>AI assistant</strong><small>Write descriptions, translate and get ideas.</small></button>
      <button class="mc-tile" type="button" data-page="settings" style="--c:#64748b"><span class="t-ic">⚙️</span><strong>Settings</strong><small>Logo, WhatsApp number, currency and colours.</small></button>
     </div>
    </div>
@@ -185,7 +185,7 @@
 <div class="ds-chips" id="dsGroups" role="tablist" aria-label="Business type"></div>
 <div class="ds-grid" id="dsGrid"></div>
 <div class="ds-bar">
-<label class="ds-color"><span>Brand colour</span><input id="dsColor" type="color" value="#7c3aed"></label>
+<label class="ds-color"><span>Brand colour</span><input id="dsColor" type="color" value="#0f766e"></label>
 <button class="btn" id="dsUseColor" type="button">Use template colour</button>
 <span class="ds-current" id="dsCurrent"></span>
 <button class="btn primary" id="dsSave" type="button" disabled>Save design</button>
@@ -400,7 +400,7 @@
   <div class="domain" style="margin:14px 0;background:#f7fbf8">
     <b>AI usage</b><p class="hint" id="aiCreditHelp" style="margin:5px 0 0">Chat uses 1 credit. AI Pro photos use 1 credit (medium) or 2 credits (high) per photo.</p>
   </div>
-  <div class="mc-card" id="apCreditsCard" style="margin-bottom:16px;border:2px solid #c4b5fd;background:linear-gradient(135deg,#faf7ff,#fff)">
+  <div class="mc-card" id="apCreditsCard" style="margin-bottom:16px;border:2px solid #99f6e4;background:linear-gradient(135deg,#f0fdfa,#fff)">
    <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap"><h3 style="margin:0">💳 AI credits</h3><span class="pill ok" style="font-size:15px;padding:8px 14px!important" id="apBalance">… credits</span></div>
    <p class="hint" style="margin:6px 0 12px">1 credit = 1 AI pro photo (medium quality) · high quality = 2 credits · chat message = 1 credit. Credits never expire.</p>
    <div class="mc-grid-3" id="apPacks"></div>
@@ -412,7 +412,7 @@
    <button class="btn primary" type="button" id="apRequest" style="margin-top:12px;width:100%" disabled>Choose a pack above</button>
    <div id="apOrders" style="margin-top:12px"></div>
   </div>
-  <div class="mc-card" id="apProCard" style="margin-bottom:16px;border:2px solid #f9a8d4;background:linear-gradient(135deg,#fff7fb,#fff)">
+  <div class="mc-card" id="apProCard" style="margin-bottom:16px;border:2px solid #fcd34d;background:linear-gradient(135deg,#fffbeb,#fff)">
    <h3 style="margin:0 0 4px">📸 AI Pro photos — phone photos → catalogue photos</h3>
    <p class="hint" style="margin:0 0 12px">Upload many phone photos at once. AI removes messy backgrounds, fixes light and makes clean studio photos while keeping your real product, labels and text. You review every result before it goes into your catalogue. Failed photos are refunded automatically.</p>
    <div class="grid">
@@ -455,22 +455,22 @@
 </section>
 <section class="panel" data-page-id="data" id="dataCenterPanel">
  <h2>📊 Import &amp; Export Center</h2>
- <p class="hint">Everything you need to move products in and out of My Catalogue. Exports never change your data. Imports always show a preview first.</p>
+ <p class="hint">Everything you need to move products in and out of Raffi. Exports never change your data. Imports always show a preview first.</p>
  <h3 style="margin:18px 0 10px">⬇️ Export</h3>
  <div class="mc-grid-3">
   <div class="mc-feature" style="--c:#10b981"><h3><span class="ic">📗</span>Products → Excel</h3><p>All products with prices, units, SKU, barcode, POS ID and photo links. Re-importable.</p><button class="btn primary" type="button" id="dcExportXlsx">Download .xlsx</button></div>
   <div class="mc-feature" style="--c:#0ea5e9"><h3><span class="ic">📄</span>Products → CSV</h3><p>Plain CSV (UTF-8) that opens in Excel, Google Sheets or any POS import tool.</p><button class="btn" type="button" id="dcExportCsv">Download .csv</button></div>
-  <div class="mc-feature" style="--c:#7c3aed"><h3><span class="ic">💾</span>Full backup (JSON)</h3><p>Business settings, products, category order &amp; photos, units. Restore it any time.</p><button class="btn" type="button" id="dcExportBackup">Download backup</button></div>
+  <div class="mc-feature" style="--c:#0f766e"><h3><span class="ic">💾</span>Full backup (JSON)</h3><p>Business settings, products, category order &amp; photos, units. Restore it any time.</p><button class="btn" type="button" id="dcExportBackup">Download backup</button></div>
   <div class="mc-feature" style="--c:#f97316"><h3><span class="ic">🧾</span>Orders → Excel</h3><p>Orders with customer, items, totals and status for the selected period.</p>
    <div class="grid" style="margin-bottom:10px"><div><label for="dcOrdersFrom">From</label><input id="dcOrdersFrom" type="date"></div><div><label for="dcOrdersTo">To</label><input id="dcOrdersTo" type="date"></div></div>
    <button class="btn" type="button" id="dcExportOrders">Download orders</button></div>
-  <div class="mc-feature" style="--c:#ec4899"><h3><span class="ic">🖼️</span>Photo list</h3><p>Every product photo URL in a sheet — handy for printing or sharing with a designer.</p><button class="btn" type="button" id="dcExportPhotos">Download photo list</button></div>
+  <div class="mc-feature" style="--c:#f59e0b"><h3><span class="ic">🖼️</span>Photo list</h3><p>Every product photo URL in a sheet — handy for printing or sharing with a designer.</p><button class="btn" type="button" id="dcExportPhotos">Download photo list</button></div>
   <div class="mc-feature" style="--c:#f59e0b"><h3><span class="ic">🏷️</span>Price list (print)</h3><p>A clean, printable price list grouped by category. Save it as PDF from the print window.</p><button class="btn" type="button" id="dcPrintPriceList">Open printable price list</button></div>
  </div>
  <h3 style="margin:22px 0 10px">⬆️ Import</h3>
  <div class="mc-grid-3">
   <div class="mc-feature" style="--c:#f59e0b"><h3><span class="ic">🔄</span>Excel / CSV import</h3><p>Add new products or update prices from a spreadsheet or POS export, with photo matching.</p><button class="btn primary" type="button" data-page="sync">Open Excel import</button></div>
-  <div class="mc-feature" style="--c:#7c3aed"><h3><span class="ic">♻️</span>Restore JSON backup</h3><p>Adds products and category photos from a backup file. Existing products are never deleted.</p><button class="btn" type="button" id="dcRestoreJson">Choose backup file</button></div>
+  <div class="mc-feature" style="--c:#0f766e"><h3><span class="ic">♻️</span>Restore JSON backup</h3><p>Adds products and category photos from a backup file. Existing products are never deleted.</p><button class="btn" type="button" id="dcRestoreJson">Choose backup file</button></div>
   <div class="mc-feature" style="--c:#0ea5e9"><h3><span class="ic">🧠</span>Smart photo matching</h3><p>Upload a folder of photos — each one is linked to the right product automatically.</p><button class="btn" type="button" id="dcMatchPhotos">Match photos to products</button></div>
   <div class="mc-feature" style="--c:#f43f5e"><h3><span class="ic">🔌</span>Automatic POS feed</h3><p>Let your POS push products and prices automatically on a schedule.</p><button class="btn" type="button" data-page="connector">Set up connector</button></div>
  </div>
@@ -482,7 +482,7 @@
  <div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:flex-start">
   <div><h2>📸 Photo Studio <span class="pill ok">Free · unlimited</span></h2><p class="hint" style="margin:0;max-width:720px">Automatically turns ordinary phone photos into clean, professional catalogue photos: removes plain backgrounds, centres and frames the product, balances light and colour, and adds a soft studio shadow. Everything runs in your browser — no credits used.</p></div>
  </div>
- <div class="mc-card" id="qsCard" style="margin-top:16px;border:2px solid #f9a8d4;background:linear-gradient(135deg,#fff7fb,#fff)">
+ <div class="mc-card" id="qsCard" style="margin-top:16px;border:2px solid #fcd34d;background:linear-gradient(135deg,#fffbeb,#fff)">
   <h3>📷 Quick shoot — photograph products one by one (phone)</h3>
   <p class="hint" style="margin-top:-4px">Take a photo of each product with your phone camera. The background is removed automatically for free and the photo is framed like a studio shot. Tap <b>Save &amp; next</b> and the next product appears.</p>
   <div class="grid">
@@ -506,7 +506,7 @@
    <p class="hint" style="font-size:12.5px;margin-top:10px">Best results: put the product on a white sheet of paper or against a plain wall, in daylight, and fill most of the picture with it. Change background colour or shadow in <b>Studio style</b> below.</p>
   </div>
  </div>
- <div class="mc-card" id="pmCard" style="margin-top:16px;border:2px solid #c4b5fd;background:linear-gradient(135deg,#faf7ff,#fff)">
+ <div class="mc-card" id="pmCard" style="margin-top:16px;border:2px solid #99f6e4;background:linear-gradient(135deg,#f0fdfa,#fff)">
   <h3>🧠 Smart photo matcher — add photos to existing products</h3>
   <p class="hint" style="margin-top:-4px">Select many photos (or a whole folder). Each photo is matched to the right product automatically by barcode / SKU / POS ID in the file name or by a similar product name (Arabic &amp; English). Review, change any match, then save.</p>
   <div class="grid">
@@ -529,7 +529,7 @@
     <button type="button" class="mc-swatch" data-bg="light" title="Soft grey" style="background:#f2f2f5"></button>
     <button type="button" class="mc-swatch" data-bg="studio" title="Studio spotlight" style="background:radial-gradient(circle at 50% 40%,#fff,#e6e6ee)"></button>
     <button type="button" class="mc-swatch" data-bg="warm" title="Warm cream" style="background:#fbf5ec"></button>
-    <button type="button" class="mc-swatch" data-bg="brand" title="Brand tint" style="background:linear-gradient(135deg,#f3edff,#fdeef6)"></button>
+    <button type="button" class="mc-swatch" data-bg="brand" title="Brand tint" style="background:linear-gradient(135deg,#e3f7f3,#fff7e0)"></button>
     <button type="button" class="mc-swatch" data-bg="keep" title="Keep original background" style="background:repeating-linear-gradient(45deg,#ddd 0 6px,#fff 6px 12px)"></button>
    </div>
    <div class="grid" style="margin-top:6px">
@@ -567,12 +567,12 @@
 <section class="panel" data-page-id="connector" id="liveConnectorPanel">
  <h2>🔌 Live POS connector</h2>
  <div class="mc-card mc-main-sys" id="mainSysCard"><h3 style="margin:0 0 4px">🧭 Main system for stock, prices &amp; sales</h3><p class="hint" style="margin:0 0 10px">Choose which system is the boss. Only one should change stock and prices, so they never disagree.</p>
-  <label class="mc-ms-opt"><input type="radio" name="mainSys" value="catalogue"><span><b>🧾 My Catalogue POS</b><small>For shops without a POS: sell in store with the My Catalogue POS (sales, stock, suppliers &amp; purchases, returns, reports). Online and in-store sales share one stock.</small></span></label>
-  <label class="mc-ms-opt"><input type="radio" name="mainSys" value="external"><span><b>🔌 My own POS (connected below)</b><small>For shops with a POS like AntiSoft: your POS is the main system. Items, prices and stock come only from it; the My Catalogue POS is hidden. The catalogue is your online shop and orders.</small></span></label>
+  <label class="mc-ms-opt"><input type="radio" name="mainSys" value="catalogue"><span><b>🧾 Raffi POS</b><small>For shops without a POS: sell in store with the Raffi POS (sales, stock, suppliers &amp; purchases, returns, reports). Online and in-store sales share one stock.</small></span></label>
+  <label class="mc-ms-opt"><input type="radio" name="mainSys" value="external"><span><b>🔌 My own POS (connected below)</b><small>For shops with a POS like AntiSoft: your POS is the main system. Items, prices and stock come only from it; the Raffi POS is hidden. The catalogue is your online shop and orders.</small></span></label>
   <p class="hint" id="mainSysNote" style="margin:8px 0 0"></p></div>
  <p class="hint">Connect your POS so products, prices and (optionally) stock flow into your catalogue automatically. One-way and read-only: the connector never writes anything back to your POS, never deletes catalogue products, and keeps your own catalogue names, photos and descriptions.</p>
  <div class="mc-grid-3" style="margin:14px 0">
-  <div class="mc-feature" style="--c:#f43f5e"><h3><span class="ic">🖥️</span>Windows POS (AntiSoft &amp; SQL Server)</h3><p>Install the small My Catalogue agent on the POS PC. It reads with a read-only SQL login and pushes on a schedule.</p><button class="btn primary" type="button" id="lcGuideWindows">Show setup steps</button></div>
+  <div class="mc-feature" style="--c:#f43f5e"><h3><span class="ic">🖥️</span>Windows POS (AntiSoft &amp; SQL Server)</h3><p>Install the small Raffi agent on the POS PC. It reads with a read-only SQL login and pushes on a schedule.</p><button class="btn primary" type="button" id="lcGuideWindows">Show setup steps</button></div>
   <div class="mc-feature" style="--c:#0ea5e9"><h3><span class="ic">📁</span>Any POS that exports Excel/CSV</h3><p>Point the agent at your POS export folder. Every new export is synced automatically.</p><button class="btn" type="button" id="lcGuideFolder">Show setup steps</button></div>
   <div class="mc-feature" style="--c:#10b981"><h3><span class="ic">☁️</span>Cloud POS / developers</h3><p>Any system that can send JSON over HTTPS can push products with your connector key.</p><button class="btn" type="button" id="lcGuideApi">Show API details</button></div>
  </div>
@@ -601,7 +601,7 @@ if ('serviceWorker' in navigator && location.protocol === 'https:') {
 
 function setupBusinessInstall(biz,page){
   const slug=String(biz?.slug||new URLSearchParams(location.search).get('shop')||'').trim();
-  const name=String(biz?.company_name||'My Catalogue').trim();
+  const name=String(biz?.company_name||'Raffi').trim();
   const logo=String(biz?.logo_url||'').trim();
   if(!slug)return;
   const start=new URL(page==='admin'?'admin.html':'index.html',location.href);
@@ -656,7 +656,7 @@ async function loadPosConnections(){
  const box=$('posProfilesList');if(!box||!biz)return;
  box.textContent='Loading connection profiles…';
  const r=await sb.from('mc_saas_pos_connections').select('id,pos_name,connection_method,connection_status,sync_frequency,setup_notes,last_tested_at,last_sync_at,created_at').eq('business_id',biz.id).order('created_at',{ascending:false});
- if(r.error){box.innerHTML='<p class="hint">Connection-profile storage is not installed yet. In the My Catalogue Supabase project only, run <b>UNIVERSAL_POS_CONNECTIONS_V7_MIGRATION.sql</b>, then press Refresh saved profiles. Details: '+esc(r.error.message)+'</p>';return;}
+ if(r.error){box.innerHTML='<p class="hint">Connection-profile storage is not installed yet. In the Raffi Supabase project only, run <b>UNIVERSAL_POS_CONNECTIONS_V7_MIGRATION.sql</b>, then press Refresh saved profiles. Details: '+esc(r.error.message)+'</p>';return;}
  const methods={file:'Excel / CSV',api:'Vendor API',local_agent:'Local Windows agent',custom:'Custom integration'};
  box.innerHTML=(r.data||[]).map(x=>`<div class="domain"><b>${esc(x.pos_name)}</b> <span class="pill">Setup required</span><div class="hint">Method: ${esc(methods[x.connection_method]||x.connection_method)} · Sync: ${esc(x.sync_frequency||'manual')} · Created: ${new Date(x.created_at).toLocaleDateString()}</div>${x.setup_notes?`<div class="hint">Notes: ${esc(x.setup_notes)}</div>`:''}<div class="hint">No credentials stored · No sync started</div></div>`).join('')||'<p class="hint">No POS profiles saved for this business yet.</p>';
 }
@@ -675,7 +675,7 @@ async function loadAiWallet(){
  const badge=$('aiCreditBadge');if(!badge||!biz)return;
  badge.textContent='Credits: loading…';
  const r=await sb.rpc('mc_saas_ai_get_wallet',{p_business_id:biz.id});
- if(r.error){badge.textContent='AI setup required';$('aiCreditHelp').textContent='Run AI_STUDIO_MIGRATION.sql in the My Catalogue Supabase project, deploy the mc-ai-studio Edge Function, and configure its secrets. Details: '+r.error.message;return;}
+ if(r.error){badge.textContent='AI setup required';$('aiCreditHelp').textContent='Run AI_STUDIO_MIGRATION.sql in the Raffi Supabase project, deploy the mc-ai-studio Edge Function, and configure its secrets. Details: '+r.error.message;return;}
  const row=Array.isArray(r.data)?r.data[0]:r.data;const balance=Number(row?.credits_balance??row?.balance??0);
  badge.textContent='Credits available: '+balance.toLocaleString();
  $('aiCreditHelp').textContent='Chat uses 1 credit. AI Pro photos use 1 credit (medium) or 2 credits (high) per photo. Buy credit packs above.';document.dispatchEvent(new CustomEvent('mc:ai-wallet',{detail:{balance}}));
@@ -807,8 +807,8 @@ function normalizedProductKey(v){return String(v??'').toLowerCase().normalize('N
 $('reviewDuplicates').onclick=()=>{const groups=new Map();for(const p of products){const name=normalizedProductKey(p.name);if(!name)continue;const key='name:'+name;if(!groups.has(key))groups.set(key,[]);groups.get(key).push(p)}const inNameGroups=new Set([...groups.values()].filter(arr=>arr.length>1).flat().map(p=>p.id));const byCode=new Map();for(const p of products){const code=normalizedProductKey(p.barcode);if(!code||inNameGroups.has(p.id))continue;if(!byCode.has(code))byCode.set(code,[]);byCode.get(code).push(p)}for(const [code,arr] of byCode){if(arr.length>1)groups.set('sku:'+code,arr)}const dup=[...groups.entries()].filter(([,arr])=>arr.length>1);const box=$('duplicateReview');box.classList.remove('hidden');if(!dup.length){box.innerHTML='<p class="status">No exact duplicate names or barcodes were found in this business catalogue.</p>';return}box.innerHTML='<p class="hint">Review each group carefully. Delete only the extra record; this action permanently deletes that product from this business.</p>'+dup.map(([key,arr])=>`<div class="duplicateGroup"><b>${esc(key.replace(/^(sku:|name:)/,''))}</b><span class="pill">${arr.length} records</span>${arr.map((p,i)=>`<div class="duplicateRow"><img src="${esc(p.image||'')}" alt="" onerror="this.style.visibility='hidden'"><div><b>${esc(p.name)}</b><small>${esc(p.category||'')} · ${esc(p.barcode||'No SKU')}</small><small>${esc(p.label1||'Box')}: ${p.price1==null?'—':esc(p.price1)} · ${esc(p.label2||'Packet')}: ${p.price2==null?'—':esc(p.price2)}</small></div>${i===0?'<span class="pill">Keep for now</span>':`<button class="btn danger" data-delete-duplicate="${esc(p.id)}">Delete this extra record</button>`}</div>`).join('')}</div>`).join('');};
 $('duplicateReview').addEventListener('click',async e=>{const b=e.target.closest('[data-delete-duplicate]');if(!b)return;const p=products.find(x=>x.id===b.dataset.deleteDuplicate);if(!p||!confirm('Permanently delete duplicate product "'+p.name+'"? Make sure the first record in this group is the one you want to keep.'))return;try{const r=await sb.from('mc_saas_products').delete().eq('id',p.id).eq('business_id',biz.id);if(r.error)throw r.error;await loadProducts();$('reviewDuplicates').click();setStatus('Duplicate product deleted.')}catch(err){setStatus('Could not delete duplicate: '+err.message,true)}});
 $('exportJson').onclick=()=>{const data={business:{company_name:biz.company_name,description:biz.description,whatsapp:biz.whatsapp,currency:biz.currency},products};const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:'application/json'}));a.download=biz.slug+'-catalogue.json';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)};
-$('exportExcel').onclick=async()=>{try{const XLSX=await loadXlsxReader();const rows=products.map(p=>({'POS Product ID':p.pos_product_id||'', 'Product Name':p.name||'',Category:p.category||'',Barcode:p.barcode||'',SKU:p.sku||'', 'Label1':p.label1||'Box','Price1':p.price1??'', 'Label2':p.label2||'','Price2':p.price2??'',Description:p.description||'','Photo URL':p.image||'','Display Order':(Number(p.sort_order)||0)+1}));const wb=XLSX.utils.book_new();const ws=XLSX.utils.json_to_sheet(rows,{header:['POS Product ID','Product Name','Category','Barcode','SKU','Label1','Price1','Label2','Price2','Description','Photo URL','Display Order']});ws['!cols']=[{wch:34},{wch:22},{wch:20},{wch:14},{wch:12},{wch:14},{wch:12},{wch:48},{wch:52},{wch:14}];XLSX.utils.book_append_sheet(wb,ws,'Products');const info=XLSX.utils.aoa_to_sheet([['My Catalogue Excel export'],['Business',biz.company_name],['Note','To re-import, upload this workbook in Bulk import products + match photos. Photo URL values are kept as links; embedded photos are not placed inside Excel cells.']]);XLSX.utils.book_append_sheet(wb,info,'Instructions');XLSX.writeFile(wb,(biz.slug||'my-catalogue')+'-catalogue.xlsx');setStatus('Excel export created with '+rows.length+' product(s).')}catch(err){setStatus('Excel export failed: '+err.message,true)}};
-// Import compatible with both My Catalogue JSON and the working White Pack products.json format.
+$('exportExcel').onclick=async()=>{try{const XLSX=await loadXlsxReader();const rows=products.map(p=>({'POS Product ID':p.pos_product_id||'', 'Product Name':p.name||'',Category:p.category||'',Barcode:p.barcode||'',SKU:p.sku||'', 'Label1':p.label1||'Box','Price1':p.price1??'', 'Label2':p.label2||'','Price2':p.price2??'',Description:p.description||'','Photo URL':p.image||'','Display Order':(Number(p.sort_order)||0)+1}));const wb=XLSX.utils.book_new();const ws=XLSX.utils.json_to_sheet(rows,{header:['POS Product ID','Product Name','Category','Barcode','SKU','Label1','Price1','Label2','Price2','Description','Photo URL','Display Order']});ws['!cols']=[{wch:34},{wch:22},{wch:20},{wch:14},{wch:12},{wch:14},{wch:12},{wch:48},{wch:52},{wch:14}];XLSX.utils.book_append_sheet(wb,ws,'Products');const info=XLSX.utils.aoa_to_sheet([['Raffi Excel export'],['Business',biz.company_name],['Note','To re-import, upload this workbook in Bulk import products + match photos. Photo URL values are kept as links; embedded photos are not placed inside Excel cells.']]);XLSX.utils.book_append_sheet(wb,info,'Instructions');XLSX.writeFile(wb,(biz.slug||'my-catalogue')+'-catalogue.xlsx');setStatus('Excel export created with '+rows.length+' product(s).')}catch(err){setStatus('Excel export failed: '+err.message,true)}};
+// Import compatible with both Raffi JSON and the working White Pack products.json format.
 async function uploadImportedPhoto(value, productName){
  if(!value || typeof value!=='string') return '';
  if(!value.startsWith('data:image/')) return value; // Keep existing public URLs unchanged.
@@ -974,7 +974,7 @@ function openPhotoPicker(rowIndex){
  const usedBy=new Map();bulkState.rows.forEach((r,ri)=>{if(r.photo&&ri!==rowIndex)usedBy.set(r.photo,r.name)});
  const ranked=bulkState.photos.map((f,i)=>({f,i,score:photoScore(row,f)})).sort((a,b)=>b.score-a.score);
  const drawGallery=()=>{const q=(window.MCMatch?MCMatch.normalize($('photoPickerSearch').value):$('photoPickerSearch').value.toLowerCase());
- $('photoGallery').innerHTML=`<button type="button" class="btn" data-gallery-photo="-1" style="min-height:150px">No photo</button>`+ranked.filter(x=>!q||(window.MCMatch?MCMatch.normalize(x.f.name):x.f.name.toLowerCase()).includes(q)).slice(0,300).map(({f,i,score})=>`<button type="button" data-gallery-photo="${i}" class="btn" style="background:${i===current?'#e9dcff':'#f6f5fd'};color:#1b1740;padding:8px;min-width:0;flex-direction:column;align-items:stretch;position:relative"><img src="${window.MCMatch?MCMatch.thumb(f):URL.createObjectURL(f)}" alt="" style="width:100%;height:105px;object-fit:contain;background:#fff;border-radius:7px">${score>=30?`<span style="position:absolute;top:10px;left:10px;background:${score>=80?'#059669':score>=55?'#d97706':'#6b6890'};color:#fff;border-radius:999px;padding:2px 7px;font-size:11px">${score}%</span>`:''}<span style="display:block;font-size:12px;overflow-wrap:anywhere;margin-top:6px">${esc(f.name)}</span>${usedBy.has(f)?`<small style="color:#b45309">used by ${esc(usedBy.get(f))}</small>`:''}</button>`).join('');
+ $('photoGallery').innerHTML=`<button type="button" class="btn" data-gallery-photo="-1" style="min-height:150px">No photo</button>`+ranked.filter(x=>!q||(window.MCMatch?MCMatch.normalize(x.f.name):x.f.name.toLowerCase()).includes(q)).slice(0,300).map(({f,i,score})=>`<button type="button" data-gallery-photo="${i}" class="btn" style="background:${i===current?'#e9dcff':'#f3f8f7'};color:#16302c;padding:8px;min-width:0;flex-direction:column;align-items:stretch;position:relative"><img src="${window.MCMatch?MCMatch.thumb(f):URL.createObjectURL(f)}" alt="" style="width:100%;height:105px;object-fit:contain;background:#fff;border-radius:7px">${score>=30?`<span style="position:absolute;top:10px;left:10px;background:${score>=80?'#059669':score>=55?'#d97706':'#627a76'};color:#fff;border-radius:999px;padding:2px 7px;font-size:11px">${score}%</span>`:''}<span style="display:block;font-size:12px;overflow-wrap:anywhere;margin-top:6px">${esc(f.name)}</span>${usedBy.has(f)?`<small style="color:#b45309">used by ${esc(usedBy.get(f))}</small>`:''}</button>`).join('');
  $('photoGallery').querySelectorAll('[data-gallery-photo]').forEach(btn=>btn.onclick=()=>{
   const n=Number(btn.dataset.galleryPhoto),row2=bulkState.rows[photoPickerRow],file=n<0?null:bulkState.photos[n];
   if(file)bulkState.rows.forEach((r,ri)=>{if(ri!==photoPickerRow&&r.photo===file){r.photo=null;r.photoMatch=null;r.photoManual=false}});

@@ -54,13 +54,13 @@
     const ret = s.kind === 'return', b = P.biz;
     const rows = (s.items || []).map((i, k) => `<tr><td>${k + 1}</td><td>${esc(i.name)}${i.barcode ? `<br><small>${esc(i.barcode)}</small>` : ''}</td><td>${esc(i.unit || '')}</td><td class="r">${P.r2(i.qty)}</td><td class="r">${money(i.price)}</td><td class="r">${i.discount ? money(i.discount) : '—'}</td><td class="r">${money(i.line_total)}</td></tr>`).join('');
     const css = `.inv{font:13px/1.45 'Plus Jakarta Sans',Arial,sans-serif;color:#111;padding:${forPdf ? '0' : '14mm'};background:#fff}
-      .inv .inv-top{display:flex;justify-content:space-between;gap:20px;border-bottom:3px solid ${b.primary_color || '#6d28d9'};padding-bottom:12px}
-      .inv .inv-top img{max-height:60px;max-width:160px;object-fit:contain}.inv h1{margin:0;font-size:26px;color:${b.primary_color || '#6d28d9'}}
+      .inv .inv-top{display:flex;justify-content:space-between;gap:20px;border-bottom:3px solid ${b.primary_color || '#115e59'};padding-bottom:12px}
+      .inv .inv-top img{max-height:60px;max-width:160px;object-fit:contain}.inv h1{margin:0;font-size:26px;color:${b.primary_color || '#115e59'}}
       .inv .meta{text-align:right}.inv .muted{color:#555}.inv .to{margin:16px 0;display:flex;justify-content:space-between;gap:20px}
-      .inv table{width:100%;border-collapse:collapse;margin-top:8px}.inv th{background:#f3f2f8;text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.04em;padding:8px}
-      .inv td{padding:8px;border-bottom:1px solid #e5e5ee;vertical-align:top}.inv .r{text-align:right}.inv small{color:#666}
+      .inv table{width:100%;border-collapse:collapse;margin-top:8px}.inv th{background:#f1f6f5;text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.04em;padding:8px}
+      .inv td{padding:8px;border-bottom:1px solid #e1eae8;vertical-align:top}.inv .r{text-align:right}.inv small{color:#666}
       .inv .sum{margin-left:auto;width:300px;margin-top:12px}.inv .sum td{border:0;padding:4px 8px}.inv .sum .g td{font-size:18px;font-weight:800;border-top:2px solid #111}
-      .inv .foot{margin-top:28px;color:#555;font-size:12px;border-top:1px solid #e5e5ee;padding-top:10px}`;
+      .inv .foot{margin-top:28px;color:#555;font-size:12px;border-top:1px solid #e1eae8;padding-top:10px}`;
     const body = `<div class="inv"><div class="inv-top"><div>${b.logo_url ? `<img src="${esc(b.logo_url)}" alt=""><br>` : ''}<b style="font-size:18px">${esc(b.company_name)}</b><div class="muted">${esc(P.settings?.receipt_header || '').replace(/\n/g, '<br>')}</div></div>
       <div class="meta"><h1>${ret ? 'CREDIT NOTE' : vatInfo(s).on ? 'TAX INVOICE' : 'INVOICE'}</h1>${vatInfo(s).on && vatNo() ? `<div>${vatNo()}</div>` : ''}<b>${esc(s.invoice_label)}</b><br>${new Date(s.created_at || Date.now()).toLocaleDateString(undefined, { day: '2-digit', month: 'long', year: 'numeric' })}</div></div>
       <div class="to"><div><small>BILL TO</small><br><b>${esc(s.customer_name || 'Walk-in customer')}</b>${s.customer_phone ? `<br>${esc(s.customer_phone)}` : ''}</div><div class="meta"><small>CASHIER</small><br>${esc(s.cashier_name || 'Owner')}<br><small>Payment: ${esc(s.payment_method || '')}</small></div></div>

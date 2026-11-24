@@ -1,4 +1,4 @@
-/* My Catalogue POS — core: sign-in, business, cashier PIN, shift, data, offline queue, UI helpers. */
+/* Raffi POS — core: sign-in, business, cashier PIN, shift, data, offline queue, UI helpers. */
 (() => {
   const $ = id => document.getElementById(id);
   const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -305,7 +305,7 @@
       localStorage.setItem('mcpos-last-biz', P.biz.id);
       if (!P.biz.pos_enabled) { show('vInactive'); return; }
       if (P.biz.main_system === 'external') {
-        $('inactiveMsg').innerHTML = 'This shop uses <b>its own POS</b> (connected to the catalogue) as the main system, so items, prices and stock come from it and this till is switched off.<br><br>To sell with the My Catalogue POS instead, open <a href="admin.html#connector">Catalogue admin → Live POS connector</a> and choose <b>My Catalogue POS</b> as the main system.';
+        $('inactiveMsg').innerHTML = 'This shop uses <b>its own POS</b> (connected to the catalogue) as the main system, so items, prices and stock come from it and this till is switched off.<br><br>To sell with the Raffi POS instead, open <a href="admin.html#connector">Catalogue admin → Live POS connector</a> and choose <b>Raffi POS</b> as the main system.';
         show('vInactive'); return;
       }
       await P.loadData();

@@ -1,4 +1,4 @@
-/* My Catalogue PRO (v8) — admin shell, dashboard, sign-in UX, Import & Export Center,
+/* Raffi (v8) — admin shell, dashboard, sign-in UX, Import & Export Center,
    Photo Studio UI and Live POS connector UI. Works on top of the existing admin logic
    through window.MCAdmin (exposed by admin.html). */
 (() => {
@@ -126,7 +126,7 @@
     $('mcHello').textContent = (hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening') + ', ' + (biz.company_name || 'there') + ' 👋';
     $('mcHeroText').textContent = biz.is_published ? 'Your catalogue is live. Keep products, prices and photos fresh to win more orders.' : 'Your catalogue is private until the platform owner approves it — perfect time to add products and photos.';
     const kpi = (c, ic, val, label, page) => `<button type="button" class="mc-kpi" style="--c:${c}" data-page="${page}"><div class="k-ic">${ic}</div><b>${val}</b><span>${label}</span></button>`;
-    $('mcKpis').innerHTML = kpi('#7c3aed', '🗂️', s.total.toLocaleString(), 'Products', 'products') + kpi('#14b8a6', '🏷️', s.cats, 'Categories', 'catorder') +
+    $('mcKpis').innerHTML = kpi('#0f766e', '🗂️', s.total.toLocaleString(), 'Products', 'products') + kpi('#14b8a6', '🏷️', s.cats, 'Categories', 'catorder') +
       kpi('#0ea5e9', '📸', s.total ? Math.round(100 * (s.total - s.noPhoto) / s.total) + '%' : '—', s.noPhoto ? s.noPhoto + ' missing photos' : 'Photo coverage', 'studio') +
       `<a class="mc-kpi" style="--c:#f97316;text-decoration:none" href="orders.html"><div class="k-ic">🧾</div><b>${orderStats.fresh == null ? '—' : orderStats.fresh}</b><span>New orders${orderStats.total != null ? ' · ' + orderStats.total + ' in 30 days' : ''}</span></a>`;
     const items = [
@@ -174,7 +174,7 @@
     const wb = XLSX.utils.book_new(); const ws = XLSX.utils.json_to_sheet(rows, { header: HEADERS });
     ws['!cols'] = [34, 20, 18, 14, 16, 12, 10, 12, 10, 44, 50, 12, 8].map(wch => ({ wch }));
     XLSX.utils.book_append_sheet(wb, ws, 'Products');
-    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([['My Catalogue export'], ['Business', A().biz.company_name], ['Exported', new Date().toLocaleString()], ['Products', rows.length], ['Re-import', 'Upload this file in Excel / CSV sync. Matching uses Barcode, then POS Product ID, then SKU.']]), 'Info');
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([['Raffi export'], ['Business', A().biz.company_name], ['Exported', new Date().toLocaleString()], ['Products', rows.length], ['Re-import', 'Upload this file in Excel / CSV sync. Matching uses Barcode, then POS Product ID, then SKU.']]), 'Info');
     XLSX.writeFile(wb, `${slug()}-products-${today()}.xlsx`); toast(`Excel export ready: ${rows.length} products.`);
   });
   const csvCell = v => { const s = String(v ?? ''); return /[",\n\r]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s; };
@@ -218,7 +218,7 @@
     const biz = A().biz, money = v => v == null ? '—' : MC.money(v, biz.currency); const groups = new Map();
     sortedProducts().filter(p => p.is_active !== false).forEach(p => { if (!groups.has(catOf(p))) groups.set(catOf(p), []); groups.get(catOf(p)).push(p); });
     const w = window.open('', '_blank'); if (!w) throw Error('Allow pop-ups to open the printable price list.');
-    w.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>${esc(biz.company_name)} — Price list</title><style>body{font-family:'Plus Jakarta Sans',Arial,sans-serif;color:#1b1740;margin:28px}header{display:flex;align-items:center;gap:16px;border-bottom:4px solid ${esc(biz.primary_color || '#7c3aed')};padding-bottom:14px;margin-bottom:10px}header img{width:64px;height:64px;object-fit:contain}h1{margin:0}h2{background:${esc(biz.primary_color || '#7c3aed')};color:#fff;padding:7px 12px;border-radius:8px;font-size:16px;margin:22px 0 6px}table{width:100%;border-collapse:collapse;font-size:13px}td,th{padding:7px 8px;border-bottom:1px solid #e7e4f5;text-align:left}th{font-size:11px;text-transform:uppercase;color:#6b6890}td.p{text-align:right;white-space:nowrap;font-weight:700}td img{width:38px;height:38px;object-fit:contain}.btn{position:fixed;right:20px;top:20px;padding:10px 16px;border:0;border-radius:10px;background:#7c3aed;color:#fff;font-weight:700;cursor:pointer}@media print{.btn{display:none}h2{-webkit-print-color-adjust:exact;print-color-adjust:exact}}</style></head><body><button class="btn" onclick="print()">🖨 Print / Save PDF</button><header>${biz.logo_url ? `<img src="${esc(biz.logo_url)}">` : ''}<div><h1>${esc(biz.company_name)}</h1><div>Price list · ${new Date().toLocaleDateString()}${biz.whatsapp ? ' · WhatsApp +' + esc(biz.whatsapp) : ''}</div></div></header>${[...groups].map(([c, ps]) => `<h2>${esc(c)}</h2><table><tr><th></th><th>Product</th><th>Code</th><th style="text-align:right">Price</th><th style="text-align:right">Price 2</th></tr>${ps.map(p => `<tr><td>${p.image ? `<img src="${esc(p.image)}">` : ''}</td><td><b>${esc(p.name)}</b></td><td>${esc(p.barcode || p.sku || '')}</td><td class="p">${money(p.price1)} <small>${esc(p.label1 || '')}</small></td><td class="p">${p.label2 ? money(p.price2) + ' <small>' + esc(p.label2) + '</small>' : ''}</td></tr>`).join('')}</table>`).join('')}</body></html>`);
+    w.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>${esc(biz.company_name)} — Price list</title><style>body{font-family:'Plus Jakarta Sans',Arial,sans-serif;color:#16302c;margin:28px}header{display:flex;align-items:center;gap:16px;border-bottom:4px solid ${esc(biz.primary_color || '#0f766e')};padding-bottom:14px;margin-bottom:10px}header img{width:64px;height:64px;object-fit:contain}h1{margin:0}h2{background:${esc(biz.primary_color || '#0f766e')};color:#fff;padding:7px 12px;border-radius:8px;font-size:16px;margin:22px 0 6px}table{width:100%;border-collapse:collapse;font-size:13px}td,th{padding:7px 8px;border-bottom:1px solid #dde9e6;text-align:left}th{font-size:11px;text-transform:uppercase;color:#627a76}td.p{text-align:right;white-space:nowrap;font-weight:700}td img{width:38px;height:38px;object-fit:contain}.btn{position:fixed;right:20px;top:20px;padding:10px 16px;border:0;border-radius:10px;background:#0f766e;color:#fff;font-weight:700;cursor:pointer}@media print{.btn{display:none}h2{-webkit-print-color-adjust:exact;print-color-adjust:exact}}</style></head><body><button class="btn" onclick="print()">🖨 Print / Save PDF</button><header>${biz.logo_url ? `<img src="${esc(biz.logo_url)}">` : ''}<div><h1>${esc(biz.company_name)}</h1><div>Price list · ${new Date().toLocaleDateString()}${biz.whatsapp ? ' · WhatsApp +' + esc(biz.whatsapp) : ''}</div></div></header>${[...groups].map(([c, ps]) => `<h2>${esc(c)}</h2><table><tr><th></th><th>Product</th><th>Code</th><th style="text-align:right">Price</th><th style="text-align:right">Price 2</th></tr>${ps.map(p => `<tr><td>${p.image ? `<img src="${esc(p.image)}">` : ''}</td><td><b>${esc(p.name)}</b></td><td>${esc(p.barcode || p.sku || '')}</td><td class="p">${money(p.price1)} <small>${esc(p.label1 || '')}</small></td><td class="p">${p.label2 ? money(p.price2) + ' <small>' + esc(p.label2) + '</small>' : ''}</td></tr>`).join('')}</table>`).join('')}</body></html>`);
     w.document.close();
   });
   on('dcRestoreJson', () => $('importJson').click());
@@ -229,7 +229,7 @@
 
   /* ------------------------------- Photo Studio ------------------------------- */
   const studio = { bg: 'white', source: null, resultBlob: null, bulk: [], stop: false, busy: false };
-  const studioOpts = () => ({ background: studio.bg, fill: Number($('psFill').value), tolerance: Number($('psTol').value), shadow: $('psShadow').value, enhance: $('psEnhance').value, brand: (A().biz && A().biz.primary_color) || '#7c3aed' });
+  const studioOpts = () => ({ background: studio.bg, fill: Number($('psFill').value), tolerance: Number($('psTol').value), shadow: $('psShadow').value, enhance: $('psEnhance').value, brand: (A().biz && A().biz.primary_color) || '#0f766e' });
   function fillStudioSelects() {
     const ps = A().products || []; const sel = $('psProduct'); if (!sel) return; const prev = sel.value;
     sel.innerHTML = '<option value="">Choose a product…</option>' + ps.slice().sort((a, b) => a.name.localeCompare(b.name)).map(p => `<option value="${esc(p.id)}">${p.image ? '🖼️' : '⬜'} ${esc(p.name)}</option>`).join('');
@@ -274,7 +274,7 @@
     return ps.filter(p => p.image);
   }
   function renderBulk() {
-    $('psBulkGrid').innerHTML = studio.bulk.map((b, i) => `<div class="mc-studio-card"><label class="sel"><input type="checkbox" data-ps-sel="${i}" ${b.selected ? 'checked' : ''} ${b.blob ? '' : 'disabled'}></label>${b.tag ? `<span class="tag" style="background:${b.tagColor}">${esc(b.tag)}</span>` : ''}${b.url ? `<img src="${b.url}" alt="">` : `<div style="aspect-ratio:1;display:grid;place-items:center;background:#faf9ff;font-size:13px;color:var(--muted)">${b.error ? '⚠️ ' + esc(b.error) : '⏳'}</div>`}<div class="meta"><b>${esc(b.p.name)}</b><span class="hint">${esc(catOf(b.p))}</span></div></div>`).join('');
+    $('psBulkGrid').innerHTML = studio.bulk.map((b, i) => `<div class="mc-studio-card"><label class="sel"><input type="checkbox" data-ps-sel="${i}" ${b.selected ? 'checked' : ''} ${b.blob ? '' : 'disabled'}></label>${b.tag ? `<span class="tag" style="background:${b.tagColor}">${esc(b.tag)}</span>` : ''}${b.url ? `<img src="${b.url}" alt="">` : `<div style="aspect-ratio:1;display:grid;place-items:center;background:#f4fbfa;font-size:13px;color:var(--muted)">${b.error ? '⚠️ ' + esc(b.error) : '⏳'}</div>`}<div class="meta"><b>${esc(b.p.name)}</b><span class="hint">${esc(catOf(b.p))}</span></div></div>`).join('');
     const n = studio.bulk.filter(b => b.selected && b.blob).length; $('psBulkApply').disabled = !n || studio.busy; $('psBulkApply').textContent = `✅ Save ${n} selected photo${n === 1 ? '' : 's'}`;
   }
   $('psBulkGrid') && $('psBulkGrid').addEventListener('change', e => { const c = e.target.closest('[data-ps-sel]'); if (!c) return; studio.bulk[Number(c.dataset.psSel)].selected = c.checked; renderBulk(); });
@@ -294,7 +294,7 @@
       try {
         const res = b.p.image ? await MCStudio.process(b.p.image, opts) : await MCStudio.brandCard(b.p, opts);
         b.blob = res.blob; b.url = URL.createObjectURL(res.blob);
-        if (!b.p.image) { b.tag = 'Brand card'; b.tagColor = '#7c3aed'; b.selected = true; }
+        if (!b.p.image) { b.tag = 'Brand card'; b.tagColor = '#0f766e'; b.selected = true; }
         else if (res.bgRemoved) { b.tag = 'Background removed'; b.tagColor = '#059669'; b.selected = true; }
         else { b.tag = 'Framed only'; b.tagColor = '#d97706'; b.selected = false; }
         ok++;
@@ -312,7 +312,7 @@
     studio.busy = true; renderBulk(); let saved = 0, failed = 0;
     for (let i = 0; i < chosen.length; i++) {
       const b = chosen[i];
-      try { await A().replaceProductImage(b.p.id, new File([b.blob], 'studio.' + (b.blob.type === 'image/webp' ? 'webp' : 'jpg'), { type: b.blob.type })); b.saved = true; b.selected = false; b.tag = 'Saved ✓'; b.tagColor = '#1b1740'; saved++; }
+      try { await A().replaceProductImage(b.p.id, new File([b.blob], 'studio.' + (b.blob.type === 'image/webp' ? 'webp' : 'jpg'), { type: b.blob.type })); b.saved = true; b.selected = false; b.tag = 'Saved ✓'; b.tagColor = '#16302c'; saved++; }
       catch (e) { failed++; b.error = e.message; }
       $('psBulkBar').style.width = Math.round(100 * (i + 1) / chosen.length) + '%';
       toast(`Saving photos ${i + 1}/${chosen.length}…`);
@@ -341,20 +341,20 @@
     const stc = { completed: 'ok', completed_with_errors: 'warn', failed: 'bad', running: '' };
     $('lcJobs').innerHTML = (j.data || []).length ? `<div style="overflow-x:auto"><table class="mc-table"><tr><th>When</th><th>Source</th><th>Mode</th><th>Status</th><th>Rows</th><th>Updated</th><th>Added</th><th>Failed</th></tr>${j.data.map(x => `<tr><td>${new Date(x.started_at).toLocaleString()}</td><td>${src[x.source_type] || esc(x.source_type)}</td><td>${x.sync_mode === 'price' ? 'Prices' : 'Full'}</td><td><span class="pill ${stc[x.status] || ''}">${esc(String(x.status).replace(/_/g, ' '))}</span></td><td>${x.rows_total}</td><td>${x.rows_updated}</td><td>${x.rows_added}</td><td>${x.rows_failed}</td></tr>`).join('')}</table></div>` : '<div class="mc-empty">No synchronizations yet.</div>';
   }
-  // main system: My Catalogue POS or the shop's own POS
+  // main system: Raffi POS or the shop's own POS
   async function loadMainSys() {
     const biz = A().biz; if (!biz || !$('mainSysCard')) return;
     const r = await sb().from('mc_saas_businesses').select('main_system').eq('id', biz.id).maybeSingle();
     const v = (r.data && r.data.main_system) || 'catalogue'; biz.main_system = v;
     document.querySelectorAll('input[name=mainSys]').forEach(i => { i.checked = i.value === v; i.closest('.mc-ms-opt').classList.toggle('on', i.checked); });
-    $('mainSysNote').textContent = v === 'external' ? 'Your own POS is the main system. The My Catalogue POS shows a notice instead of the till.' : 'The My Catalogue POS is the main system.';
+    $('mainSysNote').textContent = v === 'external' ? 'Your own POS is the main system. The Raffi POS shows a notice instead of the till.' : 'The Raffi POS is the main system.';
   }
   document.addEventListener('change', async e => {
     if (!e.target.matches || !e.target.matches('input[name=mainSys]')) return;
     const biz = A().biz; if (!biz) return;
     const r = await sb().rpc('mc_saas_set_main_system', { p_business_id: biz.id, p_main: e.target.value });
     if (r.error) { toast(r.error.message, true); return loadMainSys(); }
-    await loadMainSys(); toast(e.target.value === 'external' ? '🔌 Your own POS is now the main system.' : '🧾 The My Catalogue POS is now the main system.');
+    await loadMainSys(); toast(e.target.value === 'external' ? '🔌 Your own POS is now the main system.' : '🧾 The Raffi POS is now the main system.');
   });
   hooks.connector = () => { loadMainSys().catch(() => {}); return loadConnector().catch(e => toast(e.message, true)); };
   on('lcRefresh', () => loadConnector().then(() => toast('Connector status refreshed.')));
@@ -380,7 +380,7 @@
     if (r.error) throw Error(/function|does not exist|schema cache/i.test(r.error.message) ? SETUP_HINT : r.error.message);
     const key = r.data && r.data.key; if (!key) throw Error('The key was not returned.');
     const box = $('lcNewKey'); box.classList.remove('hidden');
-    box.innerHTML = `<div class="mc-card" style="border-color:#f9a8d4;background:#fff7fb"><h3>🔑 Your new connector key — copy it now</h3><p class="hint">For security it will not be shown again. Paste it into <code>config.json</code> on the POS computer (or download the ready-made config below).</p><div class="mc-codebox" id="lcKeyText">${esc(key)}</div><div class="row" style="margin-top:10px"><button class="btn primary" type="button" id="lcCopyKey">📋 Copy key</button><button class="btn" type="button" id="lcDownloadCfg">⬇️ Download config.json</button><button class="btn ghost" type="button" id="lcTest">🧪 Test connection</button></div></div>`;
+    box.innerHTML = `<div class="mc-card" style="border-color:#fcd34d;background:#fffbeb"><h3>🔑 Your new connector key — copy it now</h3><p class="hint">For security it will not be shown again. Paste it into <code>config.json</code> on the POS computer (or download the ready-made config below).</p><div class="mc-codebox" id="lcKeyText">${esc(key)}</div><div class="row" style="margin-top:10px"><button class="btn primary" type="button" id="lcCopyKey">📋 Copy key</button><button class="btn" type="button" id="lcDownloadCfg">⬇️ Download config.json</button><button class="btn ghost" type="button" id="lcTest">🧪 Test connection</button></div></div>`;
     $('lcCopyKey').onclick = async () => { try { await navigator.clipboard.writeText(key); toast('Key copied.'); } catch (_) { toast('Select the key text and copy it manually.', true); } };
     $('lcDownloadCfg').onclick = () => download(new Blob([JSON.stringify(agentConfig(key, permission), null, 2)], { type: 'application/json' }), 'config.json');
     $('lcTest').onclick = async () => {
@@ -433,8 +433,8 @@ Headers:
     };
     $('pmGrid').innerHTML = pm.rows.filter(r => r.file || r.ranked.length).map(r => {
       const pct = Math.round((r.score || 0) * 100);
-      const tag = r.saved ? ['Saved ✓', '#1b1740'] : r.manual ? ['Chosen by you', '#7c3aed'] : r.level === 'auto' ? [pct + '% match', '#059669'] : r.level === 'check' ? [pct + '% · check', '#d97706'] : ['Suggestions', '#6b6890'];
-      return `<div class="mc-studio-card"><label class="sel"><input type="checkbox" data-pm-sel="${r.idx}" ${r.selected ? 'checked' : ''} ${r.file && !r.saved ? '' : 'disabled'}></label><span class="tag" style="background:${tag[1]}">${esc(tag[0])}</span>${r.file ? `<img src="${MCMatch.thumb(r.file)}" alt="">` : '<div style="aspect-ratio:1;display:grid;place-items:center;background:#faf9ff;color:var(--muted);font-size:13px">No photo chosen</div>'}<div class="meta"><b>${esc(r.p.name)}</b><span class="hint">${esc(catOf(r.p))}${r.p.image ? ' · has a photo' : ''}</span>${r.reason && r.file && !r.manual ? `<div class="hint" style="font-size:11.5px">${esc(r.reason)}</div>` : ''}${r.saved ? '' : opt(r)}</div></div>`;
+      const tag = r.saved ? ['Saved ✓', '#16302c'] : r.manual ? ['Chosen by you', '#0f766e'] : r.level === 'auto' ? [pct + '% match', '#059669'] : r.level === 'check' ? [pct + '% · check', '#d97706'] : ['Suggestions', '#627a76'];
+      return `<div class="mc-studio-card"><label class="sel"><input type="checkbox" data-pm-sel="${r.idx}" ${r.selected ? 'checked' : ''} ${r.file && !r.saved ? '' : 'disabled'}></label><span class="tag" style="background:${tag[1]}">${esc(tag[0])}</span>${r.file ? `<img src="${MCMatch.thumb(r.file)}" alt="">` : '<div style="aspect-ratio:1;display:grid;place-items:center;background:#f4fbfa;color:var(--muted);font-size:13px">No photo chosen</div>'}<div class="meta"><b>${esc(r.p.name)}</b><span class="hint">${esc(catOf(r.p))}${r.p.image ? ' · has a photo' : ''}</span>${r.reason && r.file && !r.manual ? `<div class="hint" style="font-size:11.5px">${esc(r.reason)}</div>` : ''}${r.saved ? '' : opt(r)}</div></div>`;
     }).join('') || '<div class="mc-empty">No matches found. Tip: name photos with the barcode or the product name, e.g. <b>5281234567890.jpg</b> or <b>Kraft bowl 750cc.jpg</b>.</div>';
     const n = pm.rows.filter(r => r.selected && r.file && !r.saved).length;
     $('pmSave').disabled = !n || pm.busy; $('pmSave').textContent = `✅ Save ${n} photo${n === 1 ? '' : 's'}`;
