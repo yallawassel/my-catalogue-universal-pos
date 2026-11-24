@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0f766e">
+<title>Raffi | رفّي — محلّك أونلاين: كتالوج + نقطة بيع</title>
+<meta name="description" content="رفّي: كتالوج محلّك أونلاين، طلبيات على واتساب أو من الصفحة، نقطة بيع، مخزون ودفتر ديون — بتطبيق واحد. Raffi: your shop online — catalogue, orders, POS, stock and debts in one app.">
+<meta property="og:title" content="Raffi | رفّي — محلّك أونلاين">
+<meta property="og:description" content="كتالوج + طلبيات + نقطة بيع + دفتر ديون، بتطبيق واحد.">
+<meta property="og:image" content="https://myraffi.com/media/raffi-walkthrough.jpg">
+<link rel="icon" href="raffi-mark.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="manifest" href="manifest.webmanifest">
+<style>
+*{box-sizing:border-box}html{-webkit-text-size-adjust:100%}
+body{margin:0;font-family:'Plus Jakarta Sans',system-ui,-apple-system,'Segoe UI',Tahoma,Arial,sans-serif;color:#16302c;background:#f3f8f7;line-height:1.55}
+a{color:inherit}
+.wrap{max-width:1120px;margin:auto;padding:0 18px}
+header{position:sticky;top:0;z-index:20;background:rgba(243,248,247,.92);backdrop-filter:blur(8px);border-bottom:1px solid #dde9e6}
+.nav{display:flex;align-items:center;gap:12px;height:64px}
+.brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:20px;text-decoration:none}.brand img{width:38px;height:38px}
+.nav .sp{flex:1}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:0;border-radius:12px;padding:11px 18px;font:inherit;font-weight:800;text-decoration:none;cursor:pointer;white-space:nowrap}
+.btn.pri{background:#0f766e;color:#fff;box-shadow:0 8px 20px rgba(15,118,110,.28)}.btn.pri:hover{background:#115e59}
+.btn.amber{background:#fbbf24;color:#16302c}.btn.ghost{background:transparent;border:1.5px solid #c3dcd7}.btn.small{padding:8px 12px;font-size:14px}
+.lang{background:#fff;border:1.5px solid #dde9e6;border-radius:10px;padding:7px 11px;font-weight:700;cursor:pointer;font:inherit}
+.hero{background:radial-gradient(circle at 85% 0%,#14b8a6 0,#0f766e 38%,#0b2725 100%);color:#fff;padding:54px 0 64px}
+.hero .grid{display:grid;grid-template-columns:1fr 1.15fr;gap:40px;align-items:center}
+.hero h1{font-size:46px;line-height:1.15;margin:0 0 14px}.hero h1 em{font-style:normal;color:#fde68a}
+.hero p{font-size:19px;opacity:.93;margin:0 0 22px;max-width:520px}
+.cta{display:flex;gap:10px;flex-wrap:wrap}
+.tick{display:flex;gap:16px;flex-wrap:wrap;margin-top:18px;font-size:14px;opacity:.9}
+.player{background:#0b2725;border-radius:20px;padding:10px;box-shadow:0 30px 70px rgba(0,0,0,.4)}
+.player video{width:100%;display:block;border-radius:14px;background:#000;aspect-ratio:16/9}
+.vtabs{display:flex;gap:8px;justify-content:center;margin:0 0 10px}
+.vtabs button{background:rgba(255,255,255,.12);color:#fff;border:0;border-radius:10px;padding:7px 14px;font:inherit;font-weight:700;cursor:pointer}.vtabs button.on{background:#fbbf24;color:#16302c}
+section{padding:58px 0}
+h2{font-size:32px;margin:0 0 8px;text-align:center}.lead{text-align:center;color:#627a76;margin:0 auto 30px;max-width:640px}
+.feats{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.f{background:#fff;border:1px solid #dde9e6;border-radius:18px;padding:20px;box-shadow:0 1px 2px rgba(22,48,44,.04),0 8px 24px rgba(22,48,44,.06)}
+.f .ic{width:46px;height:46px;border-radius:14px;display:grid;place-items:center;font-size:22px;background:#e6f4f1;margin-bottom:10px}
+.f h3{margin:0 0 6px;font-size:18px}.f p{margin:0;color:#627a76;font-size:15px}
+.who{display:flex;flex-wrap:wrap;gap:10px;justify-content:center}
+.who span{background:#fff;border:1px solid #dde9e6;border-radius:999px;padding:9px 16px;font-weight:700}
+.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;counter-reset:s}
+.st{background:#fff;border-radius:18px;padding:22px;border:1px solid #dde9e6;position:relative}
+.st b{display:grid;place-items:center;width:40px;height:40px;border-radius:12px;background:#fbbf24;font-size:20px;margin-bottom:10px}
+.final{background:#0f766e;color:#fff;border-radius:24px;padding:40px 24px;text-align:center}
+.final h2{color:#fff}.final p{opacity:.9;margin:0 0 20px}
+footer{padding:28px 0 40px;color:#627a76;font-size:14px;text-align:center}
+.demo{display:flex;gap:16px;align-items:center;justify-content:center;flex-wrap:wrap;background:#fff;border:1px dashed #5eead4;border-radius:18px;padding:18px}
+[data-en]{}
+@media(max-width:900px){.hero .grid{grid-template-columns:1fr}.hero h1{font-size:34px}.feats,.steps{grid-template-columns:1fr 1fr}}
+@media(max-width:560px){.feats,.steps{grid-template-columns:1fr}.nav .login{display:none}.hero{padding:34px 0 44px}.hero p{font-size:17px}section{padding:42px 0}h2{font-size:26px}}
+</style>
+</head>
+<body>
+<header><div class="wrap nav">
+  <a class="brand" href="./welcome.html"><img src="raffi-mark.svg" alt="">Raffi <span style="color:#0f766e">| رفّي</span></a>
+  <span class="sp"></span>
+  <button class="lang" type="button" id="langBtn">English</button>
+  <a class="btn ghost small login" href="admin.html" data-t="login">تسجيل الدخول</a>
+  <a class="btn pri small" href="admin.html" data-t="start">جرّب رفّي</a>
+</div></header>
+
+<div class="hero"><div class="wrap grid">
+  <div>
+    <h1 data-t="h1">محلّك <em>أونلاين</em> بدقائق</h1>
+    <p data-t="sub">كتالوج على الموبايل، طلبيات بترنّ عندك فوراً، نقطة بيع، مخزون ودفتر ديون — كلّه بتطبيق واحد، بالعربي والإنكليزي.</p>
+    <div class="cta"><a class="btn amber" href="admin.html" data-t="start2">جرّب رفّي ←</a><a class="btn ghost" style="color:#fff;border-color:rgba(255,255,255,.4)" href="#how" data-t="see">شوف كيف بيشتغل</a></div>
+    <div class="tick"><span data-t="t1">✓ بلا برامج تنزّلها</span><span data-t="t2">✓ بيشتغل على أي موبايل</span><span data-t="t3">✓ عربي وإنكليزي</span></div>
+  </div>
+  <div class="player" id="how">
+    <div class="vtabs"><button type="button" data-vl="ar" class="on">العربي</button><button type="button" data-vl="en">English</button></div>
+    <video id="vid" controls playsinline preload="metadata" poster="media/raffi-walkthrough.jpg" src="media/raffi-walkthrough-ar.mp4"></video>
+  </div>
+</div></div>
+
+<section><div class="wrap">
+  <h2 data-t="fh">كل يللي بيحتاجو محلّك</h2>
+  <p class="lead" data-t="fl">من أول منتج لآخر فاتورة — بلا ورق وبلا وجع راس.</p>
+  <div class="feats">
+    <div class="f"><div class="ic">🛍️</div><h3 data-t="f1h">كتالوج على الموبايل</h3><p data-t="f1p">رابط واحد لمحلّك، بلونك وشعارك، بالعربي والإنكليزي، وبيتنزّل كتطبيق.</p></div>
+    <div class="f"><div class="ic">🛎️</div><h3 data-t="f2h">طلبيات بترنّ فوراً</h3><p data-t="f2p">الزبون بيطلب على واتساب أو تيليغرام أو من الصفحة، وموبايلك بيرنّ مع كل طلبية.</p></div>
+    <div class="f"><div class="ic">🧾</div><h3 data-t="f3h">نقطة بيع بالمحل</h3><p data-t="f3p">باركود، عملتين، حسم، جملة ومفرّق، وفاتورة — من الموبايل أو الكمبيوتر.</p></div>
+    <div class="f"><div class="ic">📦</div><h3 data-t="f4h">مخزون وجرد</h3><p data-t="f4p">«نفد» بيبيّن لحالو، جرد بالباركود، وطباعة ليبلات.</p></div>
+    <div class="f"><div class="ic">📒</div><h3 data-t="f5h">دفتر الديون</h3><p data-t="f5p">مين مديون إلك، ولمين إنت مديون، وتذكير لطيف عالواتساب بكبسة.</p></div>
+    <div class="f"><div class="ic">🔌</div><h3 data-t="f6h">بيرتبط ببرنامجك</h3><p data-t="f6p">عندك برنامج محاسبة؟ رفّي بيسحب منو الأسعار والمخزون والصور لحالو.</p></div>
+  </div>
+</div></section>
+
+<section style="padding-top:0"><div class="wrap">
+  <h2 data-t="wh">مناسب لكل محل</h2>
+  <p class="lead" data-t="wl">دكّانة، سوبرماركت، جملة، كاترينغ، كهربا، محلات الدولار، ألبسة، ومطاعم.</p>
+  <div class="who"><span data-t="w1">🏪 دكّانة</span><span data-t="w2">🛒 سوبرماركت</span><span data-t="w3">📦 جملة</span><span data-t="w4">🍽️ كاترينغ ومطاعم</span><span data-t="w5">💡 كهربا</span><span data-t="w6">💵 محلات الدولار</span><span data-t="w7">👕 ألبسة</span></div>
+</div></section>
+
+<section style="padding-top:0"><div class="wrap">
+  <h2 data-t="sh">٣ خطوات وبتكون أونلاين</h2>
+  <p class="lead" data-t="sl">بلا مبرمج وبلا تعقيد.</p>
+  <div class="steps">
+    <div class="st"><b>1</b><h3 data-t="s1h">سجّل</h3><p data-t="s1p">بالإيميل أو حساب Google، بدقيقة.</p></div>
+    <div class="st"><b>2</b><h3 data-t="s2h">زيد منتجاتك</h3><p data-t="s2p">وحدة وحدة، أو كلّن سوا من ملف Excel أو من برنامجك.</p></div>
+    <div class="st"><b>3</b><h3 data-t="s3h">ابعت الرابط</h3><p data-t="s3p">على الواتساب والإنستغرام، واستقبل الطلبيات.</p></div>
+  </div>
+  <div class="demo" style="margin-top:22px"><span data-t="dm">👀 بدك تشوف كتالوج حقيقي شغّال على رفّي؟</span><a class="btn pri small" href="index.html?shop=white-pack" target="_blank" rel="noopener" data-t="dmb">افتح مثال حي</a></div>
+</div></section>
+
+<section style="padding-top:0"><div class="wrap"><div class="final">
+  <h2 data-t="ch">جاهز تحطّ محلّك أونلاين؟</h2>
+  <p data-t="cp">سجّل اليوم وجرّب رفّي على محلّك.</p>
+  <a class="btn amber" href="admin.html" data-t="start3">جرّب رفّي ←</a>
+</div></div></section>
+
+<footer><div class="wrap"><img src="raffi-mark.svg" alt="" style="width:28px;vertical-align:middle"> Raffi | رفّي · myraffi.com</div></footer>
+
+<script>
+(() => {
+  const EN = { login:'Sign in', start:'Try Raffi', h1:'Your shop <em>online</em> in minutes', sub:'A mobile catalogue, orders that ring your phone, a point of sale, stock and a debt book — one app, in Arabic and English.', start2:'Try Raffi →', see:'See how it works', t1:'✓ Nothing to install', t2:'✓ Works on any phone', t3:'✓ Arabic & English',
+    fh:'Everything your shop needs', fl:'From the first product to the last receipt — no paper, no headache.',
+    f1h:'Mobile catalogue', f1p:'One link for your shop, in your colours and logo, Arabic and English, installable as an app.',
+    f2h:'Orders that ring', f2p:'Customers order by WhatsApp, Telegram or right on the page — and your phone rings for each one.',
+    f3h:'In-store POS', f3p:'Barcode, two currencies, discounts, retail and wholesale, receipts — on a phone or a computer.',
+    f4h:'Stock & counts', f4p:'“Sold out” shows by itself, barcode stock counts and label printing.',
+    f5h:'Debt book', f5p:'Who owes you, who you owe, and a friendly WhatsApp reminder in one tap.',
+    f6h:'Connects to your system', f6p:'Already use accounting software? Raffi pulls prices, stock and photos from it automatically.',
+    wh:'Made for every shop', wl:'Corner shops, supermarkets, wholesale, catering, electrical, dollar stores, clothing and restaurants.',
+    w1:'🏪 Corner shop', w2:'🛒 Supermarket', w3:'📦 Wholesale', w4:'🍽️ Catering & food', w5:'💡 Electrical', w6:'💵 Dollar stores', w7:'👕 Clothing',
+    sh:'Online in 3 steps', sl:'No developer, no hassle.', s1h:'Sign up', s1p:'With email or Google, in a minute.', s2h:'Add your products', s2p:'One by one, or all at once from Excel or your system.', s3h:'Share the link', s3p:'On WhatsApp and Instagram, and start taking orders.',
+    dm:'👀 Want to see a real catalogue running on Raffi?', dmb:'Open a live example', ch:'Ready to put your shop online?', cp:'Sign up today and try Raffi on your shop.', start3:'Try Raffi →' };
+  const AR = {}; document.querySelectorAll('[data-t]').forEach(e => AR[e.dataset.t] = e.innerHTML);
+  const vid = document.getElementById('vid');
+  function setVideo(l) { document.querySelectorAll('[data-vl]').forEach(b => b.classList.toggle('on', b.dataset.vl === l)); const s = 'media/raffi-walkthrough-' + l + '.mp4'; if (!vid.src.endsWith(s)) { const play = !vid.paused; vid.src = s; if (play) vid.play().catch(() => {}); } }
+  function setLang(l) {
+    const d = l === 'en' ? EN : AR; document.querySelectorAll('[data-t]').forEach(e => { if (d[e.dataset.t]) e.innerHTML = d[e.dataset.t]; });
+    document.documentElement.lang = l; document.documentElement.dir = l === 'en' ? 'ltr' : 'rtl';
+    document.getElementById('langBtn').textContent = l === 'en' ? 'العربي' : 'English';
+    document.querySelectorAll('.cta .btn, .final .btn').forEach(b => { b.textContent = b.textContent.replace(/[←→]/, l === 'en' ? '→' : '←'); });
+    setVideo(l); try { localStorage.setItem('raffi-lang', l); } catch (_) {}
+  }
+  document.getElementById('langBtn').onclick = () => setLang(document.documentElement.lang === 'en' ? 'ar' : 'en');
+  document.querySelectorAll('[data-vl]').forEach(b => b.onclick = () => setVideo(b.dataset.vl));
+  let l = 'ar'; try { l = localStorage.getItem('raffi-lang') || (/^ar/i.test(navigator.language || '') ? 'ar' : (new URLSearchParams(location.search).get('lang') || 'ar')); } catch (_) {}
+  if (l === 'en') setLang('en');
+})();
+</script>
+</body>
+</html>
