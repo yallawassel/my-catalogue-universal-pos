@@ -212,7 +212,7 @@
   const zHtml = (z, sh) => `<table class="pl"><tr><td>Opened</td><td>${P.dt(sh.opened_at)} · ${esc(sh.cashier_name)}</td></tr>${sh.closed_at ? `<tr><td>Closed</td><td>${P.dt(sh.closed_at)}</td></tr>` : ''}
     <tr><td>Sales (${z.sales_count})</td><td>${P.fmt(z.sales_total)}</td></tr><tr><td>Returns</td><td>−${P.fmt(z.returns_total)}</td></tr><tr><td>Discounts given</td><td>${P.fmt(z.discounts)}</td></tr>
     <tr><td>Card</td><td>${P.fmt(z.card)}</td></tr><tr><td>Sold on account (debt)</td><td>${P.fmt(z.credit)}</td></tr><tr><td>Debt payments received</td><td>${P.fmt(z.debt_payments_total)}</td></tr>
-    <tr><td>Expenses</td><td>${P.fmt(z.expenses)}</td></tr><tr><td>Other income</td><td>${P.fmt(z.income)}</td></tr>
+    <tr><td>Expenses</td><td>${P.fmt(z.expenses)}</td></tr><tr><td>Other income</td><td>${P.fmt(z.income)}</td></tr>${Number(z.cash_in) ? `<tr><td>Cash put in the drawer</td><td>${P.fmt(z.cash_in)}</td></tr>` : ''}${Number(z.cash_out) ? `<tr><td>Cash taken out of the drawer</td><td>−${P.fmt(z.cash_out)}</td></tr>` : ''}${Number(z.supplier_payments) ? `<tr><td>Paid to suppliers from the drawer</td><td>−${P.fmt(z.supplier_payments)}</td></tr>` : ''}
     <tr><td>Opening cash</td><td>${P.fmt(z.opening_usd)} + ${P.fmtL(z.opening_lbp)}</td></tr>
     <tr class="total"><td>Cash expected in drawer</td><td>${P.fmt(z.expected_usd)} + ${P.fmtL(z.expected_lbp)}</td></tr>
     ${z.counted_usd != null ? `<tr><td>Counted</td><td>${P.fmt(z.counted_usd)} + ${P.fmtL(z.counted_lbp)}</td></tr><tr class="total"><td>Difference</td><td style="color:${Math.abs(z.difference_usd) < 0.01 && Math.abs(z.difference_lbp) < 1 ? 'var(--ok)' : 'var(--bad)'}">${P.fmt(z.difference_usd)} · ${P.fmtL(z.difference_lbp)}</td></tr>` : ''}</table>`;
