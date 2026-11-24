@@ -81,10 +81,10 @@
     <button data-tab="sales"><span>🧾</span>Sales</button>
     <button data-tab="orders"><span>📥</span>Online orders <i class="badge" id="ordersBadge" hidden></i></button>
     <button data-tab="customers"><span>👥</span>Customers</button>
-    <button data-tab="items" data-role="manager"><span>📦</span>Items &amp; stock</button>
-    <button data-tab="purchases" data-role="manager"><span>🚚</span>Suppliers &amp; purchases</button>
-    <button data-tab="cash" data-role="manager"><span>💵</span>Cash &amp; expenses</button>
-    <button data-tab="reports" data-role="manager"><span>📊</span>Reports</button>
+    <button data-tab="items" data-perm="items"><span>📦</span>Items &amp; stock</button>
+    <button data-tab="purchases" data-perm="purchases"><span>🚚</span>Suppliers &amp; purchases</button>
+    <button data-tab="cash" data-perm="cash"><span>💵</span>Cash &amp; expenses</button>
+    <button data-tab="reports" data-perm="reports"><span>📊</span>Reports</button>
     <button data-tab="shift"><span>🗄️</span>Shift / Z report</button>
     <button data-tab="settings" data-role="manager"><span>⚙️</span>Settings</button>
     <a href="admin.html" class="side-link" id="adminLink" data-role="manager"><span>🛍️</span>Catalogue admin</a>
@@ -110,6 +110,7 @@
             <button class="icon-btn" id="clearCart" type="button" title="Clear cart" aria-label="Clear cart">🗑</button>
           </div>
           <div class="order-tag" id="orderTag" hidden></div>
+          <label class="vat-toggle ws-toggle" id="wsToggle" hidden><input type="checkbox" id="wsOn"> <span>🏷️ Wholesale prices</span></label>
           <div class="lines" id="lines"></div>
           <div class="totals">
             <div><span>Subtotal</span><b id="tSub">$0.00</b></div>
@@ -140,14 +141,14 @@
 
     <!-- CUSTOMERS -->
     <section class="tab" id="tab-customers">
-      <div class="tab-head"><h2>Customers &amp; debts</h2><div class="tools"><input id="custSearch" type="search" placeholder="Name or phone"><select id="custFilter"><option value="all">All</option><option value="debt">With debt</option></select><button class="btn primary" id="custAdd" type="button">＋ New customer</button></div></div>
+      <div class="tab-head"><h2>Customers &amp; debts</h2><div class="tools"><input id="custSearch" type="search" placeholder="Name or phone"><select id="custFilter"><option value="all">All</option><option value="debt">With debt</option></select><button class="btn" id="custRemind" type="button">💬 Debt reminders</button><button class="btn primary" id="custAdd" type="button">＋ New customer</button></div></div>
       <div class="kpis" id="custKpis"></div>
       <div class="table" id="custList"></div>
     </section>
 
     <!-- ITEMS & STOCK -->
     <section class="tab" id="tab-items">
-      <div class="tab-head"><h2>Items &amp; stock</h2><div class="tools"><input id="itSearch" type="search" placeholder="Name, barcode, SKU"><select id="itFilter"><option value="all">All items</option><option value="low">Low stock / reorder</option><option value="out">Out of stock</option><option value="nocost">No cost price</option><option value="untracked">Stock not counted</option><option value="hidden">Hidden items</option></select><button class="btn" id="itXlsx" type="button">📗 Excel</button><button class="btn primary" id="itAdd" type="button">＋ New item</button></div></div>
+      <div class="tab-head"><h2>Items &amp; stock</h2><div class="tools"><input id="itSearch" type="search" placeholder="Name, barcode, SKU"><select id="itFilter"><option value="all">All items</option><option value="low">Low stock / reorder</option><option value="out">Out of stock</option><option value="nocost">No cost price</option><option value="untracked">Stock not counted</option><option value="hidden">Hidden items</option></select><button class="btn" id="itCount" type="button" data-perm="stocktake">🔢 Stock count</button><button class="btn" id="itLabels" type="button">🏷️ Labels</button><button class="btn" id="itXlsx" type="button">📗 Excel</button><button class="btn primary" id="itAdd" type="button">＋ New item</button></div></div>
       <div class="kpis" id="itKpis"></div>
       <div class="table" id="itList"></div>
       <button class="btn ghost" id="itMore" type="button" hidden>Show more</button>

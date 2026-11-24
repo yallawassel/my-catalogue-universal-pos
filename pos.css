@@ -225,3 +225,9 @@ button.chip{cursor:pointer}
 /* v29 items & purchases */
 #npHits.list{max-height:220px;overflow:auto;margin:4px 0 8px}#npHits.list button{padding:8px 10px}
 .tr input,.tr select{width:100%;min-width:0;padding:6px 8px}
+/* v30 stock count, labels, wholesale */
+.st-units{display:flex;gap:6px;flex-wrap:wrap}.st-units label{display:flex;flex-direction:column;margin:0;min-width:64px;flex:1}.st-units small{font-size:11px;color:var(--muted)}
+#stHits.list{max-height:200px;overflow:auto}
+.lb-preview{margin-top:10px}.lb-frame{display:inline-block;border:1px dashed #c4c0dc;background:#fff;border-radius:6px}
+.ws-toggle{margin:6px 12px 0}
+.tr input[type=checkbox]{width:18px;height:18px}

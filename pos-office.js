@@ -47,7 +47,7 @@
       const r = await sb.from('mc_saas_pos_sales').select('items').eq('ref_sale_id', s.id).eq('kind', 'return');
       (r.data || []).forEach(x => (x.items || []).forEach(i => { back[i.line] = (back[i.line] || 0) + Number(i.qty); }));
     } catch (_) { }
-    const needPin = P.cashier && P.cashier.role !== 'manager' && P.cashiers.some(c => c.is_active && c.role === 'manager');
+    const needPin = P.cashier && P.cashier.role !== 'manager' && !P.can('return') && P.cashiers.some(c => c.is_active && c.role === 'manager');
     const b = P.modal('Return — ' + s.invoice_label, `<p class="muted">Choose how many of each item come back.</p>
       ${(s.items || []).map((i, k) => { const left = P.r2(Number(i.qty) - (back[k] || 0)); return `<div class="ret-line"><span>${esc(i.name)} <small class="muted">${esc(i.unit || '')} · sold ${P.r2(i.qty)}${back[k] ? `, returned ${back[k]}` : ''}</small></span><input type="number" min="0" max="${left}" step="any" value="0" data-line="${k}" ${left <= 0 ? 'disabled' : ''} aria-label="Quantity to return"></div>`; }).join('')}
       <div class="row2"><div><label for="rtMethod">Refund</label><select id="rtMethod"><option value="cash_usd">Cash USD</option><option value="cash_lbp">Cash LBP</option><option value="card">Card</option>${s.customer_id ? '<option value="credit">Reduce customer debt</option>' : ''}</select></div>
@@ -111,20 +111,22 @@
     const owed = P.customers.reduce((s, c) => s + Math.max(0, Number(c.balance)), 0);
     $('custKpis').innerHTML = `<div class="kpi"><small>Customers</small><b>${P.customers.length}</b></div><div class="kpi bad"><small>Total debts to collect</small><b>${P.fmt(owed)}</b></div><div class="kpi"><small>Customers with debt</small><b>${P.customers.filter(c => Number(c.balance) > 0.009).length}</b></div>`;
     const g = 'grid-template-columns:1.4fr 1fr 1fr 110px 290px';
-    $('custList').innerHTML = `<div class="tr th" style="${g}"><span>Name</span><span>Phone</span><span>Credit limit</span><span class="r">Debt</span><span></span></div>` + (list.map(c => `<div class="tr" style="${g}"><b>${esc(c.name)}</b><span>${esc(c.phone || '')}</span><span class="muted">${c.credit_limit != null ? P.fmt(c.credit_limit) : '—'}</span><b class="r" style="color:${Number(c.balance) > 0 ? 'var(--bad)' : 'var(--ok)'}">${P.fmt(c.balance)}</b><span style="display:flex;gap:6px;justify-content:flex-end"><button class="btn sm" type="button" data-cpay="${c.id}">💵 Receive</button><button class="btn sm" type="button" data-cst="${c.id}">Statement</button><button class="btn sm" type="button" data-ced="${c.id}">✎</button></span></div>`).join('') || '<div class="empty">No customers.</div>');
+    $('custList').innerHTML = `<div class="tr th" style="${g}"><span>Name</span><span>Phone</span><span>Credit limit</span><span class="r">Debt</span><span></span></div>` + (list.map(c => `<div class="tr" style="${g}"><b>${esc(c.name)}</b><span>${esc(c.phone || '')}</span><span class="muted">${c.credit_limit != null ? P.fmt(c.credit_limit) : '—'}</span><b class="r" style="color:${Number(c.balance) > 0 ? 'var(--bad)' : 'var(--ok)'}">${P.fmt(c.balance)}</b><span style="display:flex;gap:6px;justify-content:flex-end"><button class="btn sm" type="button" data-cpay="${c.id}">💵 Receive</button>${Number(c.balance) > 0.009 ? `<button class="btn sm" type="button" data-crem="${c.id}" title="Send a WhatsApp reminder">💬</button>` : ''}<button class="btn sm" type="button" data-cst="${c.id}">Statement</button><button class="btn sm" type="button" data-ced="${c.id}">✎</button></span></div>`).join('') || '<div class="empty">No customers.</div>');
   }
   $('custList').onclick = e => {
     const p = e.target.closest('[data-cpay]'); if (p) return receivePayment(P.customers.find(c => c.id === p.dataset.cpay));
+    const rm = e.target.closest('[data-crem]'); if (rm) return remindOne(P.customers.find(c => c.id === rm.dataset.crem));
     const s = e.target.closest('[data-cst]'); if (s) return statement(P.customers.find(c => c.id === s.dataset.cst));
     const d = e.target.closest('[data-ced]'); if (d) return editCustomer(P.customers.find(c => c.id === d.dataset.ced));
   };
   function editCustomer(c) {
     const b = P.modal(c ? 'Edit customer' : 'New customer', `<div class="row2"><div><label for="ecName">Name</label><input id="ecName" value="${esc(c?.name || '')}"></div><div><label for="ecPhone">Phone</label><input id="ecPhone" value="${esc(c?.phone || '')}" inputmode="tel"></div></div>
       <div class="row2"><div><label for="ecEmail">Email</label><input id="ecEmail" type="email" value="${esc(c?.email || '')}"></div><div><label for="ecLimit">Credit limit USD (empty = no limit)</label><input id="ecLimit" type="number" min="0" step="0.01" value="${c?.credit_limit ?? ''}" ${P.isManager() ? '' : 'disabled'}></div></div>
+      <label for="ecPrice">Prices for this customer</label><select id="ecPrice"><option value="retail" ${c?.price_list !== 'wholesale' ? 'selected' : ''}>Retail (normal prices)</option><option value="wholesale" ${c?.price_list === 'wholesale' ? 'selected' : ''}>Wholesale prices</option></select>
       <label for="ecAddr">Address</label><input id="ecAddr" value="${esc(c?.address || '')}"><label for="ecNote">Note</label><input id="ecNote" value="${esc(c?.note || '')}">
       <div class="sheet-foot"><button class="btn primary" type="button" id="ecOk">Save</button></div>`);
     b.querySelector('#ecOk').onclick = async () => {
-      const data = { name: b.querySelector('#ecName').value.trim(), phone: b.querySelector('#ecPhone').value.trim(), email: b.querySelector('#ecEmail').value.trim(), address: b.querySelector('#ecAddr').value.trim(), note: b.querySelector('#ecNote').value.trim() };
+      const data = { name: b.querySelector('#ecName').value.trim(), phone: b.querySelector('#ecPhone').value.trim(), email: b.querySelector('#ecEmail').value.trim(), address: b.querySelector('#ecAddr').value.trim(), note: b.querySelector('#ecNote').value.trim(), price_list: b.querySelector('#ecPrice').value };
       if (P.isManager()) { const l = b.querySelector('#ecLimit').value; data.credit_limit = l === '' ? null : P.num(l); }
       if (!data.name) return P.toast('Name is required.', true);
       try {
@@ -276,6 +278,8 @@
     if (!document.getElementById('caToggle')) $('caSave').insertAdjacentHTML('afterend', '<button class="btn danger" type="button" id="caToggle" style="margin-top:6px"></button>');
     $('caToggle').textContent = c.is_active ? 'Disable' : 'Enable';
     $('caToggle').onclick = () => saveCashier(!c.is_active);
+    document.getElementById('caPerms')?.remove();
+    if (c.role !== 'manager') { $('caToggle').insertAdjacentHTML('afterend', '<button class="btn" type="button" id="caPerms" style="margin-top:6px">🔐 What this cashier can do</button>'); $('caPerms').onclick = () => editPerms(c); }
   };
   async function saveCashier(active) {
     const id = $('caId').value || null, name = $('caName').value.trim();
@@ -283,12 +287,67 @@
     try {
       const r = await sb.rpc('mc_saas_pos_save_cashier', { p_business_id: P.biz.id, p_id: id, p_name: name, p_pin: $('caPin').value.trim(), p_role: $('caRole').value, p_active: active ?? true });
       if (r.error) throw r.error;
-      const l = await sb.from('mc_saas_pos_cashiers').select('id,name,role,is_active').eq('business_id', P.biz.id).order('name');
+      const l = await sb.from('mc_saas_pos_cashiers').select('id,name,role,is_active,perms').eq('business_id', P.biz.id).order('name');
       P.cashiers = l.data || []; P.save('cashiers', P.cashiers);
-      $('caId').value = ''; $('caName').value = ''; $('caPin').value = ''; $('caSave').textContent = 'Add cashier'; document.getElementById('caToggle')?.remove();
+      $('caId').value = ''; $('caName').value = ''; $('caPin').value = ''; $('caSave').textContent = 'Add cashier'; document.getElementById('caToggle')?.remove(); document.getElementById('caPerms')?.remove();
       drawCashiers(); P.toast('✅ Cashier saved.');
     } catch (e) { P.err(e); }
   }
   $('caSave').onclick = () => saveCashier(true);
+
+  /* ---------- cashier permissions ---------- */
+  const PERMS = [
+    ['discount', 'Give discounts (up to 20%)', true], ['big_discount', 'Give discounts above 20%', false], ['change_price', 'Lower the price of an item', false],
+    ['return', 'Make returns without a manager PIN', false], ['credit', 'Sell on account (customer debt)', true], ['wholesale', 'Use wholesale prices', true],
+    ['cash', 'Cash & expenses (cash in/out, expenses)', false], ['items', 'Items & stock (edit items, change stock)', false], ['see_cost', 'See cost prices and stock value', false],
+    ['stocktake', 'Do a stock count (stocktake)', false], ['purchases', 'Suppliers & purchases', false], ['reports', 'Reports (sales, profit)', false]];
+  function editPerms(c) {
+    const cur = c.perms || {};
+    const b = P.modal('What ' + c.name + ' can do', `<p class="muted small">Managers can do everything. These switches are for this cashier only.</p>
+      ${PERMS.map(([k, label, def]) => `<label class="check"><input type="checkbox" data-perm-k="${k}" ${(k in cur ? cur[k] : def) ? 'checked' : ''}> ${esc(label)}</label>`).join('')}
+      <div class="sheet-foot"><button class="btn primary" type="button" id="pmOk">Save</button></div>`);
+    b.querySelector('#pmOk').onclick = async () => {
+      const perms = {}; b.querySelectorAll('[data-perm-k]').forEach(i => { perms[i.dataset.permK] = i.checked; });
+      try {
+        const r = await sb.rpc('mc_saas_pos_set_cashier_perms', { p_business_id: P.biz.id, p_id: c.id, p_perms: perms });
+        if (r.error) throw r.error;
+        c.perms = r.data; P.save('cashiers', P.cashiers); P.close(); P.toast('✅ Permissions saved for ' + c.name + '.');
+      } catch (e) { P.err(e); }
+    };
+  }
+
+  /* ---------- WhatsApp debt reminders ---------- */
+  const DEF_MSG = 'مرحبا {name}، تذكير لطيف من {shop}: رصيد حسابك عنا {amount} ({lbp}). شكراً كتير 🙏\nHello {name}, a friendly reminder from {shop}: your balance is {amount}. Thank you!';
+  const waPhone = raw => {
+    let d = String(raw || '').replace(/[^0-9+]/g, '');
+    if (d.startsWith('+')) d = d.slice(1); else if (d.startsWith('00')) d = d.slice(2);
+    if (!d) return '';
+    if (d.startsWith('961')) return d;
+    if (d.startsWith('0')) d = d.slice(1);
+    return d.length <= 8 ? '961' + d : d;
+  };
+  const msgFor = c => (P.load('remind-msg', '') || DEF_MSG).replace(/\{name\}/g, c.name).replace(/\{shop\}/g, P.biz.company_name)
+    .replace(/\{amount\}/g, P.fmt(c.balance)).replace(/\{lbp\}/g, P.fmtL(P.ceilLbp ? P.ceilLbp(c.balance) : P.toLbp(c.balance)));
+  const waLink = c => `https://wa.me/${waPhone(c.phone)}?text=${encodeURIComponent(msgFor(c))}`;
+  function remindOne(c) {
+    if (!c) return;
+    if (!waPhone(c.phone)) return P.toast(c.name + ' has no phone number. Edit the customer to add it.', true);
+    window.open(waLink(c), '_blank');
+  }
+  function remindAll() {
+    const list = P.customers.filter(c => Number(c.balance) > 0.009).sort((a, b) => b.balance - a.balance);
+    const sent = new Set(P.load('reminded-' + P.today(), []));
+    const b = P.modal('💬 Debt reminders on WhatsApp', `<p class="muted small">Tap each customer to open WhatsApp with the message ready, then press send. Ticks are kept for today.</p>
+      <details><summary class="link">✎ Edit the message</summary><textarea id="rmMsg" rows="4">${esc(P.load('remind-msg', '') || DEF_MSG)}</textarea><p class="muted small">{name} = customer, {amount} = balance in $, {lbp} = in LBP, {shop} = your shop.</p><button class="btn" type="button" id="rmSave">Save message</button></details>
+      <div class="list" id="rmList">${list.map(c => `<button type="button" data-rm="${c.id}" ${waPhone(c.phone) ? '' : 'disabled'}><b style="flex:1">${esc(c.name)}</b><small class="muted">${esc(c.phone || 'no phone')}</small><span class="pill bad">${P.fmt(c.balance)}</span>${sent.has(c.id) ? '<span class="pill ok">sent ✓</span>' : ''}</button>`).join('') || '<p class="muted">Nobody owes you money. 🎉</p>'}</div>`, { wide: true });
+    b.querySelector('#rmSave').onclick = () => { P.save('remind-msg', b.querySelector('#rmMsg').value.trim()); P.toast('✅ Message saved.'); P.close(); remindAll(); };
+    b.querySelector('#rmList').onclick = e => {
+      const t = e.target.closest('[data-rm]'); if (!t) return;
+      const c = P.customers.find(x => x.id === t.dataset.rm); window.open(waLink(c), '_blank');
+      sent.add(c.id); P.save('reminded-' + P.today(), [...sent]);
+      if (!t.querySelector('.pill.ok')) t.insertAdjacentHTML('beforeend', '<span class="pill ok">sent ✓</span>');
+    };
+  }
+  $('custRemind').onclick = remindAll;
   P.hooks.tab_settings = fillSettings;
 })();

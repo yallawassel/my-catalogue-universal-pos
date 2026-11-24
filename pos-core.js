@@ -51,12 +51,20 @@
     b.querySelector('#cfNo').onclick = () => { P._onClose = null; P.close(); res(false); };
   });
   P.isManager = () => !P.cashier || P.cashier.role === 'manager';
+  // what this cashier may do (managers and the owner may do everything)
+  const PERM_DEFAULT = { discount: true, credit: true, wholesale: true };
+  P.can = key => {
+    if (P.isManager()) return true;
+    const c = (P.cashiers || []).find(x => x.id === P.cashier.id), p = (c && c.perms) || {};
+    return key in p ? !!p[key] : !!PERM_DEFAULT[key];
+  };
   const show = id => { ['vLogin', 'vBiz', 'vInactive', 'vPin', 'vShift', 'vApp'].forEach(v => $(v).hidden = v !== id); };
   P.show = show;
 
   /* ---------------- tabs ---------------- */
   P.tab = name => {
-    if (document.querySelector(`.side [data-tab="${name}"]`)?.dataset.role === 'manager' && !P.isManager()) return P.toast('Only a manager can open this.', true);
+    const nb = document.querySelector(`.side [data-tab="${name}"]`);
+    if ((nb?.dataset.role === 'manager' && !P.isManager()) || (nb?.dataset.perm && !P.can(nb.dataset.perm))) return P.toast('You are not allowed to open this. Ask a manager.', true);
     document.querySelectorAll('.side [data-tab]').forEach(b => b.classList.toggle('on', b.dataset.tab === name));
     document.querySelectorAll('.tab').forEach(t => t.classList.toggle('on', t.id === 'tab-' + name));
     $('sideNav').classList.remove('open');
@@ -121,8 +129,8 @@
     const id = P.biz.id;
     const [st, ca, pr, cat, cu] = await Promise.all([
       sb.from('mc_saas_pos_settings').select('*').eq('business_id', id).maybeSingle(),
-      sb.from('mc_saas_pos_cashiers').select('id,name,role,is_active').eq('business_id', id).order('name'),
-      MC.fetchAll(() => sb.from('mc_saas_products').select('id,name,category,image,barcode,sku,label1,price1,label2,price2,sale_price1,sale_price2,sale_ends_at,availability,sort_order,is_active').eq('business_id', id).eq('is_active', true).order('sort_order').order('name').order('id')),
+      sb.from('mc_saas_pos_cashiers').select('id,name,role,is_active,perms').eq('business_id', id).order('name'),
+      MC.fetchAll(() => sb.from('mc_saas_products').select('id,name,category,image,barcode,sku,label1,price1,label2,price2,sale_price1,sale_price2,sale_ends_at,availability,sort_order,is_active,wholesale_price1,wholesale_price2').eq('business_id', id).eq('is_active', true).order('sort_order').order('name').order('id')),
       sb.from('mc_saas_categories').select('name,sort_order').eq('business_id', id).order('sort_order'),
       MC.fetchAll(() => sb.from('mc_saas_pos_customers').select('*').eq('business_id', id).order('name'))
     ]);
@@ -153,7 +161,7 @@
   function prepProduct(p) {
     const active = !p.sale_ends_at || new Date(p.sale_ends_at) > new Date();
     const eff = u => { const reg = p['price' + u], sale = p['sale_price' + u]; return reg != null && sale != null && active && Number(sale) < Number(reg) ? Number(sale) : (reg == null ? null : Number(reg)); };
-    return { ...p, p1: eff(1), p2: eff(2), was1: p.price1 != null && eff(1) < Number(p.price1) ? Number(p.price1) : null, was2: p.price2 != null && eff(2) < Number(p.price2) ? Number(p.price2) : null };
+    return { ...p, w1: p.wholesale_price1 == null ? null : Number(p.wholesale_price1), w2: p.wholesale_price2 == null ? null : Number(p.wholesale_price2), p1: eff(1), p2: eff(2), was1: p.price1 != null && eff(1) < Number(p.price1) ? Number(p.price1) : null, was2: p.price2 != null && eff(2) < Number(p.price2) ? Number(p.price2) : null };
   }
   P.loadCached = () => {
     P.settings = P.load('settings', null); P.cashiers = P.load('cashiers', []); P.products = P.load('products', []);
@@ -245,6 +253,7 @@
   async function afterCashier() {
     $('topCashier').textContent = (P.cashier ? P.cashier.name : 'Owner') + (P.isManager() ? ' · manager' : '');
     document.querySelectorAll('[data-role=manager]').forEach(el => el.hidden = !P.isManager());
+    document.querySelectorAll('[data-perm]').forEach(el => el.hidden = !P.can(el.dataset.perm));
     try {
       let q = sb.from('mc_saas_pos_shifts').select('*').eq('business_id', P.biz.id).eq('status', 'open').order('opened_at', { ascending: false }).limit(1);
       q = P.cashier ? q.eq('cashier_id', P.cashier.id) : q.is('cashier_id', null);

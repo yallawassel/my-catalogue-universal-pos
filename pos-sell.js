@@ -59,17 +59,21 @@
   P.hooks.focusScan = () => { if (window.matchMedia('(min-width: 901px)').matches && document.getElementById('tab-sell').classList.contains('on')) $('scan').focus(); };
 
   /* ---------------- cart ---------------- */
+  // wholesale customers (or the Wholesale switch) get the wholesale price when the item has one
+  const priceFor = (p, u) => { const w = u === 1 ? p.w1 : p.w2; return P.cart.wholesale && w != null ? w : (u === 1 ? p.p1 : p.p2); };
+  P.priceFor = priceFor;
+  function repriceCart() { P.cart.lines.forEach(l => { if (l.manual || !l.product_id) return; const p = P.products.find(x => x.id === l.product_id); if (p) { const v = priceFor(p, l.unit_index); if (v != null) l.price = v; } }); }
   async function addProduct(p, unitIndex) {
     if (!p) return;
     let u = unitIndex || (p.p1 != null ? 1 : p.p2 != null ? 2 : 1);
-    let price = u === 1 ? p.p1 : p.p2;
+    let price = priceFor(p, u);
     if (price == null) {
       const v = await P.ask('Price for ' + p.name, 'This product has no price yet. Price in USD:', { type: 'number', inputmode: 'decimal' });
       if (v === null || v === '') return; price = P.num(v);
     }
     if (P.stock.has(p.id) && P.stock.get(p.id) <= 0) P.toast(`⚠️ ${p.name} shows 0 in stock — sold anyway.`, true);
     const unit = (u === 1 ? p.label1 : p.label2) || (u === 1 ? 'Piece' : 'Box');
-    const ex = P.cart.lines.find(l => l.product_id === p.id && l.unit_index === u && l.price === price && !l.discount);
+    const ex = P.cart.lines.find(l => l.product_id === p.id && l.unit_index === u && l.price === price && !l.discount && !l.manual);
     if (ex) ex.qty = P.r2(ex.qty + 1);
     else P.cart.lines.push({ key: P.uuid(), product_id: p.id, name: p.name, unit, unit_index: u, qty: 1, price, discount: 0, barcode: p.barcode || '', category: p.category || '', image: p.image || '' });
     renderCart(true);
@@ -91,7 +95,7 @@
     $('lines').innerHTML = c.lines.map(l => {
       const p = P.products.find(x => x.id === l.product_id), two = p && p.label2 && (p.p2 != null) && (p.p1 != null);
       return `<div class="line" data-key="${l.key}"><div class="nm">${esc(l.name)}</div><b class="lt">${P.fmt(Math.max(0, l.qty * l.price - (l.discount || 0)))}</b>
-      <div class="meta">${P.fmt(l.price)} / ${esc(l.unit)}${two ? `<button type="button" class="unit-sw" data-sw="${l.key}">⇄ ${esc(l.unit_index === 1 ? p.label2 : p.label1)}</button>` : ''}${l.discount ? ` · <span class="q">−${P.fmt(l.discount)}</span>` : ''}</div>
+      <div class="meta">${P.fmt(l.price)} / ${esc(l.unit)}${c.wholesale && p && (l.unit_index === 1 ? p.w1 : p.w2) != null && !l.manual ? ' <span class="pill info">wholesale</span>' : ''}${two ? `<button type="button" class="unit-sw" data-sw="${l.key}">⇄ ${esc(l.unit_index === 1 ? p.label2 : p.label1)}</button>` : ''}${l.discount ? ` · <span class="q">−${P.fmt(l.discount)}</span>` : ''}</div>
       <div class="qty"><button type="button" data-q="-1" data-k="${l.key}" aria-label="Less">−</button><b>${P.r2(l.qty)}</b><button type="button" data-q="1" data-k="${l.key}" aria-label="More">+</button></div></div>`;
     }).join('');
     if (bump) { const last = $('lines').lastElementChild; if (last) last.scrollIntoView({ block: 'nearest' }); }
@@ -101,6 +105,7 @@
     $('vatToggle').hidden = !(vm === 'optional' && vr > 0); $('vatOn').checked = !!c.vat;
     $('tTaxRow').hidden = !t.vat; $('tTax').textContent = P.fmt(t.tax); $('tTaxLbl').textContent = `VAT ${vr}%${t.incl ? ' (included)' : ''}`;
     $('tTotal').textContent = P.fmt(t.total); $('tTotalLbp').textContent = P.fmtL(P.ceilLbp(t.total));
+    $('wsToggle').hidden = !P.products.some(p => p.w1 != null || p.w2 != null) || !P.can('wholesale'); $('wsOn').checked = !!c.wholesale;
     $('payBtn').disabled = !c.lines.length; $('payBtn').textContent = c.lines.length ? 'Pay ' + P.fmt(t.total) : 'Pay';
     $('custName').textContent = c.customer ? c.customer.name : 'Walk-in customer';
     const cust = c.customer && P.customers.find(x => x.id === c.customer.id);
@@ -115,7 +120,7 @@
     const q = e.target.closest('[data-q]');
     if (q) { const l = P.cart.lines.find(x => x.key === q.dataset.k); l.qty = P.r2(l.qty + Number(q.dataset.q)); if (l.qty <= 0) P.cart.lines = P.cart.lines.filter(x => x !== l); renderCart(); return; }
     const sw = e.target.closest('[data-sw]');
-    if (sw) { const l = P.cart.lines.find(x => x.key === sw.dataset.sw), p = P.products.find(x => x.id === l.product_id); l.unit_index = l.unit_index === 1 ? 2 : 1; l.unit = l.unit_index === 1 ? p.label1 : p.label2; l.price = l.unit_index === 1 ? p.p1 : p.p2; renderCart(); return; }
+    if (sw) { const l = P.cart.lines.find(x => x.key === sw.dataset.sw), p = P.products.find(x => x.id === l.product_id); l.unit_index = l.unit_index === 1 ? 2 : 1; l.unit = l.unit_index === 1 ? p.label1 : p.label2; l.price = priceFor(p, l.unit_index); l.manual = false; renderCart(); return; }
     const ln = e.target.closest('[data-key]'); if (ln) editLine(ln.dataset.key);
   };
   document.addEventListener('click', e => { if (e.target.id === 'unlinkOrder') { P.cart.order_id = null; P.cart.order_label = ''; renderCart(); } });
@@ -131,11 +136,13 @@
       const qty = P.num(b.querySelector('#leQty').value), price = P.num(b.querySelector('#lePrice').value), pct = b.querySelector('#lePct').value;
       if (qty <= 0) { P.cart.lines = P.cart.lines.filter(x => x !== l); P.close(); renderCart(); return; }
       if (price < 0) return P.toast('Price cannot be negative.', true);
-      if (price !== l.price && !P.isManager() && price < l.price) return P.toast('Only a manager can lower a price.', true);
+      if (price !== l.price && price < l.price && !P.can('change_price')) return P.toast('You are not allowed to lower a price. Ask a manager.', true);
+      if (price !== l.price) l.manual = true;
       l.qty = P.r2(qty); l.price = P.r2(price);
       l.discount = P.r2(pct !== '' ? l.qty * l.price * P.num(pct) / 100 : P.num(b.querySelector('#leDisc').value));
       if (l.discount > l.qty * l.price) return P.toast('Discount is bigger than the line.', true);
-      if (l.discount && !P.isManager() && l.discount > l.qty * l.price * 0.2) return P.toast('Discounts above 20% need a manager.', true);
+      if (l.discount && !P.can('discount')) return P.toast('You are not allowed to give discounts. Ask a manager.', true);
+      if (l.discount && !P.can('big_discount') && l.discount > l.qty * l.price * 0.2) return P.toast('Discounts above 20% need a manager.', true);
       P.close(); renderCart();
     };
   }
@@ -149,13 +156,14 @@
     b.querySelector('#dOk').onclick = () => {
       const pct = b.querySelector('#dPct').value, amt = P.num(b.querySelector('#dAmt').value);
       const value = pct !== '' ? t.sub * P.num(pct) / 100 : amt;
-      if (!P.isManager() && value > t.sub * 0.2) return P.toast('Discounts above 20% need a manager.', true);
+      if (value > 0 && !P.can('discount')) return P.toast('You are not allowed to give discounts. Ask a manager.', true);
+      if (!P.can('big_discount') && value > t.sub * 0.2) return P.toast('Discounts above 20% need a manager.', true);
       if (pct !== '') { P.cart.discountPct = Math.min(100, Math.max(0, P.num(pct))); P.cart.discount = 0; } else { P.cart.discountPct = null; P.cart.discount = Math.max(0, amt); }
       P.close(); renderCart();
     };
   };
   $('clearCart').onclick = async () => { if (!P.cart.lines.length || await P.confirm('Clear the cart?', 'Remove all items from this sale?', 'Clear')) { resetCart(); } };
-  function resetCart() { P.cart = { lines: [], discount: 0, discountPct: null, customer: null, order_id: null, order_label: '', note: '', vat: false }; renderCart(); }
+  function resetCart() { P.cart = { lines: [], discount: 0, discountPct: null, customer: null, order_id: null, order_label: '', note: '', vat: false, wholesale: false }; renderCart(); }
   P.resetCart = resetCart;
   $('customItem').onclick = () => {
     const b = P.modal('Add an item', `<label for="ciName">Item name</label><input id="ciName" placeholder="e.g. Service, Delivery"><div class="row2"><div><label for="ciPrice">Price USD</label><input id="ciPrice" type="number" step="0.01" min="0" inputmode="decimal"></div><div><label for="ciQty">Quantity</label><input id="ciQty" type="number" step="any" min="0" value="1" inputmode="decimal"></div></div><div class="sheet-foot"><button class="btn primary" type="button" id="ciOk">Add</button></div>`);
@@ -194,21 +202,27 @@
     P.customers.push(r.data); P.customers.sort((a, b) => a.name.localeCompare(b.name)); P.save('customers', P.customers);
     return r.data;
   };
-  $('custBtn').onclick = () => P.pickCustomer(c => { P.cart.customer = c ? { id: c.id, name: c.name } : null; renderCart(); });
+  $('custBtn').onclick = () => P.pickCustomer(c => {
+    P.cart.customer = c ? { id: c.id, name: c.name } : null;
+    const ws = !!(c && c.price_list === 'wholesale');
+    if (ws !== !!P.cart.wholesale) { P.cart.wholesale = ws; repriceCart(); if (ws) P.toast('🏷️ Wholesale customer: wholesale prices applied.'); }
+    renderCart();
+  });
+  $('wsOn').onchange = () => { if (!P.can('wholesale')) { $('wsOn').checked = !!P.cart.wholesale; return P.toast('You are not allowed to use wholesale prices.', true); } P.cart.wholesale = $('wsOn').checked; repriceCart(); renderCart(); };
 
   /* ---------------- payment ---------------- */
   $('payBtn').onclick = () => openPay();
   function openPay() {
     const t = totals(); if (!P.cart.lines.length) return;
     if (!P.shift) return P.toast('Open a shift first.', true);
-    const rate = P.rate(), hasCust = !!P.cart.customer;
+    const rate = P.rate(), hasCust = !!P.cart.customer && P.can('credit');
     const b = P.modal('Payment', `
       <div class="pay-top"><div><small>Total USD</small><b>${P.fmt(t.total)}</b></div><div><small>Total LBP</small><b>${P.fmtL(P.ceilLbp(t.total))}</b></div></div>
       <div class="pay-grid">
         <div><label for="pyUsd">Cash USD</label><input id="pyUsd" type="number" min="0" step="0.01" inputmode="decimal" placeholder="0"><div class="quick" data-add="usd">${[1, 5, 10, 20, 50, 100].map(x => `<button type="button" data-v="${x}">+$${x}</button>`).join('')}<button type="button" data-exact="usd">Exact</button></div></div>
         <div><label for="pyLbp">Cash LBP</label><input id="pyLbp" type="number" min="0" step="1000" inputmode="numeric" placeholder="0"><div class="quick" data-add="lbp">${[100000, 500000, 1000000, 5000000].map(x => `<button type="button" data-v="${x}">+${x >= 1e6 ? x / 1e6 + 'M' : x / 1e3 + 'k'}</button>`).join('')}<button type="button" data-exact="lbp">Exact</button></div></div>
         <div><label for="pyCard">Card USD</label><input id="pyCard" type="number" min="0" step="0.01" inputmode="decimal" placeholder="0"><div class="quick"><button type="button" data-exact="card">All by card</button></div></div>
-        <div><label for="pyDebt">On account (debt) USD</label><input id="pyDebt" type="number" min="0" step="0.01" inputmode="decimal" placeholder="${hasCust ? '0' : 'Choose a customer first'}" ${hasCust ? '' : 'disabled'}><div class="quick">${hasCust ? '<button type="button" data-exact="debt">Rest on account</button>' : '<button type="button" id="pyPickCust">Choose customer</button>'}</div></div>
+        <div><label for="pyDebt">On account (debt) USD</label><input id="pyDebt" type="number" min="0" step="0.01" inputmode="decimal" placeholder="${hasCust ? '0' : P.can('credit') ? 'Choose a customer first' : 'Not allowed for you'}" ${hasCust ? '' : 'disabled'}><div class="quick">${hasCust ? '<button type="button" data-exact="debt">Rest on account</button>' : P.can('credit') ? '<button type="button" id="pyPickCust">Choose customer</button>' : ''}</div></div>
       </div>
       <div class="pay-status due" id="pyStatus"></div>
       <div class="chg-mode" id="pyChgMode" hidden>Give change in: <label class="check" style="margin:0"><input type="radio" name="chg" value="usd" checked> USD</label><label class="check" style="margin:0"><input type="radio" name="chg" value="lbp"> LBP</label><label class="check" style="margin:0"><input type="radio" name="chg" value="mix"> $ + LBP</label></div>
@@ -247,7 +261,7 @@
       if (k === 'debt') { g('#pyDebt').value = P.r2(Math.max(0, t.total - others('#pyDebt'))); }
       calc();
     });
-    if (g('#pyPickCust')) g('#pyPickCust').onclick = () => P.pickCustomer(c => { P.cart.customer = c ? { id: c.id, name: c.name } : null; renderCart(); openPay(); });
+    if (g('#pyPickCust')) g('#pyPickCust').onclick = () => P.pickCustomer(c => { P.cart.customer = c ? { id: c.id, name: c.name } : null; const ws = !!(c && c.price_list === 'wholesale'); if (ws !== !!P.cart.wholesale) { P.cart.wholesale = ws; repriceCart(); } renderCart(); openPay(); });
     g('#pyCancel').onclick = P.close;
     g('#pyDone').onclick = async () => {
       g('#pyDone').disabled = true; g('#pyDone').textContent = 'Saving…';
