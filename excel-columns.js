@@ -1,5 +1,5 @@
 /* My Catalogue — smart Excel/CSV column detection (v9.1)
-   Handles POS exports such as AntiSoft: report titles above the real header row, CamelCase
+   Handles POS exports such as POS: report titles above the real header row, CamelCase
    titles (ItemName), Arabic / French titles, cost vs selling prices, and lets the user override.
    MCCols.read(aoa, mappingOverride) -> { headerRow, headers, mapping, rows (objects with canonical keys), samples }
 */
@@ -98,7 +98,7 @@
       });
       if (best >= 0) { mapping.name = best; mapping._nameGuessed = true; }
     }
-    // 5) "Price" next to a clearer selling-price column (e.g. AntiSoft: "Sel Price" + "Price"):
+    // 5) "Price" next to a clearer selling-price column (e.g. POS: "Sel Price" + "Price"):
     //    the plain one is the cost, the selling one is what customers pay.
     const SELL = ['sel price', 'selprice', 'sell price', 'selling price', 'sale price', 'sales price', 'retail price', 'prix vente', 'prix de vente', 'سعر البيع', 'سعر المبيع', 'سعر المفرق'].map(norm);
     if (mapping.price1 !== undefined && ['price', 'prix', 'سعر', 'السعر'].map(norm).includes(norm(headers[mapping.price1]))) {

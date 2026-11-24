@@ -1,7 +1,7 @@
 # Live POS connector (v8)
 
 ```
- POS PC (AntiSoft / SQL Server)         Supabase (My Catalogue)                 Your store
+ POS PC (POS / SQL Server)         Supabase (My Catalogue)                 Your store
  ┌──────────────────────────┐  HTTPS  ┌──────────────────────────────┐       ┌──────────────┐
  │ pos-agent (PowerShell)   │ ──────► │ Edge Function mc-pos-connector│ ────► │ index.html   │
  │ read-only SQL login      │  key    │  • checks hashed key          │       │ prices/items │
@@ -15,7 +15,7 @@
 |---|---|
 | `POS_CONNECTOR_V8_MIGRATION.sql` | `mc_saas_pos_agent_keys` table + `create_key`, `revoke_key`, service-only stock RPC |
 | `supabase/functions/mc-pos-connector/index.ts` | The endpoint (`verify_jwt = false`; authenticated by `x-connector-key`) |
-| `pos-agent/` | Windows agent, AntiSoft query template, read-only login script, launchers |
+| `pos-agent/` | Windows agent, POS query template, read-only login script, launchers |
 | Admin → **Live POS connector** | Create/revoke keys, download `config.json`, test, sync history |
 
 ## API

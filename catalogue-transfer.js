@@ -1,5 +1,5 @@
 /* My Catalogue — copy photos (and descriptions) from another catalogue's JSON export (v25).
-   Example: the old White Pack catalogue has nice photos but different names and no AntiSoft codes.
+   Example: the old White Pack catalogue has nice photos but different names and no POS codes.
    Each product in THIS catalogue is matched by meaning (MCMatch: names, sizes like 500cc / 9oz must agree)
    to a product in the file; you review the suggestions, then only the photo (and optionally the
    description / category) is copied. Names, prices, barcodes and stock are never changed.

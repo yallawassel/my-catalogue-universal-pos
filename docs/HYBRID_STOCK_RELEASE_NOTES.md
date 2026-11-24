@@ -10,7 +10,7 @@
 - New-order reservation trigger, cancellation release, order-item-change recalculation, and delivered-order POS reconciliation function.
 - Reservation enforcement disabled by default for every business.
 - Admin → Stock Management page for unit/barcode setup, conversion verification, one-time opening stock, reservation enable/disable, and retrying a pending reservation.
-- Updated migration guide and AntiSoft connector status.
+- Updated migration guide and POS connector status.
 
 ## Safety boundaries
 
@@ -20,7 +20,7 @@
 - Unknown stock is represented as `stock_initialized=false`, not as confirmed zero stock.
 - Physical stock and audit ledgers are not directly writable from the browser; trusted SQL functions write them.
 - Public catalogue stock badges and unit-aware spreadsheet matching are not wired in this staging release yet.
-- No AntiSoft connection is active. No SQL Server credentials or service-role key are included.
+- No POS connection is active. No SQL Server credentials or service-role key are included.
 
 ## Validation performed on the package
 

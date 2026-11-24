@@ -1,5 +1,5 @@
-# My Catalogue — AntiSoft discovery (READ-ONLY).
-# Finds the SQL Server database used by AntiSoft on this PC and writes the product/unit table
+# My Catalogue — POS discovery (READ-ONLY).
+# Finds the SQL Server database used by POS on this PC and writes the product/unit table
 # columns plus 3 sample rows to discover-report.txt. It only runs SELECT on system views and TOP 3.
 $ErrorActionPreference = 'Continue'
 $here = Split-Path -Parent $MyInvocation.MyCommand.Path
@@ -22,7 +22,7 @@ function Dump($t, $max = 60) {
   $n = 0; foreach ($r in $t.Rows) { if ($n++ -ge $max) { break }; Say ('   ' + (($cols | ForEach-Object { ([string]$r[$_]).Replace("`r",' ').Replace("`n",' ') }) -join ' | ')) }
 }
 
-Say "My Catalogue - AntiSoft discovery  $(Get-Date -Format 'yyyy-MM-dd HH:mm')"
+Say "Raffi - POS discovery  $(Get-Date -Format 'yyyy-MM-dd HH:mm')"
 Say "Computer: $env:COMPUTERNAME   User: $env:USERNAME"
 $servers = New-Object System.Collections.Generic.List[string]
 foreach ($k in 'HKLM:\SOFTWARE\Microsoft\Microsoft SQL Server\Instance Names\SQL','HKLM:\SOFTWARE\WOW6432Node\Microsoft\Microsoft SQL Server\Instance Names\SQL') {
@@ -52,6 +52,6 @@ foreach ($srv in $servers) {
     }
   }
 }
-if (-not $found) { Say ''; Say 'No AntiSoft-like database found with Windows login. We will need the SQL user/password.' }
+if (-not $found) { Say ''; Say 'No POS database found with Windows login. We will need the SQL user/password.' }
 $lines | Set-Content -Path $out -Encoding UTF8
 Write-Host ''; Write-Host "Report saved to $out" -ForegroundColor Green

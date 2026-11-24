@@ -20,5 +20,5 @@ Base units are fixed at conversion factor 1 and configured TRUE. The import upda
 - Do not guess pack sizes or conversion factors.
 - Keep unknown conversions unconfigured.
 - Import is previewed before confirmation.
-- No AntiSoft connection is included or activated by this feature.
-- Use the My Catalogue staging Supabase project only. Do not run these actions against White Pack's live catalogue or AntiSoft.
+- No POS connection is included or activated by this feature.
+- Use the My Catalogue staging Supabase project only. Do not run these actions against White Pack's live catalogue or POS.

@@ -12,7 +12,7 @@
 ## Not activated
 - No API connector is active.
 - No Windows local agent is included or active.
-- AntiSoft is not connected.
+- POS is not connected.
 - No automatic sync schedule is enabled; profiles default to manual.
 - No stock quantities or reservation settings are changed.
 
@@ -23,4 +23,4 @@
 4. Test Admin → POS Connections using a test POS profile name. Do not enter credentials.
 5. Confirm that the profile appears with `Setup required` status.
 
-Do not run this migration in White Pack's live project. Do not run any SQL against AntiSoft.
+Do not run this migration in White Pack's live project. Do not run any SQL against POS.

@@ -1,5 +1,5 @@
--- Run in SQL Server Management Studio on the AntiSoft database (read-only, changes nothing).
--- It lists the columns of the product & unit tables so you can fill antisoft-products.sql.
+-- Run in SQL Server Management Studio on the POS database (read-only, changes nothing).
+-- It lists the columns of the product & unit tables so you can fill pos-products.sql.
 USE Data2025;
 SELECT t.name AS table_name, c.column_id, c.name AS column_name, ty.name AS data_type, c.max_length
 FROM sys.tables t

@@ -5,6 +5,10 @@
   const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
     auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
   });
+  // Raffi app from Google Play (Trusted Web Activity): it opens admin.html?src=play.
+  // Inside that app nothing may be sold for digital use (AI credits, plans), per Google Play payments policy.
+  const inPlayApp = (() => { try { const q = new URLSearchParams(location.search); if (q.get('src') === 'play' || String(document.referrer).startsWith('android-app://')) localStorage.setItem('raffi-play', '1'); return localStorage.getItem('raffi-play') === '1'; } catch (_) { return false; } })();
+  if (inPlayApp) document.documentElement.classList.add('in-play');
   const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const slugify = v => String(v || '').normalize('NFKD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'').slice(0,60);
   async function resolveBusiness() {
@@ -48,7 +52,7 @@
     if (!blob) throw new Error('Image optimization failed in this browser.');
     return new File([blob],(file.name.replace(/\.[^.]+$/,'')||'photo')+'.webp',{type:'image/webp'});
   }
-  window.MC = { fetchAll, PUBLIC_BUSINESS_COLUMNS, url: SUPABASE_URL, publishableKey: SUPABASE_PUBLISHABLE_KEY, sb, esc, slugify, resolveBusiness, optimizeImage, money:(n,c='USD') => (c==='LBP'?'LBP ':'$')+Number(n||0).toLocaleString(undefined,{maximumFractionDigits:2}) };
+  window.MC = { inPlayApp, fetchAll, PUBLIC_BUSINESS_COLUMNS, url: SUPABASE_URL, publishableKey: SUPABASE_PUBLISHABLE_KEY, sb, esc, slugify, resolveBusiness, optimizeImage, money:(n,c='USD') => (c==='LBP'?'LBP ':'$')+Number(n||0).toLocaleString(undefined,{maximumFractionDigits:2}) };
   // v8: turn the #status bar on staff pages into an auto-hiding toast (admin.html has its own).
   document.addEventListener('DOMContentLoaded', () => {
     const st = document.getElementById('status');

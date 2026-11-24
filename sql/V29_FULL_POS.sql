@@ -1,5 +1,5 @@
 -- My Catalogue v29 — full POS for shops without their own POS
---  * main_system: 'catalogue' (My Catalogue POS is the main system) or 'external' (their own POS, e.g. AntiSoft, is the main system)
+--  * main_system: 'catalogue' (My Catalogue POS is the main system) or 'external' (their own POS, e.g. POS, is the main system)
 --  * suppliers, purchase invoices (stock in + cost), supplier payments
 --  * stock adjustments (damage / loss / found), reorder level per product
 --  * correct cost for packets / boxes in POS sales (cost_price = cost of the FIRST unit)

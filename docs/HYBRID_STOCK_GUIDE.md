@@ -2,7 +2,7 @@
 
 ## Scope and safety
 
-This upgrade is designed for the existing **My Catalogue** Supabase project used by the Universal POS repository. It must **not** be run in the separate White Pack live-store Supabase project. It does not connect to AntiSoft and does not write to any external POS database.
+This upgrade is designed for the existing **My Catalogue** Supabase project used by the Universal POS repository. It must **not** be run in the separate White Pack live-store Supabase project. It does not connect to POS and does not write to any external POS database.
 
 The migration is additive. It creates new `mc_saas_*` stock/unit tables and functions. It does not delete or rewrite existing product rows, product names, images, categories, prices, orders, or customer data.
 
@@ -51,7 +51,7 @@ Use Admin → Stock Management → Retry a pending order reservation after corre
 - `mc_saas_reconcile_order_sale`: releases an online reservation after the POS confirms the sale is already represented in physical POS stock. It does **not** deduct physical stock again.
 - `mc_saas_reserve_order`: retries reservation for a particular order after stock setup.
 
-These functions are currently exposed to authenticated business managers for staging/testing. A production AntiSoft/local connector must be implemented separately, use a dedicated read-only AntiSoft SQL account, send approved data one-way over HTTPS, and use a secure server-side relay for authenticated stock RPCs. Do not put database passwords or Supabase service-role keys in browser code or a public repository.
+These functions are currently exposed to authenticated business managers for staging/testing. A production POS/local connector must be implemented separately, use a dedicated read-only POS SQL account, send approved data one-way over HTTPS, and use a secure server-side relay for authenticated stock RPCs. Do not put database passwords or Supabase service-role keys in browser code or a public repository.
 
 ## Status and limitations
 
@@ -59,7 +59,7 @@ These functions are currently exposed to authenticated business managers for sta
 - Product unit/barcode and stock setup UI is added to Admin.
 - The public catalogue does not yet display stock badges; the public availability endpoint/UI is a separate next integration step.
 - The spreadsheet importer continues to match the legacy product-level barcode; unit-level barcode matching is not yet wired into the importer.
-- This package does not implement an automatic AntiSoft connection, scheduled POS polling, or a live POS API connection.
+- This package does not implement an automatic POS connection, scheduled POS polling, or a live POS API connection.
 - The current order trigger creates pending/reserved line records for new orders; it does not retroactively reserve old orders.
 - A delivered order is not automatically reconciled. The POS connector must supply a unique sale event and call the reconciliation function only after the POS confirms the sale is reflected in its physical stock.
 - If an order unit does not match a configured product unit, the line is flagged as an exception rather than matched by product name.

@@ -7,7 +7,7 @@
 
 
 > **New in v8:** colourful pro design, dashboard, upgraded sign-in (magic link, strength meter),
-> Import & Export Center, **Live POS connector** (Windows agent for AntiSoft/SQL Server, CSV folder
+> Import & Export Center, **Live POS connector** (Windows agent for SQL Server POS, CSV folder
 > watcher, HTTPS API), free **Photo Studio** (auto white background, framing, shadow, bulk mode) and a
 > smarter storefront. Start with **`docs/PRO_V8_UPGRADE_GUIDE.md`**, then **`docs/POS_CONNECTOR_GUIDE.md`**.
 > The only new database step is `POS_CONNECTOR_V8_MIGRATION.sql` + deploying `mc-pos-connector`.
@@ -29,7 +29,7 @@ This package turns the White Pack feature set into a separate multi-business cat
 - `HYBRID_STOCK_MIGRATION.sql` — additive unit/barcode, conversion, hybrid stock, reservation and POS stock-event schema.
 - `HYBRID_STOCK_GUIDE.md` — migration, configuration, safety and testing steps.
 - `HYBRID_STOCK_RELEASE_NOTES.md` — staging release scope and validation notes.
-- `ANTISOFT_CONNECTOR_STATUS.md` — AntiSoft connector requirements and strict one-way/read-only safety gates.
+- `POS_CONNECTOR_STATUS.md` — POS connector requirements and strict one-way/read-only safety gates.
 - `SAAS_HARDENING_MIGRATION.sql` — completes missing settings/template/platform RPCs, adds subscription fields, and protects platform-only fields with an email allowlist.
 - `PLATFORM_ADMIN_GUIDE.sql` — platform administrator allowlist, domain approval and driver assignment instructions.
 
@@ -78,7 +78,7 @@ New businesses are created unpublished (`is_published=false`). A platform operat
 
 The current build supports Excel/CSV imports and per-row approval. Barcode is the primary matching key, followed by POS Product ID and SKU. Rows with barcodes are preselected for review; users can manually select other rows. Existing catalogue display names are retained when an imported row matches.
 
-v8 adds the Live POS connector (Windows agent + HTTPS API). The AntiSoft query still needs your real column names before going live, and every connector run should be tested with a dry run first. The AntiSoft connector must use a dedicated read-only SQL account and must handle multiple unit barcodes per product before release. See `ANTISOFT_CONNECTOR_STATUS.md`.
+v8 adds the Live POS connector (Windows agent + HTTPS API). The POS query still needs your real column names before going live, and every connector run should be tested with a dry run first. the POS connector must use a dedicated read-only SQL account and must handle multiple unit barcodes per product before release. See `POS_CONNECTOR_STATUS.md`.
 
 ## Current limitations to finish before commercial launch
 
@@ -90,7 +90,7 @@ v8 adds the Live POS connector (Windows agent + HTTPS API). The AntiSoft query s
 
 ## Hybrid stock upgrade (staging)
 
-The repository now includes `HYBRID_STOCK_MIGRATION.sql` and `HYBRID_STOCK_GUIDE.md` for unit-level barcodes, explicit conversion factors, physical stock, online reservations and idempotent POS stock snapshots. Run this additive migration only in the existing My Catalogue Supabase project after a backup. Reservation enforcement is disabled by default. This does not connect to AntiSoft or modify the separate White Pack Supabase project.
+The repository now includes `HYBRID_STOCK_MIGRATION.sql` and `HYBRID_STOCK_GUIDE.md` for unit-level barcodes, explicit conversion factors, physical stock, online reservations and idempotent POS stock snapshots. Run this additive migration only in the existing My Catalogue Supabase project after a backup. Reservation enforcement is disabled by default. This does not connect to POS or modify the separate White Pack Supabase project.
 
 
 ## Product onboarding v4
@@ -100,7 +100,7 @@ New businesses see a first-product onboarding panel with two paths: add products
 
 The v7 package adds a business-scoped POS compatibility checker and setup-profile screen. Run `UNIVERSAL_POS_CONNECTIONS_V7_MIGRATION.sql` in the **My Catalogue staging Supabase project only** before saving profiles. See `UNIVERSAL_POS_ARCHITECTURE_V7.md` and `UNIVERSAL_POS_COMPATIBILITY_CHECKER_GUIDE.md`.
 
-Saving a profile is not a live connection. Excel/CSV remains the currently available sync method. Vendor API, local Windows agent, and custom adapters require separate implementation. AntiSoft is not connected. Do not store credentials in the profile table or browser code. Stock and reservations remain unchanged by this upgrade.
+Saving a profile is not a live connection. Excel/CSV remains the currently available sync method. Vendor API, local Windows agent, and custom adapters require separate implementation. POS is not connected. Do not store credentials in the profile table or browser code. Stock and reservations remain unchanged by this upgrade.
 
 
 ## AI Studio (Phase 1)
