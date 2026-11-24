@@ -138,8 +138,15 @@
   };
   P.refreshStock = async () => {
     try {
-      const r = await MC.fetchAll(() => sb.from('mc_saas_stock_availability').select('product_id,available_qty_base,stock_initialized').eq('business_id', P.biz.id));
-      if (!r.error) { P.stock = new Map((r.data || []).filter(x => x.stock_initialized).map(x => [x.product_id, Number(x.available_qty_base)])); P.save('stock', [...P.stock]); }
+      // "Sell everything" switch (Stock page): stock is ignored, so the till shows no "Out" badges either
+      const ss = await sb.rpc('mc_saas_public_stock_settings', { p_business_id: P.biz.id });
+      const st = !ss.error && Array.isArray(ss.data) ? ss.data[0] : null;
+      const sellAll = !!st && !st.show_on_catalogue && !st.hide_out_of_stock && st.block_out_of_stock_orders === false;
+      if (sellAll) { P.stock = new Map(); P.save('stock', []); }
+      else {
+        const r = await MC.fetchAll(() => sb.from('mc_saas_stock_availability').select('product_id,available_qty_base,stock_initialized').eq('business_id', P.biz.id));
+        if (!r.error) { P.stock = new Map((r.data || []).filter(x => x.stock_initialized).map(x => [x.product_id, Number(x.available_qty_base)])); P.save('stock', [...P.stock]); }
+      }
     } catch (_) { }
     if (P.hooks.renderGrid) P.hooks.renderGrid();
   };
