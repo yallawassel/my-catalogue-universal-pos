@@ -9,7 +9,7 @@
   const slugify = v => String(v || '').normalize('NFKD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'').slice(0,60);
   async function resolveBusiness() {
     const host = location.hostname.toLowerCase().replace(/^www\./,'');
-    const platformHosts = ['localhost','127.0.0.1',''];
+    const platformHosts = ['localhost','127.0.0.1','','myraffi.com'];
     const shop = new URLSearchParams(location.search).get('shop');
     if (!platformHosts.includes(host) && !host.endsWith('.github.io')) {
       const d = await sb.from('mc_saas_custom_domains').select('business_id').eq('domain',host).eq('verified',true).eq('active',true).maybeSingle();

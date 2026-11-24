@@ -11,8 +11,8 @@
         - Worker → Settings → Domains & Routes → Add → Route:  <domain>/*   and   www.<domain>/*
    4. Ask the platform admin to activate the domain (verified = true, active = true).
 */
-const ORIGIN = 'https://yallawassel.github.io';
-const BASE = '/my-catalogue-universal-pos';
+const ORIGIN = 'https://myraffi.com';
+const BASE = '';
 // Only the public catalogue is served on client domains; the admin and POS stay on the platform address.
 // Extra domains that forward to a client's main domain.
 const REDIRECTS = { 'petitebon.store': 'petitbon.shop' };
