@@ -222,3 +222,6 @@ button.chip{cursor:pointer}
 .vat-box{border:1.5px dashed var(--line);border-radius:12px;padding:4px 12px 12px;margin-top:10px;background:#fbfaff}
 .vat-toggle{display:flex!important;align-items:center;gap:8px;margin:2px 0;font-weight:700;font-size:13.5px;cursor:pointer;color:var(--ink)}
 .vat-toggle input{width:20px;height:20px;accent-color:var(--brand)}
+/* v29 items & purchases */
+#npHits.list{max-height:220px;overflow:auto;margin:4px 0 8px}#npHits.list button{padding:8px 10px}
+.tr input,.tr select{width:100%;min-width:0;padding:6px 8px}

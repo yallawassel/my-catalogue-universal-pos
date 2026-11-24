@@ -85,3 +85,10 @@ body.mcs-open{overflow:hidden}
 .av-all small{color:#5f6b64;font-weight:400;line-height:1.4}
 .av-all.on{border-color:#14915b;background:#e8f7ef}
 #avCard .av-settings input:disabled+span{opacity:.5}
+
+/* v29: main system choice (Live POS connector page) */
+.mc-main-sys{margin:12px 0 16px}
+.mc-ms-opt{display:flex;gap:10px;align-items:flex-start;padding:10px 12px;margin:6px 0;border:2px solid #e5e7eb;border-radius:12px;cursor:pointer;background:#fff}
+.mc-ms-opt input{width:18px;height:18px;margin-top:3px;flex:none}
+.mc-ms-opt span{display:flex;flex-direction:column;gap:2px}.mc-ms-opt small{color:#6b7280;font-weight:400;line-height:1.4}
+.mc-ms-opt.on{border-color:#6d28d9;background:#f5f3ff}

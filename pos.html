@@ -81,6 +81,8 @@
     <button data-tab="sales"><span>🧾</span>Sales</button>
     <button data-tab="orders"><span>📥</span>Online orders <i class="badge" id="ordersBadge" hidden></i></button>
     <button data-tab="customers"><span>👥</span>Customers</button>
+    <button data-tab="items" data-role="manager"><span>📦</span>Items &amp; stock</button>
+    <button data-tab="purchases" data-role="manager"><span>🚚</span>Suppliers &amp; purchases</button>
     <button data-tab="cash" data-role="manager"><span>💵</span>Cash &amp; expenses</button>
     <button data-tab="reports" data-role="manager"><span>📊</span>Reports</button>
     <button data-tab="shift"><span>🗄️</span>Shift / Z report</button>
@@ -141,6 +143,25 @@
       <div class="tab-head"><h2>Customers &amp; debts</h2><div class="tools"><input id="custSearch" type="search" placeholder="Name or phone"><select id="custFilter"><option value="all">All</option><option value="debt">With debt</option></select><button class="btn primary" id="custAdd" type="button">＋ New customer</button></div></div>
       <div class="kpis" id="custKpis"></div>
       <div class="table" id="custList"></div>
+    </section>
+
+    <!-- ITEMS & STOCK -->
+    <section class="tab" id="tab-items">
+      <div class="tab-head"><h2>Items &amp; stock</h2><div class="tools"><input id="itSearch" type="search" placeholder="Name, barcode, SKU"><select id="itFilter"><option value="all">All items</option><option value="low">Low stock / reorder</option><option value="out">Out of stock</option><option value="nocost">No cost price</option><option value="untracked">Stock not counted</option><option value="hidden">Hidden items</option></select><button class="btn" id="itXlsx" type="button">📗 Excel</button><button class="btn primary" id="itAdd" type="button">＋ New item</button></div></div>
+      <div class="kpis" id="itKpis"></div>
+      <div class="table" id="itList"></div>
+      <button class="btn ghost" id="itMore" type="button" hidden>Show more</button>
+    </section>
+
+    <!-- SUPPLIERS & PURCHASES -->
+    <section class="tab" id="tab-purchases">
+      <div class="tab-head"><h2>Suppliers &amp; purchases</h2><div class="tools"><button class="btn" id="puRefresh" type="button">↻</button><button class="btn" id="supAdd" type="button">＋ Supplier</button><button class="btn primary" id="puNew" type="button">＋ New purchase</button></div></div>
+      <p class="muted">A purchase adds the goods to your stock, updates the cost price, and what you don't pay now is added to what you owe the supplier.</p>
+      <div class="kpis" id="puKpis"></div>
+      <h3>Suppliers</h3>
+      <div class="table" id="supList"></div>
+      <h3>Recent purchases</h3>
+      <div class="table" id="puList"></div>
     </section>
 
     <!-- CASH -->
@@ -242,5 +263,6 @@
 <script src="pos-sell.js"></script>
 <script src="pos-office.js"></script>
 <script src="pos-reports.js"></script>
+<script src="pos-stock.js"></script>
 </body>
 </html>
