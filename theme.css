@@ -357,3 +357,6 @@ body.mc-admin #resetPanel,body.mc-admin #createPanel{max-width:560px;margin:60px
 .av-row{grid-template-columns:34px minmax(0,1.4fr) minmax(250px,1.3fr) minmax(250px,1.1fr)}
 .pc-box{margin:14px 0;border:1.5px solid #c7d2fe;background:#eef2ff;border-radius:14px;padding:12px 14px}
 .pc-box>b{display:block}.pc-box>small{display:block;color:var(--muted);margin:2px 0 6px}
+
+/* how-to video */
+.mc-video-modal{position:fixed;inset:0;background:rgba(6,20,18,.82);z-index:200;display:flex;align-items:center;justify-content:center;padding:16px}.mc-video-modal[hidden]{display:none}.mc-video-box{background:#0b2725;border-radius:18px;padding:12px;width:min(1100px,100%);position:relative;text-align:center}.mc-video-box video{width:100%;border-radius:12px;display:block;background:#000}.mc-video-box .hint{color:#cfe5e1;margin:8px 0 2px}.mc-video-box #mcVideoClose{position:absolute;top:-14px;right:-6px;background:#fff!important;border-radius:999px!important;width:40px;height:40px;padding:0!important;z-index:2}

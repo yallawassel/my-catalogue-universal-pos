@@ -29,7 +29,7 @@
     return null;
   }
   // v9: never ask for private business fields (billing notes, owner id) on public pages.
-  const PUBLIC_BUSINESS_COLUMNS = 'id,company_name,slug,description,whatsapp,currency,logo_url,primary_color,catalogue_template,is_published,banner_mode,banner_product_ids,banner_video_url,banner_headline,catalogue_enabled,default_language,description_ar,pay_methods,pickup_enabled,pickup_address';
+  const PUBLIC_BUSINESS_COLUMNS = 'id,company_name,slug,description,whatsapp,currency,logo_url,primary_color,catalogue_template,is_published,banner_mode,banner_product_ids,banner_video_url,banner_headline,catalogue_enabled,default_language,description_ar,pay_methods,pickup_enabled,pickup_address,order_channels';
   // v9: Supabase returns at most 1,000 rows per request — load big catalogues page by page.
   async function fetchAll(build, pageSize = 1000) {
     let out = [];
@@ -52,7 +52,7 @@
     if (!blob) throw new Error('Image optimization failed in this browser.');
     return new File([blob],(file.name.replace(/\.[^.]+$/,'')||'photo')+'.webp',{type:'image/webp'});
   }
-  window.MC = { inPlayApp, fetchAll, PUBLIC_BUSINESS_COLUMNS, url: SUPABASE_URL, publishableKey: SUPABASE_PUBLISHABLE_KEY, sb, esc, slugify, resolveBusiness, optimizeImage, money:(n,c='USD') => (c==='LBP'?'LBP ':'$')+Number(n||0).toLocaleString(undefined,{maximumFractionDigits:2}) };
+  window.MC = { inPlayApp, fetchAll, PUBLIC_BUSINESS_COLUMNS, url: SUPABASE_URL, publishableKey: SUPABASE_PUBLISHABLE_KEY, sb, esc, slugify, resolveBusiness, optimizeImage, money:(n,c='USD') => { const sym={USD:'$',EUR:'€',LBP:'LBP ',IQD:'IQD ',EGP:'EGP ',SAR:'SAR ',AED:'AED ',JOD:'JOD ',KWD:'KWD ',QAR:'QAR ',BHD:'BHD ',OMR:'OMR ',SYP:'SYP ',MAD:'MAD ',TND:'TND ',DZD:'DZD ',LYD:'LYD '}[c]; const big=['LBP','IQD','SYP'].includes(c); const dec=['KWD','BHD','OMR','JOD','LYD','TND'].includes(c)?3:2; return (sym||((c||'USD')+' '))+Number(n||0).toLocaleString(undefined,{maximumFractionDigits:big?0:dec}); } };
   // v8: turn the #status bar on staff pages into an auto-hiding toast (admin.html has its own).
   document.addEventListener('DOMContentLoaded', () => {
     const st = document.getElementById('status');
