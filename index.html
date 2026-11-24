@@ -98,7 +98,7 @@ body.template-showcase .product .name{font-size:19px}
 
 function setupBusinessInstall(biz,page){
   const slug=String(biz?.slug||new URLSearchParams(location.search).get('shop')||'').trim();
-  const name=String(biz?.company_name||'My Catalogue').trim();
+  const name=String(biz?.company_name||'Raffi').trim();
   const logo=String(biz?.logo_url||'').trim();
   if(!slug)return;
   const start=new URL(page==='admin'?'admin.html':'index.html',location.href);

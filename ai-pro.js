@@ -22,7 +22,7 @@
   function renderPacks() {
     $('apPacks').innerHTML = packs.map(p => {
       const per = p.credits ? (Number(p.price_usd) / p.credits * 100).toFixed(1) : '';
-      return `<button type="button" class="mc-tile" data-ap-pack="${esc(p.pack_key)}" style="--c:#7c3aed;${chosenPack === p.pack_key ? 'outline:3px solid #7c3aed;outline-offset:2px' : ''}"><span class="t-ic">💎</span><strong>${esc(p.display_name)}</strong><small><b style="font-size:20px;color:var(--ink)">$${Number(p.price_usd).toFixed(2)}</b><br>${p.credits} credits · ${per}¢ per photo</small></button>`;
+      return `<button type="button" class="mc-tile" data-ap-pack="${esc(p.pack_key)}" style="--c:#0f766e;${chosenPack === p.pack_key ? 'outline:3px solid #0f766e;outline-offset:2px' : ''}"><span class="t-ic">💎</span><strong>${esc(p.display_name)}</strong><small><b style="font-size:20px;color:var(--ink)">$${Number(p.price_usd).toFixed(2)}</b><br>${p.credits} credits · ${per}¢ per photo</small></button>`;
     }).join('') || '<div class="mc-empty">No credit packs are available right now.</div>';
     const p = packs.find(x => x.pack_key === chosenPack);
     const btn = $('apRequest'); btn.disabled = !p; btn.textContent = p ? `Request ${p.display_name} · $${Number(p.price_usd).toFixed(2)}` : 'Choose a pack above';
@@ -78,7 +78,7 @@
   }
   function render() {
     $('apGrid').innerHTML = ap.rows.map((r, i) => {
-      const tag = r.saved ? ['Saved ✓', '#1b1740'] : r.result ? ['AI pro ✨', '#059669'] : r.error ? ['Failed · refunded', '#be123c'] : r.working ? ['Working…', '#7c3aed'] : ['Ready', '#6b6890'];
+      const tag = r.saved ? ['Saved ✓', '#16302c'] : r.result ? ['AI pro ✨', '#059669'] : r.error ? ['Failed · refunded', '#be123c'] : r.working ? ['Working…', '#0f766e'] : ['Ready', '#627a76'];
       const before = r.file ? MCMatch.thumb(r.file) : r.srcUrl;
       return `<div class="mc-studio-card"><label class="sel"><input type="checkbox" data-ap-sel="${i}" ${r.selected ? 'checked' : ''} ${r.result && !r.saved ? '' : 'disabled'}></label><span class="tag" style="background:${tag[1]}">${esc(tag[0])}</span>
         <div class="ba"><img src="${esc(before)}" alt="before" title="Before">${r.result ? `<img src="${esc(r.result)}" alt="after" title="After">` : '<div style="display:grid;place-items:center;background:#fff;color:var(--muted);font-size:12px;aspect-ratio:1">after</div>'}</div>

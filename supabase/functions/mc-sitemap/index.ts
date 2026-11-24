@@ -2,7 +2,7 @@
 // GET /functions/v1/mc-sitemap?shop=<slug>[&base=https://example.com/path/]
 import { createClient } from "npm:@supabase/supabase-js@2";
 
-const DEFAULT_BASE = "https://yallawassel.github.io/my-catalogue-universal-pos/";
+const DEFAULT_BASE = "https://myraffi.com/";
 const xml = (s: string) => s.replace(/[<>&'"]/g, (c) => ({ "<": "&lt;", ">": "&gt;", "&": "&amp;", "'": "&apos;", '"': "&quot;" }[c]!));
 
 Deno.serve(async (req) => {
