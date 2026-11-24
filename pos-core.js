@@ -180,7 +180,7 @@
     if (m.error) throw m.error;
     const ids = (m.data || []).map(x => x.business_id);
     if (!ids.length) { $('inactiveMsg').textContent = 'This account is not linked to a business yet. Create your business in the catalogue admin first.'; show('vInactive'); return null; }
-    const b = await sb.from('mc_saas_businesses').select('id,company_name,slug,currency,logo_url,primary_color,whatsapp,pos_enabled').in('id', ids);
+    const b = await sb.from('mc_saas_businesses').select('id,company_name,slug,currency,logo_url,primary_color,whatsapp,pos_enabled,main_system').in('id', ids);
     if (b.error) throw b.error;
     const list = b.data || [], last = localStorage.getItem('mcpos-last-biz');
     const roles = new Map((m.data || []).map(x => [x.business_id, x.role]));
@@ -295,6 +295,10 @@
       P.biz = await pickBusiness(); if (!P.biz) return;
       localStorage.setItem('mcpos-last-biz', P.biz.id);
       if (!P.biz.pos_enabled) { show('vInactive'); return; }
+      if (P.biz.main_system === 'external') {
+        $('inactiveMsg').innerHTML = 'This shop uses <b>its own POS</b> (connected to the catalogue) as the main system, so items, prices and stock come from it and this till is switched off.<br><br>To sell with the My Catalogue POS instead, open <a href="admin.html#connector">Catalogue admin → Live POS connector</a> and choose <b>My Catalogue POS</b> as the main system.';
+        show('vInactive'); return;
+      }
       await P.loadData();
       P.save('biz', P.biz);
     } catch (e) {

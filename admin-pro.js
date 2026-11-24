@@ -341,7 +341,22 @@
     const stc = { completed: 'ok', completed_with_errors: 'warn', failed: 'bad', running: '' };
     $('lcJobs').innerHTML = (j.data || []).length ? `<div style="overflow-x:auto"><table class="mc-table"><tr><th>When</th><th>Source</th><th>Mode</th><th>Status</th><th>Rows</th><th>Updated</th><th>Added</th><th>Failed</th></tr>${j.data.map(x => `<tr><td>${new Date(x.started_at).toLocaleString()}</td><td>${src[x.source_type] || esc(x.source_type)}</td><td>${x.sync_mode === 'price' ? 'Prices' : 'Full'}</td><td><span class="pill ${stc[x.status] || ''}">${esc(String(x.status).replace(/_/g, ' '))}</span></td><td>${x.rows_total}</td><td>${x.rows_updated}</td><td>${x.rows_added}</td><td>${x.rows_failed}</td></tr>`).join('')}</table></div>` : '<div class="mc-empty">No synchronizations yet.</div>';
   }
-  hooks.connector = () => loadConnector().catch(e => toast(e.message, true));
+  // main system: My Catalogue POS or the shop's own POS
+  async function loadMainSys() {
+    const biz = A().biz; if (!biz || !$('mainSysCard')) return;
+    const r = await sb().from('mc_saas_businesses').select('main_system').eq('id', biz.id).maybeSingle();
+    const v = (r.data && r.data.main_system) || 'catalogue'; biz.main_system = v;
+    document.querySelectorAll('input[name=mainSys]').forEach(i => { i.checked = i.value === v; i.closest('.mc-ms-opt').classList.toggle('on', i.checked); });
+    $('mainSysNote').textContent = v === 'external' ? 'Your own POS is the main system. The My Catalogue POS shows a notice instead of the till.' : 'The My Catalogue POS is the main system.';
+  }
+  document.addEventListener('change', async e => {
+    if (!e.target.matches || !e.target.matches('input[name=mainSys]')) return;
+    const biz = A().biz; if (!biz) return;
+    const r = await sb().rpc('mc_saas_set_main_system', { p_business_id: biz.id, p_main: e.target.value });
+    if (r.error) { toast(r.error.message, true); return loadMainSys(); }
+    await loadMainSys(); toast(e.target.value === 'external' ? '🔌 Your own POS is now the main system.' : '🧾 The My Catalogue POS is now the main system.');
+  });
+  hooks.connector = () => { loadMainSys().catch(() => {}); return loadConnector().catch(e => toast(e.message, true)); };
   on('lcRefresh', () => loadConnector().then(() => toast('Connector status refreshed.')));
   $('lcKeys') && $('lcKeys').addEventListener('click', async e => {
     const b = e.target.closest('[data-lc-revoke]'); if (!b) return;

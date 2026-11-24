@@ -32,7 +32,14 @@
         sb.from('mc_saas_pos_shifts').select('*').eq('business_id', id).gte('opened_at', s).lt('opened_at', e).order('opened_at')
       ]);
       for (const r of [sa, pa, ce, cu, sh]) if (r.error) throw r.error;
+      // purchases & suppliers (v29) — optional, the report still works without them
+      let pu = { data: [] }, sp = { data: [] };
+      try { [pu, sp] = await Promise.all([MC.fetchAll(() => sb.from('mc_saas_purchases').select('purchase_date,purchase_no,supplier_name,total,paid').eq('business_id', id).gte('purchase_date', from).lte('purchase_date', to).order('purchase_date')), MC.fetchAll(() => sb.from('mc_saas_suppliers').select('name,balance').eq('business_id', id))]); } catch (_) { }
       R = compute(sa.data || [], pa.data || [], ce.data || [], cu.data || [], sh.data || [], from, to);
+      R.purchases = pu.error ? [] : (pu.data || []); R.owedSuppliers = (sp.data || []).reduce((t, x) => t + Math.max(0, Number(x.balance)), 0);
+      R.purchTotal = R.purchases.reduce((t, x) => t + Number(x.total), 0);
+      const bySup = new Map(); R.purchases.forEach(x => { const o = bySup.get(x.supplier_name) || { k: x.supplier_name || 'Supplier', n: 0, v: 0, p: 0 }; o.n++; o.v += Number(x.total); o.p += Number(x.paid); bySup.set(x.supplier_name, o); });
+      R.bySup = [...bySup.values()].sort((a, b) => b.v - a.v);
       draw();
     } catch (er) { $('report').innerHTML = '<p class="muted">Reports need the internet.</p>'; if (!P.isNetErr(er)) P.err(er); }
   }
@@ -93,6 +100,8 @@
       <h3>By cashier</h3>${table(['Cashier', 'Sales', 'Returns', 'Net total'], r.byCashier.map(c => tr([esc(c.k), c.n, f(c.c), f(c.v)])))}
       <h3>By category</h3>${table(['Category', 'Qty', 'Sales', 'Profit'], r.byCat.map(c => tr([esc(c.k), P.r2(c.q), f(c.v), c.cost ? f(c.v - c.cost) : '—'])))}
       <h3>Products</h3>${table(['Product', 'Qty', 'Sales', 'Profit'], r.byProd.slice(0, 100).map(c => tr([esc(c.k), P.r2(c.q), f(c.v), c.nocost ? '—' : f(c.v - c.cost)])))}
+      <h3>Purchases from suppliers</h3>${table(['Supplier', 'Invoices', 'Bought', 'Paid'], (r.bySup || []).map(c => tr([esc(c.k), c.n, f(c.v), f(c.p)])), ['Total', (r.purchases || []).length, f(r.purchTotal || 0), ''])}
+      <p class="muted">You owe your suppliers ${f(r.owedSuppliers || 0)} in total (all time). Purchases are not expenses: their cost counts in profit when the goods are sold.</p>
       <h3>Expenses by category</h3>${table(['Category', 'Entries', 'Amount'], r.byExp.map(c => tr([esc(c.k), c.n, f(c.v)])), ['Total', '', f(r.expenses)])}
       <h3>Customers who owe money</h3>${table(['Customer', 'Phone', 'Debt'], r.debtors.map(c => tr([esc(c.name), esc(c.phone || ''), f(c.balance)])), ['Total', '', f(r.debtTotal)])}
       <h3>Shifts</h3>${table(['Opened', 'Cashier', 'Status', 'Sales', 'Cash difference'], r.shifts.map(s => tr([P.dt(s.opened_at), esc(s.cashier_name), s.status, f(s.totals?.sales_total || 0), s.totals ? f(s.totals.difference_usd) + ' · ' + P.fmtL(s.totals.difference_lbp) : '—'])))}`;
@@ -114,6 +123,7 @@
       add('Invoices', [['Date', 'Invoice', 'Type', 'Customer', 'Cashier', 'Payment', 'Subtotal', 'Discount', 'VAT USD', 'Total USD', 'Cash USD', 'Cash LBP', 'Card', 'Debt', 'Change USD', 'Change LBP', 'Rate'], ...r.sales.map(s => [new Date(s.created_at).toLocaleString(), s.invoice_label, s.kind, s.customer_name || '', s.cashier_name || '', s.payment_method, +s.subtotal, +s.discount, +s.tax, +s.total, +s.paid_usd, +s.paid_lbp, +s.paid_card, +s.credit_amount, +s.change_usd, +s.change_lbp, +s.rate])]);
       add('Expenses & income', [['Date', 'Type', 'Category', 'Amount USD', 'Paid USD', 'Paid LBP', 'Note', 'By'], ...r.entries.map(x => [x.entry_date, x.kind, x.category, +x.amount_usd, +x.paid_usd, +x.paid_lbp, x.note || '', x.cashier_name || ''])]);
       add('Debts', [['Customer', 'Phone', 'Debt USD'], ...r.debtors.map(c => [c.name, c.phone || '', +c.balance])]);
+      add('Purchases', [['Date', 'No.', 'Supplier', 'Total USD', 'Paid USD'], ...(r.purchases || []).map(x => [x.purchase_date, 'P-' + String(x.purchase_no).padStart(5, '0'), x.supplier_name || '', +x.total, +x.paid])]);
       X.writeFile(wb, fileBase() + '.xlsx');
     } catch (e) { P.err(e); }
   };

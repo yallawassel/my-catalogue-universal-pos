@@ -566,6 +566,10 @@
 
 <section class="panel" data-page-id="connector" id="liveConnectorPanel">
  <h2>🔌 Live POS connector</h2>
+ <div class="mc-card mc-main-sys" id="mainSysCard"><h3 style="margin:0 0 4px">🧭 Main system for stock, prices &amp; sales</h3><p class="hint" style="margin:0 0 10px">Choose which system is the boss. Only one should change stock and prices, so they never disagree.</p>
+  <label class="mc-ms-opt"><input type="radio" name="mainSys" value="catalogue"><span><b>🧾 My Catalogue POS</b><small>For shops without a POS: sell in store with the My Catalogue POS (sales, stock, suppliers &amp; purchases, returns, reports). Online and in-store sales share one stock.</small></span></label>
+  <label class="mc-ms-opt"><input type="radio" name="mainSys" value="external"><span><b>🔌 My own POS (connected below)</b><small>For shops with a POS like AntiSoft: your POS is the main system. Items, prices and stock come only from it; the My Catalogue POS is hidden. The catalogue is your online shop and orders.</small></span></label>
+  <p class="hint" id="mainSysNote" style="margin:8px 0 0"></p></div>
  <p class="hint">Connect your POS so products, prices and (optionally) stock flow into your catalogue automatically. One-way and read-only: the connector never writes anything back to your POS, never deletes catalogue products, and keeps your own catalogue names, photos and descriptions.</p>
  <div class="mc-grid-3" style="margin:14px 0">
   <div class="mc-feature" style="--c:#f43f5e"><h3><span class="ic">🖥️</span>Windows POS (AntiSoft &amp; SQL Server)</h3><p>Install the small My Catalogue agent on the POS PC. It reads with a read-only SQL login and pushes on a schedule.</p><button class="btn primary" type="button" id="lcGuideWindows">Show setup steps</button></div>
