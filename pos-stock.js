@@ -4,6 +4,7 @@
   const P = window.POS, $ = P.$, esc = P.esc, sb = P.sb;
   const PAGE = 80;
   let items = [], units = [], stock = new Map(), lowDefault = 0, shown = PAGE, loaded = false;
+  const sel = new Set();
   const nice = v => Math.round(Number(v) * 1000) / 1000;
   const money = v => v == null || v === '' ? '—' : P.fmt(v);
 
@@ -14,8 +15,8 @@
     try {
       const id = P.biz.id;
       const [pr, un, st, ss] = await Promise.all([
-        MC.fetchAll(() => sb.from('mc_saas_products').select('id,name,category,barcode,sku,label1,price1,pieces1,label2,price2,pieces2,cost_price,reorder_level,is_active,image,sort_order').eq('business_id', id).order('name').order('id')),
-        MC.fetchAll(() => sb.from('mc_saas_product_units').select('id,product_id,unit_name,conversion_to_base,is_base_unit,conversion_configured,is_active').eq('business_id', id).eq('is_active', true).order('id')),
+        MC.fetchAll(() => sb.from('mc_saas_products').select('id,name,category,barcode,sku,label1,price1,pieces1,label2,price2,pieces2,cost_price,reorder_level,is_active,image,sort_order,wholesale_price1,wholesale_price2').eq('business_id', id).order('name').order('id')),
+        MC.fetchAll(() => sb.from('mc_saas_product_units').select('id,product_id,unit_name,conversion_to_base,is_base_unit,conversion_configured,is_active,barcode').eq('business_id', id).eq('is_active', true).order('id')),
         MC.fetchAll(() => sb.from('mc_saas_product_stock').select('product_id,physical_qty_base,stock_initialized').eq('business_id', id).order('product_id')),
         sb.from('mc_saas_stock_settings').select('low_stock_threshold').eq('business_id', id).maybeSingle()
       ]);
@@ -59,24 +60,31 @@
   function draw() {
     let value = 0, valued = 0, low = 0, out = 0;
     items.forEach(p => { const q = stock.get(p.id), c = baseCost(p); if (q > 0 && c != null) { value += q * c; valued++; } const s = state(p); if (s === 'low') low++; if (s === 'out') out++; });
-    $('itKpis').innerHTML = `<div class="kpi"><small>Items</small><b>${items.length}</b></div><div class="kpi good"><small>Stock value at cost</small><b>${P.fmt(value)}</b></div>
-      <div class="kpi bad"><small>Low stock (reorder)</small><b>${low}</b></div><div class="kpi bad"><small>Out of stock</small><b>${out}</b></div><div class="kpi"><small>Without cost price</small><b>${items.filter(p => p.cost_price == null).length}</b></div>`;
-    const list = filtered(), g = 'grid-template-columns:2fr 1.3fr 90px 1.4fr 100px 150px';
+    const sc = P.can('see_cost');
+    $('itKpis').innerHTML = `<div class="kpi"><small>Items</small><b>${items.length}</b></div>${sc ? `<div class="kpi good"><small>Stock value at cost</small><b>${P.fmt(value)}</b></div>` : ''}
+      <div class="kpi bad"><small>Low stock (reorder)</small><b>${low}</b></div><div class="kpi bad"><small>Out of stock</small><b>${out}</b></div>${sc ? `<div class="kpi"><small>Without cost price</small><b>${items.filter(p => p.cost_price == null).length}</b></div>` : ''}`;
+    const list = filtered(), g = sc ? 'grid-template-columns:34px 2fr 1.3fr 90px 1.4fr 100px 150px' : 'grid-template-columns:34px 2fr 1.3fr 1.4fr 150px';
     const st = { ok: '', low: '<span class="pill warn">Low</span>', out: '<span class="pill bad">Out</span>', untracked: '' };
-    $('itList').innerHTML = `<div class="tr th" style="${g}"><span>Item</span><span>Prices</span><span class="r">Cost</span><span>In stock</span><span class="r">Value</span><span></span></div>` + (list.slice(0, shown).map(p => {
+    $('itList').innerHTML = `<div class="tr th" style="${g}"><span><input type="checkbox" id="itAll" aria-label="Select all shown"></span><span>Item</span><span>Prices</span>${sc ? '<span class="r">Cost</span>' : ''}<span>In stock</span>${sc ? '<span class="r">Value</span>' : ''}<span></span></div>` + (list.slice(0, shown).map(p => {
       const q = stock.get(p.id), c = baseCost(p);
-      return `<div class="tr" style="${g}"><span><b>${esc(p.name)}</b>${p.is_active === false ? ' <span class="pill">Hidden</span>' : ''}<br><small class="muted">${esc(p.category || '')}${p.barcode ? ' · ' + esc(p.barcode) : ''}</small></span>
-        <span><small>${esc(p.label1 || 'Unit')} ${money(p.price1)}${p.label2 ? `<br>${esc(p.label2)} ${money(p.price2)}` : ''}</small></span>
-        <span class="r">${p.cost_price != null ? `<small>${P.fmt(p.cost_price)}<br><span class="muted">/${esc(p.label1 || 'unit')}</span></small>` : '<small class="muted">—</small>'}</span>
-        <span>${st[state(p)]} ${breakdown(p, q)}</span><span class="r">${q > 0 && c != null ? P.fmt(q * c) : '—'}</span>
+      return `<div class="tr" style="${g}"><span><input type="checkbox" data-it-sel="${p.id}" ${sel.has(p.id) ? 'checked' : ''} aria-label="Select"></span><span><b>${esc(p.name)}</b>${p.is_active === false ? ' <span class="pill">Hidden</span>' : ''}<br><small class="muted">${esc(p.category || '')}${p.barcode ? ' · ' + esc(p.barcode) : ''}</small></span>
+        <span><small>${esc(p.label1 || 'Unit')} ${money(p.price1)}${p.wholesale_price1 != null ? ` <span class="muted">· W ${P.fmt(p.wholesale_price1)}</span>` : ''}${p.label2 ? `<br>${esc(p.label2)} ${money(p.price2)}${p.wholesale_price2 != null ? ` <span class="muted">· W ${P.fmt(p.wholesale_price2)}</span>` : ''}` : ''}</small></span>
+        ${sc ? `<span class="r">${p.cost_price != null ? `<small>${P.fmt(p.cost_price)}<br><span class="muted">/${esc(p.label1 || 'unit')}</span></small>` : '<small class="muted">—</small>'}</span>` : ''}
+        <span>${st[state(p)]} ${breakdown(p, q)}</span>${sc ? `<span class="r">${q > 0 && c != null ? P.fmt(q * c) : '—'}</span>` : ''}
         <span class="r"><button class="btn sm" type="button" data-it-stock="${p.id}">Stock</button> <button class="btn sm" type="button" data-it-edit="${p.id}">Edit</button></span></div>`;
     }).join('') || '<div class="empty">No items found.</div>');
     $('itMore').hidden = list.length <= shown;
+    selUI();
   }
+  function selUI() { $('itLabels').textContent = sel.size ? `🏷️ Labels (${sel.size})` : '🏷️ Labels'; }
   $('itSearch').oninput = () => { shown = PAGE; draw(); };
   $('itFilter').onchange = () => { shown = PAGE; draw(); };
   $('itMore').onclick = () => { shown += PAGE; draw(); };
   $('itAdd').onclick = () => editItem(null);
+  $('itList').onchange = e => {
+    if (e.target.id === 'itAll') { filtered().slice(0, shown).forEach(p => e.target.checked ? sel.add(p.id) : sel.delete(p.id)); draw(); return; }
+    const t = e.target.closest('[data-it-sel]'); if (t) { t.checked ? sel.add(t.dataset.itSel) : sel.delete(t.dataset.itSel); selUI(); }
+  };
   $('itList').onclick = e => {
     const ed = e.target.closest('[data-it-edit]'); if (ed) return editItem(items.find(p => p.id === ed.dataset.itEdit));
     const sk = e.target.closest('[data-it-stock]'); if (sk) return stockSheet(items.find(p => p.id === sk.dataset.itStock));
@@ -93,10 +101,11 @@
       <div class="row2"><div><label for="eiSku">SKU / item code</label><input id="eiSku" value="${v('sku')}"></div><div><label for="eiReorder">Reorder when stock is at or below (${esc(p ? baseName(p) : 'pieces')})</label><input id="eiReorder" type="number" min="0" step="any" value="${v('reorder_level')}" placeholder="${lowDefault || ''}"></div></div>
       <h4 style="margin:12px 0 4px">First unit (sold most)</h4>
       <div class="row4"><div><label for="eiL1">Unit name</label><input id="eiL1" value="${v('label1', 'Piece')}" placeholder="Piece, Packet, Box, Kg"></div><div><label for="eiP1">Price USD</label><input id="eiP1" type="number" min="0" step="0.01" value="${v('price1')}"></div>
-      <div><label for="eiN1">Pieces in it</label><input id="eiN1" type="number" min="0" step="any" value="${v('pieces1')}" placeholder="1 if it is a piece"></div><div><label for="eiCost">Cost of this unit</label><input id="eiCost" type="number" min="0" step="0.0001" value="${v('cost_price')}"></div></div>
+      <div><label for="eiN1">Pieces in it</label><input id="eiN1" type="number" min="0" step="any" value="${v('pieces1')}" placeholder="1 if it is a piece"></div><div><label for="eiW1">Wholesale price</label><input id="eiW1" type="number" min="0" step="0.01" value="${v('wholesale_price1')}" placeholder="optional"></div></div>
+      ${P.can('see_cost') ? `<div class="row4"><div><label for="eiCost">Cost of the first unit</label><input id="eiCost" type="number" min="0" step="0.0001" value="${v('cost_price')}"></div><div></div><div></div><div></div></div>` : ''}
       <h4 style="margin:12px 0 4px">Second unit (optional)</h4>
       <div class="row4"><div><label for="eiL2">Unit name</label><input id="eiL2" value="${v('label2')}" placeholder="e.g. Box"></div><div><label for="eiP2">Price USD</label><input id="eiP2" type="number" min="0" step="0.01" value="${v('price2')}"></div>
-      <div><label for="eiN2">Pieces in it</label><input id="eiN2" type="number" min="0" step="any" value="${v('pieces2')}" placeholder="e.g. 450"></div><div></div></div>
+      <div><label for="eiN2">Pieces in it</label><input id="eiN2" type="number" min="0" step="any" value="${v('pieces2')}" placeholder="e.g. 450"></div><div><label for="eiW2">Wholesale price</label><input id="eiW2" type="number" min="0" step="0.01" value="${v('wholesale_price2')}" placeholder="optional"></div></div>
       <label class="check"><input type="checkbox" id="eiActive" ${!p || p.is_active !== false ? 'checked' : ''}> Show on the catalogue and in the till</label>
       <p class="muted small">Stock is counted in pieces (the main unit). "Pieces in it" lets a sale of 1 box take the right amount out of stock.</p>
       <div class="sheet-foot">${p ? '<button class="btn" type="button" id="eiStock">Stock…</button>' : ''}<button class="btn primary" type="button" id="eiOk">${p ? 'Save' : 'Add item'}</button></div>`, { wide: true });
@@ -105,10 +114,11 @@
     g('#eiOk').onclick = async () => {
       const row = {
         name: g('#eiName').value.trim(), category: g('#eiCat').value.trim() || 'Products', barcode: g('#eiBarcode').value.trim(), sku: g('#eiSku').value.trim(),
-        label1: g('#eiL1').value.trim() || 'Piece', price1: numOrNull('#eiP1'), pieces1: numOrNull('#eiN1'), cost_price: numOrNull('#eiCost'),
-        label2: g('#eiL2').value.trim(), price2: g('#eiL2').value.trim() ? numOrNull('#eiP2') : null, pieces2: g('#eiL2').value.trim() ? numOrNull('#eiN2') : null,
+        label1: g('#eiL1').value.trim() || 'Piece', price1: numOrNull('#eiP1'), pieces1: numOrNull('#eiN1'), wholesale_price1: numOrNull('#eiW1'),
+        label2: g('#eiL2').value.trim(), price2: g('#eiL2').value.trim() ? numOrNull('#eiP2') : null, pieces2: g('#eiL2').value.trim() ? numOrNull('#eiN2') : null, wholesale_price2: g('#eiL2').value.trim() ? numOrNull('#eiW2') : null,
         reorder_level: numOrNull('#eiReorder'), is_active: g('#eiActive').checked, updated_at: new Date().toISOString()
       };
+      if (g('#eiCost')) row.cost_price = numOrNull('#eiCost');
       if (!row.name) return P.toast('Name is required.', true);
       if ([row.pieces1, row.pieces2].some(x => x !== null && x <= 0)) return P.toast('"Pieces in it" must be more than 0.', true);
       try {
@@ -121,7 +131,7 @@
           Object.assign(p, row);
         } else {
           const maxSort = items.reduce((m, x) => Math.max(m, Number(x.sort_order) || 0), 0);
-          const r = await sb.from('mc_saas_products').insert({ ...row, business_id: P.biz.id, sort_order: maxSort + 1 }).select('id,name,category,barcode,sku,label1,price1,pieces1,label2,price2,pieces2,cost_price,reorder_level,is_active,image,sort_order').single();
+          const r = await sb.from('mc_saas_products').insert({ ...row, business_id: P.biz.id, sort_order: maxSort + 1 }).select('id,name,category,barcode,sku,label1,price1,pieces1,label2,price2,pieces2,cost_price,reorder_level,is_active,image,sort_order,wholesale_price1,wholesale_price2').single();
           if (r.error) throw r.error; items.push(r.data); p = r.data;
         }
         P.close(); await loadItems(true); await P.loadData().catch(() => { }); P.toast('✅ Item saved.');
@@ -179,13 +189,171 @@
     try {
       if (!loaded) await loadItems(true);
       const X = await P.loadXlsx(), wb = X.utils.book_new();
-      const rows = items.map(p => { const q = stock.get(p.id), c = baseCost(p); return [p.name, p.category || '', p.barcode || '', p.sku || '', p.label1 || '', p.price1 ?? '', p.label2 || '', p.price2 ?? '', p.cost_price ?? '', q == null ? '' : nice(q), baseName(p), breakdown(p, q).replace(/<[^>]+>/g, ''), q > 0 && c != null ? P.r2(q * c) : '', reorderAt(p) || '', { ok: 'OK', low: 'REORDER', out: 'OUT', untracked: 'not counted' }[state(p)], p.is_active === false ? 'hidden' : '']; });
+      const sc = P.can('see_cost'); const rows = items.map(p => { const q = stock.get(p.id), c = sc ? baseCost(p) : null; return [p.name, p.category || '', p.barcode || '', p.sku || '', p.label1 || '', p.price1 ?? '', p.label2 || '', p.price2 ?? '', sc ? (p.cost_price ?? '') : '', q == null ? '' : nice(q), baseName(p), breakdown(p, q).replace(/<[^>]+>/g, ''), q > 0 && c != null ? P.r2(q * c) : '', reorderAt(p) || '', { ok: 'OK', low: 'REORDER', out: 'OUT', untracked: 'not counted' }[state(p)], p.is_active === false ? 'hidden' : '']; });
       X.utils.book_append_sheet(wb, X.utils.aoa_to_sheet([['Item', 'Category', 'Barcode', 'SKU', 'Unit 1', 'Price 1', 'Unit 2', 'Price 2', 'Cost (unit 1)', 'Stock (main unit)', 'Main unit', 'Stock', 'Value at cost', 'Reorder at', 'Status', 'Shown'], ...rows]), 'Inventory');
-      const re = items.filter(p => ['low', 'out'].includes(state(p))).map(p => [p.name, p.category || '', breakdown(p, stock.get(p.id)).replace(/<[^>]+>/g, ''), reorderAt(p) || '', p.cost_price ?? '']);
+      const re = items.filter(p => ['low', 'out'].includes(state(p))).map(p => [p.name, p.category || '', breakdown(p, stock.get(p.id)).replace(/<[^>]+>/g, ''), reorderAt(p) || '', sc ? (p.cost_price ?? '') : '']);
       X.utils.book_append_sheet(wb, X.utils.aoa_to_sheet([['Item', 'Category', 'In stock', 'Reorder at', 'Last cost (unit 1)'], ...re]), 'To reorder');
       X.writeFile(wb, `${P.biz.slug || 'shop'}-inventory-${P.today()}.xlsx`);
     } catch (e) { P.err(e); }
   };
+
+  /* ================= STOCK COUNT (stocktake) ================= */
+  // A count can take days: it is kept on this device until you apply it.
+  const DKEY = () => 'stocktake';
+  function countDraft() { return P.load(DKEY(), null) || { started: new Date().toISOString(), lines: {} }; }
+  function saveDraft(d) { P.save(DKEY(), d); }
+  const byCode = code => {
+    const c = String(code || '').trim().toLowerCase(); if (!c) return null;
+    const u = units.find(x => x.barcode && x.barcode.trim().toLowerCase() === c);
+    if (u) { const p = items.find(x => x.id === u.product_id); if (p) return { p, f: Number(u.conversion_to_base) || 1, unit: u.unit_name }; }
+    const p = items.find(x => (x.barcode && x.barcode.trim().toLowerCase() === c) || (x.sku && x.sku.trim().toLowerCase() === c));
+    return p ? { p, f: factor(p, p.label1) || 1, unit: p.label1 } : null;
+  };
+  async function stocktake() {
+    if (!P.can('stocktake')) return P.toast('You are not allowed to do a stock count.', true);
+    if (!loaded) await loadItems(true);
+    const d = countDraft();
+    const cats = [...new Set(items.map(x => x.category).filter(Boolean))].sort();
+    const b = P.modal('🔢 Stock count', `
+      <p class="muted small">Scan each item on the shelf (every scan adds 1), or search and type the quantity. Your count is kept on this device until you press <b>Apply</b>. Started ${P.dt(d.started)}.</p>
+      <div class="row2"><div><label for="stScan">Scan or search</label><input id="stScan" type="search" autocomplete="off" placeholder="Scan a barcode or type a name…"></div>
+      <div><label for="stCat">Or add a whole category to count</label><select id="stCat"><option value="">— choose —</option>${cats.map(c => `<option>${esc(c)}</option>`).join('')}</select></div></div>
+      <div id="stHits" class="list"></div>
+      <div class="kpis" id="stKpis"></div>
+      <div class="table" id="stLines"></div>
+      <label class="check"><input type="checkbox" id="stZero"> Items I did not count are <b>zero</b> (only for a full shop count)</label>
+      <div class="sheet-foot"><button class="btn danger" type="button" id="stClear">Start over</button><button class="btn" type="button" id="stXlsx">📗 Excel</button><button class="btn primary" type="button" id="stApply">Apply the count</button></div>`, { wide: true });
+    const g = id => b.querySelector(id), sc = P.can('see_cost');
+    const counted = id => { const l = d.lines[id]; return l ? Object.entries(l.u || {}).reduce((t, [name, n]) => t + P.num(n) * (factor(items.find(x => x.id === id), name) || 1), 0) : 0; };
+    function addQty(p, unitName, n) {
+      const l = d.lines[p.id] || (d.lines[p.id] = { u: {}, at: Date.now() });
+      l.u[unitName] = P.r2(P.num(l.u[unitName]) + n); l.at = Date.now(); saveDraft(d); drawCount();
+    }
+    function drawCount() {
+      const ids = Object.keys(d.lines).sort((a, b) => d.lines[b].at - d.lines[a].at);
+      let diffVal = 0, plus = 0, minus = 0;
+      const rows = ids.map(id => {
+        const p = items.find(x => x.id === id); if (!p) return '';
+        const sys = stock.get(id) ?? 0, cnt = counted(id), diff = nice(cnt - sys), c = baseCost(p);
+        if (diff > 0) plus++; if (diff < 0) minus++; if (c != null) diffVal += diff * c;
+        return `<div class="tr" style="${gl}"><span><b>${esc(p.name)}</b><br><small class="muted">system: ${breakdown(p, stock.get(id))}</small></span>
+          <span class="st-units">${unitsOf(p).map(u => `<label><small>${esc(u.name)}</small><input type="number" min="0" step="any" data-st-id="${id}" data-st-u="${esc(u.name)}" value="${d.lines[id].u[u.name] ?? ''}" placeholder="0"></label>`).join('')}</span>
+          <span class="r"><b>${breakdown(p, cnt)}</b></span><span class="r" style="color:${diff < 0 ? 'var(--bad)' : diff > 0 ? 'var(--ok)' : 'inherit'}">${diff > 0 ? '+' : ''}${diff}</span>${sc ? `<span class="r">${c != null && diff ? P.fmt(diff * c) : '—'}</span>` : ''}
+          <span><button class="icon-btn" type="button" data-st-rm="${id}" aria-label="Remove">✕</button></span></div>`;
+      }).join('');
+      g('#stKpis').innerHTML = `<div class="kpi"><small>Items counted</small><b>${ids.length}</b></div><div class="kpi good"><small>More than system</small><b>${plus}</b></div><div class="kpi bad"><small>Less than system</small><b>${minus}</b></div>${sc ? `<div class="kpi ${diffVal < 0 ? 'bad' : 'good'}"><small>Difference at cost</small><b>${P.fmt(diffVal)}</b></div>` : ''}`;
+      g('#stLines').innerHTML = ids.length ? `<div class="tr th" style="${gl}"><span>Item</span><span>Counted</span><span class="r">Total</span><span class="r">Difference</span>${sc ? '<span class="r">Value</span>' : ''}<span></span></div>` + rows : '<div class="empty">Scan your first item.</div>';
+    }
+    const gl = sc ? 'grid-template-columns:1.5fr 1.6fr 110px 90px 90px 36px' : 'grid-template-columns:1.6fr 1.8fr 120px 100px 36px';
+    g('#stScan').onkeydown = e => {
+      if (e.key !== 'Enter') return; e.preventDefault();
+      const hit = byCode(g('#stScan').value);
+      if (hit) { addQty(hit.p, hit.unit || unitsOf(hit.p)[unitsOf(hit.p).length - 1].name, 1); P.toast('+1 ' + (hit.unit || '') + ' · ' + hit.p.name); g('#stScan').value = ''; g('#stHits').innerHTML = ''; }
+      else { const h = g('#stHits').querySelector('[data-st-add]'); if (h) h.click(); else P.toast('No item with this barcode.', true); }
+    };
+    g('#stScan').oninput = () => {
+      const q = g('#stScan').value.trim().toLowerCase(); if (q.length < 2 || /^\d{6,}$/.test(q)) { g('#stHits').innerHTML = ''; return; }
+      g('#stHits').innerHTML = items.filter(p => [p.name, p.sku].join(' ').toLowerCase().includes(q)).slice(0, 8).map(p => `<button type="button" data-st-add="${p.id}">${esc(p.name)}</button>`).join('');
+    };
+    g('#stHits').onclick = e => { const t = e.target.closest('[data-st-add]'); if (!t) return; const p = items.find(x => x.id === t.dataset.stAdd); if (!d.lines[p.id]) { d.lines[p.id] = { u: {}, at: Date.now() }; saveDraft(d); } g('#stScan').value = ''; g('#stHits').innerHTML = ''; drawCount(); const inp = g(`[data-st-id="${p.id}"]`); if (inp) inp.focus(); };
+    g('#stCat').onchange = () => { const c = g('#stCat').value; if (!c) return; items.filter(p => p.category === c && p.is_active !== false).forEach(p => { if (!d.lines[p.id]) d.lines[p.id] = { u: {}, at: 0 }; }); saveDraft(d); g('#stCat').value = ''; drawCount(); };
+    g('#stLines').oninput = e => { const t = e.target.closest('[data-st-id]'); if (!t) return; d.lines[t.dataset.stId].u[t.dataset.stU] = t.value; saveDraft(d); };
+    g('#stLines').onchange = e => { if (e.target.closest('[data-st-id]')) drawCount(); };
+    g('#stLines').onclick = e => { const t = e.target.closest('[data-st-rm]'); if (t) { delete d.lines[t.dataset.stRm]; saveDraft(d); drawCount(); } };
+    g('#stClear').onclick = async () => { if (await P.confirm('Start over?', 'This deletes the count on this device.', 'Delete the count')) { P.save(DKEY(), null); stocktake(); } };
+    g('#stXlsx').onclick = async () => {
+      try {
+        const X = await P.loadXlsx(), wb = X.utils.book_new();
+        const rows = Object.keys(d.lines).map(id => { const p = items.find(x => x.id === id); if (!p) return null; const sys = stock.get(id) ?? 0, cnt = counted(id), c = baseCost(p); return [p.name, p.category || '', p.barcode || '', nice(sys), nice(cnt), nice(cnt - sys), baseName(p), sc && c != null ? P.r2((cnt - sys) * c) : '']; }).filter(Boolean);
+        X.utils.book_append_sheet(wb, X.utils.aoa_to_sheet([['Item', 'Category', 'Barcode', 'System', 'Counted', 'Difference', 'Unit', 'Difference at cost'], ...rows]), 'Stock count');
+        X.writeFile(wb, `${P.biz.slug || 'shop'}-stock-count-${P.today()}.xlsx`);
+      } catch (e) { P.err(e); }
+    };
+    g('#stApply').onclick = async () => {
+      const ids = Object.keys(d.lines);
+      const lines = ids.map(id => ({ product_id: id, counted: nice(counted(id)) }));
+      if (g('#stZero').checked) items.filter(p => !d.lines[p.id] && (stock.get(p.id) || 0) > 0).forEach(p => lines.push({ product_id: p.id, counted: 0 }));
+      if (!lines.length) return P.toast('Nothing counted yet.', true);
+      const zeroed = lines.length - ids.length;
+      if (!(await P.confirm('Apply the count?', `Stock will be set to what you counted for <b>${ids.length}</b> item(s)${zeroed ? ` and to <b>zero</b> for ${zeroed} item(s) you did not count` : ''}. Every change is kept in each item's history.`, 'Apply'))) return;
+      try {
+        let done = 0;
+        for (let i = 0; i < lines.length; i += 500) {
+          const r = await sb.rpc('mc_saas_apply_stocktake', { p_business_id: P.biz.id, p_lines: lines.slice(i, i + 500), p_note: 'Stock count ' + P.today() });
+          if (r.error) throw r.error; done += r.data.items;
+        }
+        P.save(DKEY(), null); loaded = false; await loadItems(true); P.refreshStock && P.refreshStock();
+        P.toast(`✅ Stock count applied to ${done} item(s).`);
+      } catch (e) { P.err(e); }
+    };
+    drawCount(); g('#stScan').focus();
+  }
+  $('itCount').onclick = () => stocktake();
+
+  /* ================= BARCODE & PRICE LABELS ================= */
+  const loadJsBarcode = () => window.JsBarcode ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = 'https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js'; s.onload = res; s.onerror = () => rej(new Error('Could not load the barcode tool. Check the internet.')); document.head.appendChild(s); });
+  const ean13 = body12 => { const d = body12.split('').map(Number); const sum = d.reduce((t, x, i) => t + x * (i % 2 ? 3 : 1), 0); return body12 + ((10 - sum % 10) % 10); };
+  function newCode() {
+    // in-store EAN-13 starting with 2 (reserved for shop use, never clashes with factory barcodes)
+    const used = new Set(items.map(p => (p.barcode || '').trim()));
+    for (let i = 0; i < 50; i++) { const c = ean13('2' + String(Date.now()).slice(-7) + String(Math.floor(Math.random() * 1e4)).padStart(4, '0')); if (!used.has(c)) return c; }
+    return ean13('2' + String(Math.floor(Math.random() * 1e11)).padStart(11, '0'));
+  }
+  const SIZES = { '38x25': { w: 38, h: 25, name: 'Small label 38 × 25 mm' }, '50x30': { w: 50, h: 30, name: 'Label 50 × 30 mm' }, '58x40': { w: 58, h: 40, name: 'Big label 58 × 40 mm' }, 'a4': { w: 63.5, h: 38.1, name: 'A4 sheet — 21 labels (3 × 7)' } };
+  async function labels() {
+    if (!loaded) await loadItems(true);
+    let list = sel.size ? items.filter(p => sel.has(p.id)) : filtered();
+    if (!list.length) return P.toast('Select the items to print (tick them in the list).', true);
+    if (list.length > 300) list = list.slice(0, 300);
+    const noCode = list.filter(p => !(p.barcode || '').trim());
+    const pref = P.load('label-prefs', { size: '50x30', name: true, price: '1', shop: true, copies: '1' });
+    const b = P.modal('🏷️ Print barcode labels', `<p class="muted small">${list.length} item(s)${sel.size ? ' selected' : ' in the list'}.${noCode.length ? ` <b>${noCode.length}</b> have no barcode yet.` : ''}</p>
+      ${noCode.length ? `<button class="btn" type="button" id="lbGen">Create barcodes for the ${noCode.length} item(s) without one</button>` : ''}
+      <div class="row4"><div><label for="lbSize">Label</label><select id="lbSize">${Object.entries(SIZES).map(([k, v]) => `<option value="${k}" ${pref.size === k ? 'selected' : ''}>${v.name}</option>`).join('')}</select></div>
+      <div><label for="lbPrice">Price on the label</label><select id="lbPrice"><option value="1" ${pref.price === '1' ? 'selected' : ''}>First unit price</option><option value="2" ${pref.price === '2' ? 'selected' : ''}>Second unit price</option><option value="both" ${pref.price === 'both' ? 'selected' : ''}>Both prices</option><option value="0" ${pref.price === '0' ? 'selected' : ''}>No price</option></select></div>
+      <div><label for="lbCopies">Copies of each</label><select id="lbCopies"><option value="1">1</option><option value="2">2</option><option value="5">5</option><option value="10">10</option><option value="stock">= stock in first unit</option></select></div><div></div></div>
+      <label class="check"><input type="checkbox" id="lbName" ${pref.name ? 'checked' : ''}> Item name</label><label class="check"><input type="checkbox" id="lbShop" ${pref.shop ? 'checked' : ''}> Shop name</label>
+      <div id="lbPreview" class="lb-preview"></div>
+      <div class="sheet-foot"><button class="btn primary" type="button" id="lbPrint">🖨️ Print labels</button></div>`, { wide: true });
+    const g = id => b.querySelector(id);
+    g('#lbCopies').value = pref.copies || '1';
+    if (g('#lbGen')) g('#lbGen').onclick = async () => {
+      try {
+        for (const p of noCode) { const code = newCode(); const r = await sb.from('mc_saas_products').update({ barcode: code, updated_at: new Date().toISOString() }).eq('id', p.id).eq('business_id', P.biz.id); if (r.error) throw r.error; p.barcode = code; }
+        P.toast(`✅ ${noCode.length} barcode(s) created and saved.`); P.loadData().catch(() => { }); P.close(); labels();
+      } catch (e) { P.err(e); }
+    };
+    const opts = () => ({ size: g('#lbSize').value, price: g('#lbPrice').value, copies: g('#lbCopies').value, name: g('#lbName').checked, shop: g('#lbShop').checked });
+    async function labelHtml(p, o) {
+      await loadJsBarcode();
+      const code = (p.barcode || '').trim(), S = SIZES[o.size];
+      let svg = '';
+      if (code) {
+        const el = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        try { JsBarcode(el, code, { format: /^\d{13}$/.test(code) ? 'EAN13' : /^\d{8}$/.test(code) ? 'EAN8' : 'CODE128', displayValue: true, fontSize: 14, height: 40, margin: 0, width: 1.6 }); }
+        catch (_) { JsBarcode(el, code, { format: 'CODE128', displayValue: true, fontSize: 14, height: 40, margin: 0, width: 1.6 }); }
+        el.setAttribute('preserveAspectRatio', 'xMidYMid meet'); el.removeAttribute('width'); el.removeAttribute('height'); svg = el.outerHTML;
+      }
+      const pr = [o.price === '1' || o.price === 'both' ? (p.price1 != null ? `${P.fmt(p.price1)}${o.price === 'both' ? ' / ' + esc(p.label1 || '') : ''}` : '') : '', o.price === '2' || o.price === 'both' ? (p.price2 != null ? `${P.fmt(p.price2)}${o.price === 'both' ? ' / ' + esc(p.label2 || '') : ''}` : '') : ''].filter(Boolean).join(' · ');
+      return `<div class="lb" style="width:${S.w}mm;height:${S.h}mm">${o.shop ? `<div class="lb-shop">${esc(P.biz.company_name)}</div>` : ''}${o.name ? `<div class="lb-name">${esc(p.name)}</div>` : ''}${svg ? `<div class="lb-code">${svg}</div>` : '<div class="lb-code lb-none">no barcode</div>'}${pr ? `<div class="lb-price">${pr}</div>` : ''}</div>`;
+    }
+    const css = S => `*{box-sizing:border-box;margin:0}body{font-family:Arial,Helvetica,sans-serif;color:#000}.lb{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:1.2mm 1.5mm;overflow:hidden;page-break-inside:avoid;text-align:center}
+      .lb-shop{font-size:6.5pt;font-weight:700;letter-spacing:.2px}.lb-name{font-size:7.5pt;line-height:1.1;max-height:2.3em;overflow:hidden;width:100%}.lb-code{flex:1;width:100%;min-height:0;display:flex;align-items:center;justify-content:center}.lb-code svg{width:100%;height:100%;max-height:100%}
+      .lb-price{font-size:11pt;font-weight:800}.lb-none{font-size:7pt;color:#888}`;
+    async function build(o) {
+      const S = SIZES[o.size], out = [];
+      for (const p of list) { const n = o.copies === 'stock' ? Math.max(0, Math.min(200, Math.floor((stock.get(p.id) || 0) / (factor(p, p.label1) || 1)))) : Number(o.copies) || 1; const h = await labelHtml(p, o); for (let i = 0; i < n; i++) out.push(h); }
+      const page = o.size === 'a4' ? `@page{size:A4;margin:10.7mm 7.2mm}.sheet{display:grid;grid-template-columns:repeat(3,${S.w}mm);grid-auto-rows:${S.h}mm;column-gap:2.5mm}` : `@page{size:${S.w}mm ${S.h}mm;margin:0}.lb{page-break-after:always}`;
+      return { html: `<!doctype html><html><head><meta charset="utf-8"><style>${css(S)}${page}</style></head><body>${o.size === 'a4' ? `<div class="sheet">${out.join('')}</div>` : out.join('')}</body></html>`, count: out.length };
+    }
+    async function preview() { try { const o = opts(); const h = await labelHtml(list[0], o); g('#lbPreview').innerHTML = `<style>${css(SIZES[o.size])}</style><p class="muted small">Preview</p><div class="lb-frame">${h}</div>`; } catch (e) { g('#lbPreview').textContent = e.message; } }
+    b.querySelectorAll('select,input').forEach(i => i.addEventListener('change', preview)); preview();
+    g('#lbPrint').onclick = async () => {
+      const o = opts(); P.save('label-prefs', o);
+      try { const r = await build(o); if (!r.count) return P.toast('Nothing to print (copies = 0).', true); P.printHtml(r.html); P.toast(`🖨️ ${r.count} label(s) sent to the printer.`); } catch (e) { P.err(e); }
+    };
+  }
+  $('itLabels').onclick = () => labels();
 
   /* ================= SUPPLIERS & PURCHASES ================= */
   let suppliers = [], purchases = [];
