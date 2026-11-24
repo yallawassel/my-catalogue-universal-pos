@@ -1,12 +1,12 @@
--- My Catalogue agent query for AntiSoft (database Data2026) — READ-ONLY.
--- One row per AntiSoft item that is not stopped. Units shown online:
+-- My Catalogue agent query for POS (database Data2026) — READ-ONLY.
+-- One row per POS item that is not stopped. Units shown online:
 --   * item has a Packet AND a Box  -> Unit1 = Packet, Unit2 = Box (the single piece stays in-store only)
 --   * otherwise                    -> Unit1 = the item's main unit, Unit2 = its Packet / Box / next bigger unit
---   Pieces1 / Pieces2 = how many main units (AntiSoft base unit) each shown unit holds, e.g. BOX = 270
---   Price1 / Price2   = AntiSoft selling price of that unit (empty = no price in AntiSoft = "price on request")
+--   Pieces1 / Pieces2 = how many main units (POS base unit) each shown unit holds, e.g. BOX = 270
+--   Price1 / Price2   = POS selling price of that unit (empty = no price in your POS = "price on request")
 --   Barcode           = barcode of Unit1 (falls back to the item's first barcode)
---   Stock             = AntiSoft current quantity, in the main unit (negative is shown as sold out)
---   Pic               = picture file name set in AntiSoft (Pics\\PicsItem folder), uploaded by the agent
+--   Stock             = POS current quantity, in the main unit (negative is shown as sold out)
+--   Pic               = picture file name set in your POS (Pics\\PicsItem folder), uploaded by the agent
 WITH U AS (
     -- the item's main (base) unit
     SELECT v.ItemID, LTRIM(RTRIM(ISNULL(v.UnitFileName, ''))) AS UName, CAST(1 AS float) AS Qty,

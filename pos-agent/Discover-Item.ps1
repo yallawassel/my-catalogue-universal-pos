@@ -1,4 +1,4 @@
-# My Catalogue - show everything AntiSoft stores for ONE item (READ-ONLY: only reads, never changes anything)
+# My Catalogue - show everything POS stores for ONE item (READ-ONLY: only reads, never changes anything)
 param([string]$ItemId = '540')
 $ErrorActionPreference = 'Continue'
 $here = Split-Path -Parent $MyInvocation.MyCommand.Path

@@ -20,6 +20,6 @@
 - No SQL migration is required for this admin/UI enhancement; it uses the existing `mc_saas_product_units.is_active` and `conversion_configured` columns.
 - No stock quantities are initialized or changed.
 - Online reservations remain disabled unless separately enabled by an authorized user.
-- No AntiSoft connector is activated, and no AntiSoft database is accessed.
+- No POS connector is activated, and no POS database is accessed.
 - Use the My Catalogue staging Supabase project only. Do not use White Pack's live catalogue project.
 - Existing unit records are not automatically deleted or rewritten. Review and deactivate a generic/unused second unit only when you are sure it is not needed.

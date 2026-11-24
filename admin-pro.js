@@ -368,7 +368,7 @@
     return {
       endpoint: fnUrl(), apikey: (window.MC && MC.publishableKey) || '', connectorKey: key,
       source: 'sqlserver', syncMode: permission === 'price' ? 'price' : 'full', markupPercent: 0, includeStock: permission === 'full_stock', autoApply: false,
-      sqlServer: { connectionString: 'Server=.\\SQLEXPRESS;Database=Data2025;User Id=mc_readonly;Password=CHANGE_ME;ApplicationIntent=ReadOnly;Encrypt=False;TrustServerCertificate=True', queryFile: 'antisoft-products.sql', timeoutSeconds: 60 },
+      sqlServer: { connectionString: 'Server=.\\SQLEXPRESS;Database=Data2025;User Id=mc_readonly;Password=CHANGE_ME;ApplicationIntent=ReadOnly;Encrypt=False;TrustServerCertificate=True', queryFile: 'pos-products.sql', timeoutSeconds: 60 },
       csv: { folder: 'C:\\POS\\Exports', pattern: '*.csv', delimiter: ',', encoding: 'UTF8' },
       columns: { barcode: 'Barcode', posProductId: 'ItemID', sku: 'SKU', name: 'Name', category: 'Category', unit1: 'Unit1', price1: 'Price1', unit2: 'Unit2', price2: 'Price2', stock: 'Stock', description: 'Description' },
       logFolder: 'logs'
@@ -391,11 +391,11 @@
   });
   function guide(kind) {
     const g = $('lcGuide'); g.style.display = 'block'; const url = esc(fnUrl());
-    if (kind === 'windows') g.innerHTML = `<h3>🖥️ Windows POS (AntiSoft / SQL Server) — setup</h3><ol class="mc-steps">
-      <li><b>Create a read-only SQL login</b> on the POS server (run <code>pos-agent/sql/create-readonly-login.sql</code> in SQL Server Management Studio as administrator). It can only <i>read</i> — it cannot change or delete anything in AntiSoft.</li>
+    if (kind === 'windows') g.innerHTML = `<h3>🖥️ Windows POS (SQL Server) — setup</h3><ol class="mc-steps">
+      <li><b>Create a read-only SQL login</b> on the POS server (run <code>pos-agent/sql/create-readonly-login.sql</code> in SQL Server Management Studio as administrator). It can only <i>read</i> — it cannot change or delete anything in your POS.</li>
       <li><b>Copy the <code>pos-agent</code> folder</b> from this package to the POS PC, e.g. <code>C:\\MyCatalogueAgent</code>.</li>
       <li><b>Create a connector key</b> below and press <i>Download config.json</i>. Put the file in the agent folder and replace <code>CHANGE_ME</code> with the read-only password.</li>
-      <li><b>Map your AntiSoft columns</b>: run <code>sql/antisoft-discover-columns.sql</code>, then adjust <code>antisoft-products.sql</code> so it returns Barcode, ItemID, Name, Category, Unit1, Price1, Unit2, Price2 (and Stock if wanted).</li>
+      <li><b>Map your POS columns</b>: run <code>sql/pos-discover-columns.sql</code>, then adjust <code>pos-products.sql</code> so it returns Barcode, ItemID, Name, Category, Unit1, Price1, Unit2, Price2 (and Stock if wanted).</li>
       <li><b>Dry run</b>: right-click <code>Run-DryRun.cmd</code> → Run. It shows exactly what would change — nothing is saved.</li>
       <li><b>Go live</b>: run <code>Install-Schedule.cmd</code> as administrator to sync automatically every 15 minutes (set <code>"autoApply": true</code> in config.json first).</li></ol>`;
     else if (kind === 'folder') g.innerHTML = `<h3>📁 Any POS with Excel/CSV export — setup</h3><ol class="mc-steps"><li>Set your POS to export its product/price list as CSV into one folder (e.g. <code>C:\\POS\\Exports</code>). Many POS systems can schedule this.</li><li>Copy the <code>pos-agent</code> folder to that PC and download <code>config.json</code> after creating a key below.</li><li>In config.json set <code>"source": "csv"</code>, the folder path, and the column names used by your export under <code>"columns"</code>.</li><li>Run <code>Run-DryRun.cmd</code> to preview, then <code>Install-Schedule.cmd</code> to automate. Each new export file is processed once, then moved into a <code>processed</code> sub-folder.</li></ol>`;

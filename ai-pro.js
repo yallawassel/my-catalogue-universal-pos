@@ -64,7 +64,7 @@
     const n = ap.rows.filter(r => !r.done && !r.result).length;
     const need = n * creditsPer();
     $('apEstimate').innerHTML = !ap.rows.length ? `You have <b>${balance}</b> credits. Choose photos, then press <b>Prepare list</b>.` :
-      `${n} photo${n === 1 ? '' : 's'} × ${creditsPer()} credit = <b>${need} credits</b> · you have <b style="color:${balance >= need ? '#047857' : '#be123c'}">${balance}</b>${balance < need ? ' — buy a credit pack above, or remove some photos.' : ''}`;
+      `${n} photo${n === 1 ? '' : 's'} × ${creditsPer()} credit = <b>${need} credits</b> · you have <b style="color:${balance >= need ? '#047857' : '#be123c'}">${balance}</b>${balance < need ? (MC.inPlayApp ? ' — remove some photos.' : ' — buy a credit pack above, or remove some photos.') : ''}`;
   }
   $('apQuality').addEventListener('change', estimate);
   $('apSource').addEventListener('change', () => {

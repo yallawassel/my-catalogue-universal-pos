@@ -1,4 +1,4 @@
-# My Catalogue — find where AntiSoft keeps item quantities (READ-ONLY, SELECT on system views + TOP 3).
+# My Catalogue — find where POS keeps item quantities (READ-ONLY, SELECT on system views + TOP 3).
 $ErrorActionPreference = 'Continue'
 $here = Split-Path -Parent $MyInvocation.MyCommand.Path
 $out = Join-Path $here 'discover-stock.txt'

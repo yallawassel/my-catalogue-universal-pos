@@ -1,6 +1,6 @@
 -- Create a dedicated READ-ONLY login for the My Catalogue agent.
 -- Run in SSMS as a SQL Server administrator. Change the password first!
--- The agent must NEVER use the normal AntiSoft 'dbo'/'sa' account.
+-- The agent must NEVER use the normal POS 'dbo'/'sa' account.
 USE master;
 IF NOT EXISTS (SELECT 1 FROM sys.server_principals WHERE name = 'mc_readonly')
     CREATE LOGIN mc_readonly WITH PASSWORD = 'Change-This-Strong#Password-2026', CHECK_POLICY = ON, DEFAULT_DATABASE = Data2025;

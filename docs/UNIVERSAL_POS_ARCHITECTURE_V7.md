@@ -72,8 +72,8 @@ An adapter must identify which source fields are authoritative and must not inve
 - API secrets belong in a managed server-side secret store.
 - Local database credentials stay on the business PC in the local agent's protected configuration and use a dedicated read-only account.
 - No direct browser-to-SQL connection and no public internet exposure of a POS database.
-- The AntiSoft connector is planned only. It is not connected or active.
-- Work only in the My Catalogue staging Supabase project. Never touch White Pack's live project or write to AntiSoft.
+- the POS connector is planned only. It is not connected or active.
+- Work only in the My Catalogue staging Supabase project. Never touch White Pack's live project or write to POS.
 
 ## Current implementation status in v7 package
 
@@ -81,6 +81,6 @@ An adapter must identify which source fields are authoritative and must not inve
 - POS compatibility questionnaire and business-scoped connection-profile UI: added in v7 package; requires the additive SQL migration.
 - API adapters: not implemented.
 - Windows local-agent adapters: not implemented.
-- AntiSoft: not connected; dedicated read-only account and field mapping are prerequisites.
+- POS: not connected; dedicated read-only account and field mapping are prerequisites.
 - Automatic scheduling: not implemented; saved profiles default to manual.
 - Saving a profile does not mark it connected or trigger a sync.

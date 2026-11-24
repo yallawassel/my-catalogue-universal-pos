@@ -1,4 +1,4 @@
-# My Catalogue - where does AntiSoft keep item pictures? (READ-ONLY: only reads, never changes anything)
+# My Catalogue - where does POS keep item pictures? (READ-ONLY: only reads, never changes anything)
 $ErrorActionPreference = 'Continue'
 $here = Split-Path -Parent $MyInvocation.MyCommand.Path
 $out = Join-Path $here 'discover-photos.txt'
@@ -33,14 +33,14 @@ if ($cols) {
 Say ''; Say "=== Columns of ItemFile ==="
 Dump (Query "SELECT c.name AS col, ty.name AS typ FROM sys.columns c JOIN sys.types ty ON ty.user_type_id=c.user_type_id WHERE c.object_id=OBJECT_ID('dbo.ItemFile') ORDER BY c.column_id") 200
 
-Say ''; Say "=== Where AntiSoft is installed (running programs) ==="
+Say ''; Say "=== Where POS is installed (running programs) ==="
 $dirs = New-Object System.Collections.Generic.List[string]
 Get-Process -ErrorAction SilentlyContinue | Where-Object { $_.Path -and ($_.Path -match 'anti|soft' -and $_.Path -notmatch '\\Windows\\|Microsoft|Google|Mozilla|Claude') } | ForEach-Object { Say ('   ' + $_.ProcessName + ' -> ' + $_.Path); $d = Split-Path $_.Path; if (-not $dirs.Contains($d)) { $dirs.Add($d) } }
 foreach ($root in @('C:\', 'D:\', 'E:\')) { if (Test-Path $root) { Get-ChildItem $root -Directory -ErrorAction SilentlyContinue | Where-Object { $_.Name -match 'anti' } | ForEach-Object { if (-not $dirs.Contains($_.FullName)) { $dirs.Add($_.FullName) } } } }
 foreach ($pf in @($env:ProgramFiles, ${env:ProgramFiles(x86)}, $env:ProgramData)) { if ($pf -and (Test-Path $pf)) { Get-ChildItem $pf -Directory -ErrorAction SilentlyContinue | Where-Object { $_.Name -match 'anti' } | ForEach-Object { if (-not $dirs.Contains($_.FullName)) { $dirs.Add($_.FullName) } } } }
 foreach ($d in $dirs) { Say ('   folder: ' + $d) }
 
-Say ''; Say "=== Pictures saved in the last 3 hours (AntiSoft folders, Documents, Pictures, Desktop) ==="
+Say ''; Say "=== Pictures saved in the last 3 hours (POS folders, Documents, Pictures, Desktop) ==="
 $since = (Get-Date).AddHours(-3)
 $search = @($dirs) + @([Environment]::GetFolderPath('MyDocuments'), [Environment]::GetFolderPath('MyPictures'), [Environment]::GetFolderPath('Desktop'))
 $found = 0
@@ -51,7 +51,7 @@ foreach ($d in $search) {
     ForEach-Object { $found++; Say ('   ' + $_.LastWriteTime.ToString('HH:mm') + '  ' + [math]::Round($_.Length / 1KB) + ' KB  ' + $_.FullName) }
 }
 if ($found -eq 0) { Say '   (none found)' }
-Say ''; Say "=== Most recent pictures in AntiSoft folders (any date) ==="
+Say ''; Say "=== Most recent pictures in your POS folders (any date) ==="
 foreach ($d in $dirs) {
   Get-ChildItem $d -Recurse -File -ErrorAction SilentlyContinue -Include *.jpg, *.jpeg, *.png, *.bmp | Sort-Object LastWriteTime -Descending | Select-Object -First 10 |
     ForEach-Object { Say ('   ' + $_.LastWriteTime.ToString('yyyy-MM-dd HH:mm') + '  ' + $_.FullName) }

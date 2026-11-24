@@ -20,7 +20,7 @@
 
 If any identifier produces multiple matches, synchronization stops for that row and requires manual review. Product name is never used as an automatic matching key.
 
-**Important:** the current spreadsheet importer still matches at product level using the legacy main barcode field. The new hybrid stock schema stores multiple unit-level barcodes, but the spreadsheet matching flow is not yet unit-aware. Some POS systems, including AntiSoft, may store different barcodes for different packaging units. Before enabling an automatic connector or unit-aware import, map product IDs and unit IDs safely. Do not treat a box barcode and a packet barcode as interchangeable.
+**Important:** the current spreadsheet importer still matches at product level using the legacy main barcode field. The new hybrid stock schema stores multiple unit-level barcodes, but the spreadsheet matching flow is not yet unit-aware. Some POS systems, including POS, may store different barcodes for different packaging units. Before enabling an automatic connector or unit-aware import, map product IDs and unit IDs safely. Do not treat a box barcode and a packet barcode as interchangeable.
 
 ## Product names and catalogue content
 
@@ -49,7 +49,7 @@ For reliable barcode matching, format barcode columns as text in Excel so leadin
 ## POS connector roadmap
 
 - **Spreadsheet import:** available in this build.
-- **AntiSoft Windows connector:** planned. It must run locally, use a dedicated read-only SQL account, read only approved fields, and send selected data one way over HTTPS. It is not active in this build.
+- **POS Windows connector:** planned. It must run locally, use a dedicated read-only SQL account, read only approved fields, and send selected data one way over HTTPS. It is not active in this build.
 - **Other POS connectors:** can be added through vendor APIs, scheduled exports, or separate local agents. Each connector needs its own field mapping and security review.
 - Never expose SQL Server to the public internet. Never place database passwords, Supabase service-role keys, or connector secrets in browser code or a public repository.
 
@@ -59,12 +59,12 @@ For reliable barcode matching, format barcode columns as text in Excel so leadin
 - Each job and per-product change is recorded in `mc_saas_sync_jobs` and `mc_saas_sync_changes`.
 - Ambiguous identifiers are not auto-updated.
 - No missing product is automatically deleted.
-- This release implements file-based synchronization. No POS API or direct AntiSoft connection is claimed to be active.
+- This release implements file-based synchronization. No POS API or direct POS connection is claimed to be active.
 - Change history is audit data in this release; automated one-click rollback is a later enhancement.
 
 ## Hybrid stock management
 
-See `HYBRID_STOCK_GUIDE.md` and `HYBRID_STOCK_MIGRATION.sql` for the additive hybrid-stock upgrade. The migration adds per-unit barcodes and conversion factors, base-unit physical stock, online reservations, stock movement history, POS unit mappings and idempotent stock-sync events. Reservation enforcement is disabled by default. Do not enable it until each unit conversion and physical stock balance has been checked. This does not activate the AntiSoft connector.
+See `HYBRID_STOCK_GUIDE.md` and `HYBRID_STOCK_MIGRATION.sql` for the additive hybrid-stock upgrade. The migration adds per-unit barcodes and conversion factors, base-unit physical stock, online reservations, stock movement history, POS unit mappings and idempotent stock-sync events. Reservation enforcement is disabled by default. Do not enable it until each unit conversion and physical stock balance has been checked. This does not activate the POS connector.
 
 ## First-time setup
 

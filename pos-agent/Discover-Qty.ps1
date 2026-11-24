@@ -1,4 +1,4 @@
-# My Catalogue — read the AntiSoft quantity views (READ-ONLY).
+# My Catalogue — read the POS quantity views (READ-ONLY).
 $ErrorActionPreference = 'Continue'
 $here = Split-Path -Parent $MyInvocation.MyCommand.Path
 $out = Join-Path $here 'discover-qty.txt'

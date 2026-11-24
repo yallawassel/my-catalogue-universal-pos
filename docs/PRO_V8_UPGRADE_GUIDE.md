@@ -15,7 +15,7 @@ tables are unchanged except for one small additive migration.
 | **Dashboard** | Greeting, KPI cards (products, categories, photo coverage, new orders), launch checklist with progress bar, recently updated products, quick-action tiles. |
 | **Sign-in system** | Split-screen sign-in page, Sign in / Create account tabs, show/hide password, password strength meter + confirm password, **magic-link email sign-in**, friendly error messages, Google & Microsoft buttons, sign-out always in the sidebar. |
 | **Import & Export Center** | Products → Excel / CSV (UTF-8, Arabic-safe), full JSON backup (settings, products, category order & photos, units), orders → Excel by date range, photo list, printable price list (save as PDF), restore backup, all templates in one place. |
-| **Live POS connector** | Connector keys (hashed, revocable), `mc-pos-connector` Edge Function, Windows agent for AntiSoft / SQL Server (read-only), CSV export-folder watcher, HTTPS API for cloud POS. Dry-run preview, sync history, optional stock. |
+| **Live POS connector** | Connector keys (hashed, revocable), `mc-pos-connector` Edge Function, Windows agent for POS / SQL Server (read-only), CSV export-folder watcher, HTTPS API for cloud POS. Dry-run preview, sync history, optional stock. |
 | **Photo Studio (free)** | In-browser auto pro photos: removes plain backgrounds, centres & frames, auto light/colour, soft floor or drop shadow, 6 background styles. Single photo or **bulk** with review before saving. Products without a photo get a **branded photo card**. No AI credits used. |
 | **Storefront** | Search now finds products across all categories, cart is saved on the device (survives refresh), cart button shows the total, add-to-cart animation, brand-tinted placeholders, order confirmation message. |
 
@@ -70,9 +70,9 @@ tables are unchanged except for one small additive migration.
 
 - **Photo Studio** removes *plain* backgrounds (wall, table, paper). Busy backgrounds are kept and the
   photo is enhanced and framed instead — the preview tags each result so you can untick it.
-- **AntiSoft** column names are not documented publicly; `antisoft-products.sql` has `<<placeholders>>`
-  you fill after running `sql/antisoft-discover-columns.sql`. The agent refuses to run until they are filled.
+- **POS** column names are not documented publicly; `pos-products.sql` has `<<placeholders>>`
+  you fill after running `sql/pos-discover-columns.sql`. The agent refuses to run until they are filled.
 - The connector, agent and UI were syntax-checked and logic-tested against a simulated database in this
-  build, **not** against your live Supabase project or a real AntiSoft PC. Run the checklist on staging.
+  build, **not** against your live Supabase project or a real POS PC. Run the checklist on staging.
 - AI image generation stays paused until the platform owner sets `AI_IMAGE_GENERATION_ENABLED=true`.
 - Billing/subscriptions and automatic custom-domain hookup are still manual (unchanged from v7).

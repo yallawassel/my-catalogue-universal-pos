@@ -12,7 +12,7 @@
 
   "sqlServer": {
     "connectionString": "Server=.\\SQLEXPRESS;Database=Data2025;User Id=mc_readonly;Password=CHANGE_ME;ApplicationIntent=ReadOnly;Encrypt=False;TrustServerCertificate=True",
-    "queryFile": "antisoft-products.sql",
+    "queryFile": "pos-products.sql",
     "timeoutSeconds": 60
   },
 

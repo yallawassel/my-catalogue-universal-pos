@@ -50,7 +50,7 @@
       <h1>Your products, beautifully online — in minutes.</h1>
       <p>Build a colourful branded catalogue, take WhatsApp orders, sync prices straight from your POS and turn everyday phone photos into studio-quality product shots.</p>
       <div class="mc-feats">
-        <div class="mc-feat"><span>🔌</span>Live POS connector — AntiSoft, cloud POS or any Excel export</div>
+        <div class="mc-feat"><span>🔌</span>Live POS connector — Windows POS, cloud POS or any Excel export</div>
         <div class="mc-feat"><span>📸</span>Auto pro photos — white background, shadow, perfect framing</div>
         <div class="mc-feat"><span>📊</span>One-click import &amp; export — Excel, CSV, full backups</div>
         <div class="mc-feat"><span>💬</span>WhatsApp ordering, quotations &amp; delivery tracking</div>
@@ -166,7 +166,7 @@
    <div class="mc-card"><h3>⚡ Quick actions</h3>
     <div class="mc-tiles">
      <button class="mc-tile" type="button" data-page="studio" style="--c:#0ea5e9"><span class="t-ic">📸</span><strong>Photo Studio</strong><small>Auto white background, shadow &amp; framing for all photos.</small></button>
-     <button class="mc-tile" type="button" data-page="connector" style="--c:#f43f5e"><span class="t-ic">🔌</span><strong>Live POS connector</strong><small>Prices &amp; products straight from AntiSoft or any POS.</small></button>
+     <button class="mc-tile" type="button" data-page="connector" style="--c:#f43f5e"><span class="t-ic">🔌</span><strong>Live POS connector</strong><small>Prices &amp; products straight from your POS.</small></button>
      <button class="mc-tile" type="button" data-page="data" style="--c:#10b981"><span class="t-ic">💾</span><strong>Backup &amp; export</strong><small>Excel, CSV and full JSON backups in one click.</small></button>
      <button class="mc-tile" type="button" data-page="design" style="--c:#14b8a6"><span class="t-ic">🎨</span><strong>Storefront design</strong><small>Pick one of 8 templates and your brand colour.</small></button>
      <a class="mc-tile" href="orders.html" style="--c:#06b6d4;text-decoration:none"><span class="t-ic">🧾</span><strong>Orders</strong><small>See WhatsApp orders and update their status.</small></a>
@@ -287,7 +287,7 @@
   <div class="domain" style="background:#f7fbf8;border-color:#cbded0">
     <h3 style="margin-top:0">Step 1 — POS compatibility checker</h3>
     <p class="hint">Tell us a little about your POS. Do not enter passwords, API keys, or database credentials here.</p>
-    <label for="posName">POS software name *</label><input id="posName" maxlength="120" placeholder="Example: AntiSoft, Local POS, My Store System">
+    <label for="posName">POS software name *</label><input id="posName" maxlength="120" placeholder="Example: Local POS, My Store System">
     <div class="grid">
       <div><label for="posEnvironment">Where does it run?</label><select id="posEnvironment"><option value="unknown">I'm not sure</option><option value="local">On a Windows PC / local server</option><option value="cloud">Online / cloud website</option><option value="mixed">Both local and cloud</option></select></div>
       <div><label for="posApiAvailable">Does the provider offer an API?</label><select id="posApiAvailable"><option value="unknown">I don't know</option><option value="yes">Yes</option><option value="no">No</option></select></div>
@@ -313,11 +313,11 @@
     <li>Connectors are one-way read-only from the source POS; no writes are sent back to POS software.</li>
     <li>Stock remains optional. The public catalogue will show In stock / Out of stock, not remaining quantities, once stock is configured.</li>
   </ul>
-  <div class="domain"><b>Current integration status</b><p class="hint">Excel/CSV import and the new <b>Live POS connector</b> (Windows agent for AntiSoft/SQL Server, export-folder watcher and HTTPS API) are available. Profiles here are planning notes; create a connector key in <a href="#connector" data-page="connector">Live POS connector</a> to start automatic synchronization. Always test with a dry run first.</p></div>
+  <div class="domain"><b>Current integration status</b><p class="hint">Excel/CSV import and the new <b>Live POS connector</b> (Windows agent for SQL Server POS, export-folder watcher and HTTPS API) are available. Profiles here are planning notes; create a connector key in <a href="#connector" data-page="connector">Live POS connector</a> to start automatic synchronization. Always test with a dry run first.</p></div>
 </section>
 <section data-page-id="stock" class="panel" id="stockManagementPanel"><div class="av-card" id="avCard">
 <div class="bn-top"><div><h2 style="margin:0">📦 Stock on your catalogue</h2><p class="hint" style="margin:4px 0 0">Mark products as sold out, type stock counts, and choose what customers see. Stock coming from your POS connector updates these numbers automatically.</p></div><button class="btn" id="avRefresh" type="button">↻ Refresh</button></div>
-<label class="av-all" id="avAllWrap"><input type="checkbox" id="avAll"><span><b>🟢 Sell everything — all products available</b><small>One switch: ignores stock, no "Sold out" labels, customers can order every product. Your AntiSoft stock keeps updating in the background. Switch it off to go back to your stock settings.</small></span></label>
+<label class="av-all" id="avAllWrap"><input type="checkbox" id="avAll"><span><b>🟢 Sell everything — all products available</b><small>One switch: ignores stock, no "Sold out" labels, customers can order every product. Your POS stock keeps updating in the background. Switch it off to go back to your stock settings.</small></span></label>
 <div class="av-settings">
 <label class="av-opt"><input type="checkbox" id="avShow"><span><b>Show stock on the catalogue</b><small>"Out of stock" and "Low stock" labels</small></span></label>
 <label class="av-opt"><input type="checkbox" id="avHide"><span><b>Hide sold-out products</b><small>Instead of showing them greyed out</small></span></label>
@@ -401,16 +401,16 @@
     <b>AI usage</b><p class="hint" id="aiCreditHelp" style="margin:5px 0 0">Chat uses 1 credit. AI Pro photos use 1 credit (medium) or 2 credits (high) per photo.</p>
   </div>
   <div class="mc-card" id="apCreditsCard" style="margin-bottom:16px;border:2px solid #99f6e4;background:linear-gradient(135deg,#f0fdfa,#fff)">
-   <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap"><h3 style="margin:0">💳 AI credits</h3><span class="pill ok" style="font-size:15px;padding:8px 14px!important" id="apBalance">… credits</span></div>
+   <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap"><h3 style="margin:0">✨ AI credits</h3><span class="pill ok" style="font-size:15px;padding:8px 14px!important" id="apBalance">… credits</span></div>
    <p class="hint" style="margin:6px 0 12px">1 credit = 1 AI pro photo (medium quality) · high quality = 2 credits · chat message = 1 credit. Credits never expire.</p>
-   <div class="mc-grid-3" id="apPacks"></div>
-   <div class="grid" style="margin-top:12px">
+   <div class="mc-grid-3 play-hide" id="apPacks"></div>
+   <div class="grid play-hide" style="margin-top:12px">
     <div><label for="apPayMethod">How will you pay?</label><select id="apPayMethod"><option value="whish">Whish Money</option><option value="omt">OMT</option><option value="cash">Cash</option><option value="bank">Bank transfer</option><option value="other">Other</option></select></div>
     <div><label for="apPayRef">Payment reference / sender name (optional)</label><input id="apPayRef" maxlength="200" placeholder="e.g. Whish transfer from 70 123 456"></div>
    </div>
-   <div class="domain" id="apPayInfo" style="margin-top:12px;padding:12px 14px;white-space:pre-wrap"></div>
-   <button class="btn primary" type="button" id="apRequest" style="margin-top:12px;width:100%" disabled>Choose a pack above</button>
-   <div id="apOrders" style="margin-top:12px"></div>
+   <div class="domain play-hide" id="apPayInfo" style="margin-top:12px;padding:12px 14px;white-space:pre-wrap"></div>
+   <button class="btn primary play-hide" type="button" id="apRequest" style="margin-top:12px;width:100%" disabled>Choose a pack above</button>
+   <div id="apOrders" class="play-hide" style="margin-top:12px"></div>
   </div>
   <div class="mc-card" id="apProCard" style="margin-bottom:16px;border:2px solid #fcd34d;background:linear-gradient(135deg,#fffbeb,#fff)">
    <h3 style="margin:0 0 4px">📸 AI Pro photos — phone photos → catalogue photos</h3>
@@ -568,11 +568,11 @@
  <h2>🔌 Live POS connector</h2>
  <div class="mc-card mc-main-sys" id="mainSysCard"><h3 style="margin:0 0 4px">🧭 Main system for stock, prices &amp; sales</h3><p class="hint" style="margin:0 0 10px">Choose which system is the boss. Only one should change stock and prices, so they never disagree.</p>
   <label class="mc-ms-opt"><input type="radio" name="mainSys" value="catalogue"><span><b>🧾 Raffi POS</b><small>For shops without a POS: sell in store with the Raffi POS (sales, stock, suppliers &amp; purchases, returns, reports). Online and in-store sales share one stock.</small></span></label>
-  <label class="mc-ms-opt"><input type="radio" name="mainSys" value="external"><span><b>🔌 My own POS (connected below)</b><small>For shops with a POS like AntiSoft: your POS is the main system. Items, prices and stock come only from it; the Raffi POS is hidden. The catalogue is your online shop and orders.</small></span></label>
+  <label class="mc-ms-opt"><input type="radio" name="mainSys" value="external"><span><b>🔌 My own POS (connected below)</b><small>For shops that already have a POS: your POS is the main system. Items, prices and stock come only from it; the Raffi POS is hidden. The catalogue is your online shop and orders.</small></span></label>
   <p class="hint" id="mainSysNote" style="margin:8px 0 0"></p></div>
  <p class="hint">Connect your POS so products, prices and (optionally) stock flow into your catalogue automatically. One-way and read-only: the connector never writes anything back to your POS, never deletes catalogue products, and keeps your own catalogue names, photos and descriptions.</p>
  <div class="mc-grid-3" style="margin:14px 0">
-  <div class="mc-feature" style="--c:#f43f5e"><h3><span class="ic">🖥️</span>Windows POS (AntiSoft &amp; SQL Server)</h3><p>Install the small Raffi agent on the POS PC. It reads with a read-only SQL login and pushes on a schedule.</p><button class="btn primary" type="button" id="lcGuideWindows">Show setup steps</button></div>
+  <div class="mc-feature" style="--c:#f43f5e"><h3><span class="ic">🖥️</span>Windows POS (SQL Server)</h3><p>Install the small Raffi agent on the POS PC. It reads with a read-only SQL login and pushes on a schedule.</p><button class="btn primary" type="button" id="lcGuideWindows">Show setup steps</button></div>
   <div class="mc-feature" style="--c:#0ea5e9"><h3><span class="ic">📁</span>Any POS that exports Excel/CSV</h3><p>Point the agent at your POS export folder. Every new export is synced automatically.</p><button class="btn" type="button" id="lcGuideFolder">Show setup steps</button></div>
   <div class="mc-feature" style="--c:#10b981"><h3><span class="ic">☁️</span>Cloud POS / developers</h3><p>Any system that can send JSON over HTTPS can push products with your connector key.</p><button class="btn" type="button" id="lcGuideApi">Show API details</button></div>
  </div>
@@ -580,7 +580,7 @@
  <div class="mc-card">
   <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap"><h3 style="margin:0">🔑 Connector keys</h3><button class="btn" type="button" id="lcRefresh">Refresh</button></div>
   <p class="hint">Each POS computer or system gets its own key. The full key is shown only once — keep it in the agent's config file, never in a public place. Revoke a key instantly if a PC is lost.</p>
-  <div class="grid"><div><label for="lcKeyName">Key name</label><input id="lcKeyName" maxlength="80" placeholder="e.g. AntiSoft – shop PC"></div><div><label for="lcKeyMode">Allowed changes</label><select id="lcKeyMode"><option value="price">Prices only (safest)</option><option value="full" selected>Products + prices</option><option value="full_stock">Products + prices + stock</option></select></div></div>
+  <div class="grid"><div><label for="lcKeyName">Key name</label><input id="lcKeyName" maxlength="80" placeholder="e.g. Shop PC"></div><div><label for="lcKeyMode">Allowed changes</label><select id="lcKeyMode"><option value="price">Prices only (safest)</option><option value="full" selected>Products + prices</option><option value="full_stock">Products + prices + stock</option></select></div></div>
   <button class="btn primary" type="button" id="lcCreateKey" style="margin-top:12px">＋ Create connector key</button>
   <div id="lcNewKey" class="hidden" style="margin-top:14px"></div>
   <div id="lcKeys" style="margin-top:14px"><div class="mc-empty">Loading keys…</div></div>
@@ -678,7 +678,7 @@ async function loadAiWallet(){
  if(r.error){badge.textContent='AI setup required';$('aiCreditHelp').textContent='Run AI_STUDIO_MIGRATION.sql in the Raffi Supabase project, deploy the mc-ai-studio Edge Function, and configure its secrets. Details: '+r.error.message;return;}
  const row=Array.isArray(r.data)?r.data[0]:r.data;const balance=Number(row?.credits_balance??row?.balance??0);
  badge.textContent='Credits available: '+balance.toLocaleString();
- $('aiCreditHelp').textContent='Chat uses 1 credit. AI Pro photos use 1 credit (medium) or 2 credits (high) per photo. Buy credit packs above.';document.dispatchEvent(new CustomEvent('mc:ai-wallet',{detail:{balance}}));
+ $('aiCreditHelp').textContent='Chat uses 1 credit. AI Pro photos use 1 credit (medium) or 2 credits (high) per photo.'+(MC.inPlayApp?'':' Buy credit packs above.');document.dispatchEvent(new CustomEvent('mc:ai-wallet',{detail:{balance}}));
 }
 function addAiChatLine(role,text){const log=$('aiChatLog'),p=document.createElement('div');p.style.cssText='margin:8px 0;padding:9px 11px;border-radius:9px;white-space:pre-wrap;overflow-wrap:anywhere;'+(role==='user'?'background:#eaf3ec;margin-left:12%':'background:#f3f5f3;margin-right:8%');const strong=document.createElement('b');strong.textContent=role==='user'?'You':'AI Assistant';const body=document.createElement('div');body.textContent=text;p.append(strong,body);log.appendChild(p);log.scrollTop=log.scrollHeight;}
 const aiHistory=[];

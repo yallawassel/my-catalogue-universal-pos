@@ -1,4 +1,4 @@
-# My Catalogue — how AntiSoft items use packets/boxes (READ-ONLY).
+# My Catalogue — how POS items use packets/boxes (READ-ONLY).
 $ErrorActionPreference = 'Continue'
 $here = Split-Path -Parent $MyInvocation.MyCommand.Path
 $out = Join-Path $here 'discover-units.txt'

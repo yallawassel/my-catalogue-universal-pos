@@ -14,7 +14,7 @@
 
 - Stock quantities remain uninitialized.
 - Reservations remain disabled by default.
-- No AntiSoft connection is active.
+- No POS connection is active.
 - No changes to White Pack's live Supabase project.
 - No database migration is required for these UI changes.
 

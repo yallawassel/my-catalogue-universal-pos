@@ -24,4 +24,4 @@ Do not enter SQL passwords, API tokens, Supabase service-role keys, or other sec
 
 ## Current status
 
-Excel/CSV import is available. API, local Windows agent, and custom adapters need separate development and security testing. AntiSoft remains planned only and is not connected.
+Excel/CSV import is available. API, local Windows agent, and custom adapters need separate development and security testing. POS remains planned only and is not connected.

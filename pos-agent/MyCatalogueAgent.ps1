@@ -82,7 +82,7 @@ function Read-SqlServer {
   $clean = [regex]::Replace($query, '(--[^\r\n]*)|(/\*[\s\S]*?\*/)', ' ')
   $forbidden = '\b(insert|update|delete|merge|drop|alter|create|truncate|exec|execute|grant|revoke|deny|backup|restore|dbcc|shutdown|kill|openrowset|opendatasource|into|xp_\w+|sp_\w+)\b'
   if ($clean -match $forbidden) { throw "SAFETY STOP: the query contains a forbidden keyword ('" + $Matches[1] + "'). Only read-only SELECT queries are allowed." }
-  if ($clean -match '<<') { throw "Open antisoft-products.sql and replace every <<...>> placeholder with your real AntiSoft column names (run sql\antisoft-discover-columns.sql to see them)." }
+  if ($clean -match '<<') { throw "Open your query file and replace every <<...>> placeholder with your real POS column names (run sql\pos-discover-columns.sql to see them)." }
   if ($clean.Trim() -notmatch '^(?i)(select|with)\b') { throw "SAFETY STOP: the query must start with SELECT or WITH." }
   $conn = New-Object System.Data.SqlClient.SqlConnection($cfg.sqlServer.connectionString)
   $conn.Open()
@@ -148,7 +148,7 @@ function Map-Rows($rows) {
     if ($cfg.includeStock) { $item.stock_qty = Num (Col $r $c.stock) }
     if ($item.barcode -or $item.pos_product_id -or $item.sku) { [void]$items.Add($item) }
   }
-  # AntiSoft-style data has one row per packaging unit. Group them into ONE product
+  # POS-style data has one row per packaging unit. Group them into ONE product
   # (smallest unit first) so the catalogue never gets duplicate products per barcode.
   if ($cfg.groupUnitsByProduct -ne $false) {
     $grouped = New-Object System.Collections.ArrayList
@@ -174,7 +174,7 @@ function Map-Rows($rows) {
   return ,$items
 }
 
-# ---------- product photos from the POS (e.g. AntiSoft Pics\PicsItem) ----------
+# ---------- product photos from the POS (e.g. POS Pics\PicsItem) ----------
 function Get-PhotoBytes([string]$path) {
   # resize to max 1200 px and save as JPEG (white background), so the catalogue stays fast
   Add-Type -AssemblyName System.Drawing
@@ -228,7 +228,7 @@ function Sync-Photos($rows, [bool]$isDry) {
         $isJpg = $raw.Length -gt 3 -and $raw[0] -eq 0xFF -and $raw[1] -eq 0xD8
         $isPng = $raw.Length -gt 3 -and $raw[0] -eq 0x89 -and $raw[1] -eq 0x50
         if (($isWebp -or $isJpg -or $isPng) -and $raw.Length -le 2900000) { $bytes = $raw }
-        else { throw ("this picture format cannot be read (" + [IO.Path]::GetFileName($t.path) + "). Save it again as JPG in AntiSoft.") }
+        else { throw ("this picture format cannot be read (" + [IO.Path]::GetFileName($t.path) + "). Save it again as JPG in your POS.") }
       }
       $res = Post-Connector @{ action = 'photo'; pos_product_id = $t.id; hash = $t.hash; image_base64 = [Convert]::ToBase64String($bytes) }
       if ($res.status -eq 'updated' -or $res.status -eq 'unchanged') { $sent++; $state[$t.id] = $t.hash }

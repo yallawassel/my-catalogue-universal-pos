@@ -23,7 +23,7 @@ test('shop-plus loads and exposes its API', () => {
   assert.equal(w.MCShopPlus.t('Send'), 'Send'); // English by default
 });
 
-test('AntiSoft inventory export: selling price, cost and barcode list are recognised', () => {
+test('POS inventory export: selling price, cost and barcode list are recognised', () => {
   const ctx = { window: {} }; vm.createContext(ctx);
   vm.runInContext(readFileSync(new URL('../excel-columns.js', import.meta.url), 'utf8'), ctx);
   const c = ctx.window.MCCols.read([

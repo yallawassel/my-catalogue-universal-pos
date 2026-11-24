@@ -85,7 +85,7 @@ Deno.serve(async (req) => {
     return json({ ok: true, business: { name: biz.company_name, slug: biz.slug, currency: biz.currency }, key: { name: k.name, permission: k.permission } });
   }
   if (action === "photo") {
-    // One product photo from the POS (e.g. AntiSoft item picture), already resized by the agent.
+    // One product photo from the POS (e.g. POS item picture), already resized by the agent.
     // A photo the business set in the catalogue itself is kept unless replace=true.
     if (k.permission === "price") return json({ error: "This key can only update prices." }, 403);
     const posId = str(body.pos_product_id, 80), hash = str(body.hash, 80).replace(/[^a-zA-Z0-9]/g, "").slice(0, 16) || "x";
@@ -184,7 +184,7 @@ Deno.serve(async (req) => {
     const unitSet = mode === "full" && !!u1 && raw.unit_only !== true;
     if (!barcode && !posId && !sku) { out.push({ i, action: "skip", reason: "No barcode, POS ID or SKU", name }); return; }
 
-    // 1. unit barcode (multi-barcode products, e.g. AntiSoft packaging units)
+    // 1. unit barcode (multi-barcode products, e.g. POS packaging units)
     let product: P | undefined; let unit: (typeof units)[number] | undefined; let match = "";
     if (barcode) {
       const ub = unitByBarcode.get(key(barcode)) || [];

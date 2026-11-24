@@ -23,4 +23,4 @@ This v4 update is UI and import workflow only. It does not execute SQL or activa
 - Imports match strictly by Unit ID + Product ID; product names are display-only and never used for matching.
 - Base units remain fixed at factor 1. Unknown secondary conversions remain unconfigured.
 - Unit-level barcode and price fields are supported. Existing product-level Label1/Label2 prices are synchronized when the imported unit corresponds to those legacy fields.
-- This update does not set physical stock, enable reservations, modify stock source, or connect AntiSoft.
+- This update does not set physical stock, enable reservations, modify stock source, or connect POS.
