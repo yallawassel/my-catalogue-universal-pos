@@ -20,9 +20,9 @@
 #adminDashboard .dashboard-intro{margin:0 0 15px;color:#637269;line-height:1.5}
 @media(max-width:700px){.admin-board{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.admin-tile{min-height:120px;padding:13px}}
 @media(max-width:390px){.admin-board{grid-template-columns:1fr}.admin-tile{min-height:unset}}
-</style><link rel="stylesheet" href="theme.css?v=42"><link rel="manifest" href="./manifest.webmanifest">
+</style><link rel="stylesheet" href="theme.css?v=43"><link rel="manifest" href="./manifest.webmanifest">
 <link rel="apple-touch-icon" href="./icon-192.png">
-<link rel="stylesheet" href="shop-admin.css?v=42"></head><body class="mc-admin"><main class="wrap"><div id="status" class="status" role="status">Connecting…</div>
+<link rel="stylesheet" href="shop-admin.css?v=43"></head><body class="mc-admin"><main class="wrap"><div id="status" class="status" role="status">Connecting…</div>
 <script>
 // Startup watchdog: turn a silent/stalled startup into a useful diagnostic.
 (function(){
@@ -1305,15 +1305,29 @@ sessionLoad().catch(e=>setStatus(e.message,true));
 <script>(()=>{const go=()=>{const b=window.MCAdmin&&MCAdmin.biz;if(!b||!window.MCAlerts){setTimeout(go,800);return}MCAlerts.mount(document.getElementById('mcAlertsDash'),()=>MCAdmin.biz.id)};go()})();</script>
 <script>(()=>{if(/[?&#]signup/.test(location.search+location.hash)){const go=(n)=>{const t=document.getElementById('tabSignUp'),panel=document.getElementById('authPanel');if(t&&panel&&!panel.hidden&&panel.offsetParent!==null){t.click();return}if(n<20)setTimeout(()=>go(n+1),250)};go(0)}})();</script>
 <script>(()=>{const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+let S=null;
 async function trial(){const b=window.MCAdmin&&MCAdmin.biz,el=document.getElementById('mcTrialBanner');if(!b||!el){setTimeout(trial,800);return}
-const r=await MC.sb.rpc('mc_saas_my_subscription',{p_business_id:b.id});const s=r.data;if(!s){el.innerHTML='';return}
+const r=await MC.sb.rpc('mc_saas_my_subscription',{p_business_id:b.id});const s=S=r.data;if(!s){el.innerHTML='';return}
 const days=s.days_left,until=s.expires?new Date(s.expires+'T00:00:00').toLocaleDateString():'';
-const wa=s.contact&&!MC.inPlayApp?`<a class="btn primary" target="_blank" rel="noopener" href="https://wa.me/${esc(s.contact)}?text=${encodeURIComponent('مرحبا، بدي اشترك برفّي لمحل '+b.company_name+' ('+b.slug+') — Hello, I want to subscribe to Raffi.')}">💬 ${s.paused?'Renew':'Subscribe'} on WhatsApp</a>`:'';
 let cls='',ic='',t='',sub='';
 if(s.paused){cls='bad';ic='⏸️';t='Your catalogue and POS are paused';sub=`Your subscription ended${until?' on '+until:''}. Customers can't open the catalogue right now, but all your products, orders and data are safe. Renew and everything comes back as it was.`}
 else if(s.plan==='trial'&&days!=null&&days>=0){cls=days<=4?'warn':'';ic='🎁';t=`Free trial — ${days===0?'last day today':days+' day'+(days===1?'':'s')+' left'}`;sub=`Everything is on until ${until}: catalogue, orders, POS and alerts.${s.note&&!MC.inPlayApp?' '+esc(s.note):''}`}
 else if(days!=null&&days>=0&&days<=7){cls='warn';ic='⏰';t=`Your subscription ends in ${days} day${days===1?'':'s'}`;sub=`On ${until}. Renew to keep your catalogue online.`}
 else{el.innerHTML='';return}
-el.innerHTML=`<div class="mc-trial ${cls}"><div class="mc-trial-ic">${ic}</div><div class="mc-trial-tx"><b>${esc(t)}</b><small>${sub}</small></div>${wa}</div>`}
+let act='';
+if(!MC.inPlayApp){const msg=encodeURIComponent('Hello, I want to subscribe to Raffi for '+b.company_name+' ('+b.slug+') — مرحبا، بدي اشترك برفّي');
+ const ways=[s.contact?`<a class="btn ghost" target="_blank" rel="noopener" href="https://wa.me/${esc(s.contact)}?text=${msg}">💬 WhatsApp</a>`:'',s.telegram?`<a class="btn ghost" target="_blank" rel="noopener" href="https://t.me/${esc(s.telegram)}">✈️ Telegram</a>`:'',s.phone?`<a class="btn ghost" href="tel:${esc(s.phone)}">📞 Call</a>`:'',s.email?`<a class="btn ghost" href="mailto:${esc(s.email)}?subject=${encodeURIComponent('Raffi subscription — '+b.company_name)}">✉️ Email</a>`:''].join('');
+ act=s.pending_request?`<span class="pill ok">✓ Request sent — we'll contact you soon</span>${ways}`:`<button type="button" class="btn primary" id="trSub">${s.paused?'Renew my subscription':'Subscribe'}</button>${ways}`}
+el.innerHTML=`<div class="mc-trial ${cls}"><div class="mc-trial-ic">${ic}</div><div class="mc-trial-tx"><b>${esc(t)}</b><small>${sub}</small></div><div class="mc-trial-act">${act}</div><div id="trForm" hidden></div></div>`;
+const btn=document.getElementById('trSub');if(btn)btn.onclick=()=>form(b)}
+function form(b){const f=document.getElementById('trForm');f.hidden=false;f.innerHTML=`<div class="mc-trial-form"><b>Ask for your subscription — we contact you to confirm the price and how you pay</b>
+<div class="grid"><div><label>Plan</label><select id="trPlan"><option value="monthly">Monthly</option><option value="yearly">Yearly</option><option value="not sure">Not sure yet</option></select></div>
+<div><label>Your phone</label><input id="trPhone" inputmode="tel" value="${esc(b.whatsapp||'')}" placeholder="+964 770 000 0000"></div>
+<div><label>Best way to reach you</label><select id="trWay"><option value="call">Phone call</option><option value="whatsapp">WhatsApp</option><option value="telegram">Telegram</option><option value="viber">Viber</option><option value="sms">SMS</option><option value="email">Email</option></select></div></div>
+<label>Message (optional)</label><input id="trMsg" maxlength="300" placeholder="e.g. Call me after 5 pm">
+<div class="row" style="margin-top:10px;gap:8px;display:flex;flex-wrap:wrap"><button type="button" class="btn primary" id="trSend">Send request</button><button type="button" class="btn ghost" id="trCancel">Cancel</button></div><small id="trMsgOut" class="hint"></small></div>`;
+document.getElementById('trCancel').onclick=()=>{f.hidden=true};
+document.getElementById('trSend').onclick=async e=>{e.target.disabled=true;const r=await MC.sb.rpc('mc_saas_request_subscription',{p_business_id:b.id,p_plan:document.getElementById('trPlan').value,p_phone:document.getElementById('trPhone').value,p_way:document.getElementById('trWay').value,p_message:document.getElementById('trMsg').value});
+ if(r.error){document.getElementById('trMsgOut').textContent='⚠️ '+r.error.message;e.target.disabled=false;return}trial()}}
 trial();})();</script>
 </body></html>

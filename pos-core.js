@@ -304,7 +304,7 @@
       P.biz = await pickBusiness(); if (!P.biz) return;
       localStorage.setItem('mcpos-last-biz', P.biz.id);
       if (!P.biz.pos_enabled) {
-        try { const sub = (await sb.rpc('mc_saas_my_subscription', { p_business_id: P.biz.id })).data; if (sub && sub.paused) $('inactiveMsg').innerHTML = '⏸️ <b>Your Raffi subscription ended' + (sub.expires ? ' on ' + esc(sub.expires) : '') + '.</b><br>The till is paused, but all your items, sales and customers are safe. Renew and everything comes back exactly as it was.' + (sub.contact && !MC.inPlayApp ? '<br><br><a class="btn primary" target="_blank" rel="noopener" href="https://wa.me/' + esc(sub.contact) + '?text=' + encodeURIComponent('Hello, I want to renew Raffi for ' + P.biz.company_name) + '">💬 Renew on WhatsApp</a>' : ''); } catch (_) {}
+        try { const sub = (await sb.rpc('mc_saas_my_subscription', { p_business_id: P.biz.id })).data; if (sub && sub.paused) $('inactiveMsg').innerHTML = '⏸️ <b>Your Raffi subscription ended' + (sub.expires ? ' on ' + esc(sub.expires) : '') + '.</b><br>The till is paused, but all your items, sales and customers are safe. Renew and everything comes back exactly as it was.' + (!MC.inPlayApp ? '<br><br><a class="btn primary" href="admin.html">Renew from Catalogue admin</a>' : ''); } catch (_) {}
         show('vInactive'); return;
       }
       if (P.biz.main_system === 'external') {
