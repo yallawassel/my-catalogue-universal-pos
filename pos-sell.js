@@ -237,10 +237,10 @@
     if (!P.shift) return P.toast('Open a shift first.', true);
     const rate = P.rate(), hasCust = !!P.cart.customer && P.can('credit');
     const b = P.modal('Payment', `
-      <div class="pay-top"><div><small>Total USD</small><b>${P.fmt(t.total)}</b></div><div><small>Total LBP</small><b>${P.fmtL(P.ceilLbp(t.total))}</b></div></div>
+      <div class="pay-top"><div><small>Total USD</small><b>${P.fmt(t.total)}</b></div><div class="c2-only"><small>Total LBP</small><b>${P.fmtL(P.ceilLbp(t.total))}</b></div></div>
       <div class="pay-grid">
         <div><label for="pyUsd">Cash USD</label><input id="pyUsd" type="number" min="0" step="0.01" inputmode="decimal" placeholder="0"><div class="quick" data-add="usd">${[1, 5, 10, 20, 50, 100].map(x => `<button type="button" data-v="${x}">+$${x}</button>`).join('')}<button type="button" data-exact="usd">Exact</button></div></div>
-        <div><label for="pyLbp">Cash LBP</label><input id="pyLbp" type="number" min="0" step="1000" inputmode="numeric" placeholder="0"><div class="quick" data-add="lbp">${[100000, 500000, 1000000, 5000000].map(x => `<button type="button" data-v="${x}">+${x >= 1e6 ? x / 1e6 + 'M' : x / 1e3 + 'k'}</button>`).join('')}<button type="button" data-exact="lbp">Exact</button></div></div>
+        <div><label for="pyLbp">Cash LBP</label><input id="pyLbp" type="number" min="0" step="1000" inputmode="numeric" placeholder="0"><div class="quick" data-add="lbp">${(['LBP', 'IQD', 'SYP'].includes(P.c2()) ? [100000, 500000, 1000000, 5000000] : ['EGP', 'TRY', 'DZD'].includes(P.c2()) ? [100, 200, 500, 1000] : [5, 10, 50, 100]).map(x => `<button type="button" data-v="${x}">+${x >= 1e6 ? x / 1e6 + 'M' : x >= 1e3 ? x / 1e3 + 'k' : x}</button>`).join('')}<button type="button" data-exact="lbp">Exact</button></div></div>
         <div><label for="pyCard">Card USD</label><input id="pyCard" type="number" min="0" step="0.01" inputmode="decimal" placeholder="0"><div class="quick"><button type="button" data-exact="card">All by card</button></div></div>
         <div><label for="pyDebt">On account (debt) USD</label><input id="pyDebt" type="number" min="0" step="0.01" inputmode="decimal" placeholder="${hasCust ? '0' : P.can('credit') ? 'Choose a customer first' : 'Not allowed for you'}" ${hasCust ? '' : 'disabled'}><div class="quick">${hasCust ? '<button type="button" data-exact="debt">Rest on account</button>' : P.can('credit') ? '<button type="button" id="pyPickCust">Choose customer</button>' : ''}</div></div>
       </div>

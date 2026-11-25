@@ -50,7 +50,7 @@
     const needPin = P.cashier && P.cashier.role !== 'manager' && !P.can('return') && P.cashiers.some(c => c.is_active && c.role === 'manager');
     const b = P.modal('Return — ' + s.invoice_label, `<p class="muted">Choose how many of each item come back.</p>
       ${(s.items || []).map((i, k) => { const left = P.r2(Number(i.qty) - (back[k] || 0)); return `<div class="ret-line"><span>${esc(i.name)} <small class="muted">${esc(i.unit || '')} · sold ${P.r2(i.qty)}${back[k] ? `, returned ${back[k]}` : ''}</small></span><input type="number" min="0" max="${left}" step="any" value="0" data-line="${k}" ${left <= 0 ? 'disabled' : ''} aria-label="Quantity to return"></div>`; }).join('')}
-      <div class="row2"><div><label for="rtMethod">Refund</label><select id="rtMethod"><option value="cash_usd">Cash USD</option><option value="cash_lbp">Cash LBP</option><option value="card">Card</option>${s.customer_id ? '<option value="credit">Reduce customer debt</option>' : ''}</select></div>
+      <div class="row2"><div><label for="rtMethod">Refund</label><select id="rtMethod"><option value="cash_usd">Cash USD</option>${P.hasC2() ? '<option value="cash_lbp">Cash LBP</option>' : ''}<option value="card">Card</option>${s.customer_id ? '<option value="credit">Reduce customer debt</option>' : ''}</select></div>
       <label class="check"><input type="checkbox" id="rtRestock" checked> Put items back in stock</label></div>
       <label for="rtReason">Reason</label><input id="rtReason" placeholder="e.g. damaged, wrong size">
       ${needPin ? '<label for="rtPin">Manager PIN</label><input id="rtPin" type="password" inputmode="numeric" maxlength="8">' : ''}
@@ -139,7 +139,7 @@
   $('custAdd').onclick = () => editCustomer(null);
   $('custSearch').oninput = drawCustomers; $('custFilter').onchange = drawCustomers;
   function receivePayment(c) {
-    const b = P.modal('Receive payment — ' + c.name, `<div class="pay-top"><div><small>Debt</small><b style="color:var(--bad)">${P.fmt(c.balance)}</b></div><div><small>in LBP</small><b>${P.fmtL(P.ceilLbp(Math.max(0, c.balance)))}</b></div></div>
+    const b = P.modal('Receive payment — ' + c.name, `<div class="pay-top"><div><small>Debt</small><b style="color:var(--bad)">${P.fmt(c.balance)}</b></div><div class="c2-only"><small>in LBP</small><b>${P.fmtL(P.ceilLbp(Math.max(0, c.balance)))}</b></div></div>
       <div class="row4"><div><label for="rpUsd">Cash USD</label><input id="rpUsd" type="number" min="0" step="0.01" inputmode="decimal"></div><div><label for="rpLbp">Cash LBP</label><input id="rpLbp" type="number" min="0" step="1000" inputmode="numeric"></div><div><label for="rpCard">Card USD</label><input id="rpCard" type="number" min="0" step="0.01" inputmode="decimal"></div><div><label>&nbsp;</label><button class="btn" type="button" id="rpAll">Pay all in USD</button></div></div>
       <label for="rpNote">Note</label><input id="rpNote"><p class="pay-status ok" id="rpSt">Enter the amount received.</p>
       <div class="sheet-foot"><button class="btn primary" type="button" id="rpOk">Save payment</button></div>`);
@@ -215,9 +215,9 @@
     <tr><td>Sales (${z.sales_count})</td><td>${P.fmt(z.sales_total)}</td></tr><tr><td>Returns</td><td>−${P.fmt(z.returns_total)}</td></tr><tr><td>Discounts given</td><td>${P.fmt(z.discounts)}</td></tr>
     <tr><td>Card</td><td>${P.fmt(z.card)}</td></tr><tr><td>Sold on account (debt)</td><td>${P.fmt(z.credit)}</td></tr><tr><td>Debt payments received</td><td>${P.fmt(z.debt_payments_total)}</td></tr>
     <tr><td>Expenses</td><td>${P.fmt(z.expenses)}</td></tr><tr><td>Other income</td><td>${P.fmt(z.income)}</td></tr>${Number(z.cash_in) ? `<tr><td>Cash put in the drawer</td><td>${P.fmt(z.cash_in)}</td></tr>` : ''}${Number(z.cash_out) ? `<tr><td>Cash taken out of the drawer</td><td>−${P.fmt(z.cash_out)}</td></tr>` : ''}${Number(z.supplier_payments) ? `<tr><td>Paid to suppliers from the drawer</td><td>−${P.fmt(z.supplier_payments)}</td></tr>` : ''}
-    <tr><td>Opening cash</td><td>${P.fmt(z.opening_usd)} + ${P.fmtL(z.opening_lbp)}</td></tr>
-    <tr class="total"><td>Cash expected in drawer</td><td>${P.fmt(z.expected_usd)} + ${P.fmtL(z.expected_lbp)}</td></tr>
-    ${z.counted_usd != null ? `<tr><td>Counted</td><td>${P.fmt(z.counted_usd)} + ${P.fmtL(z.counted_lbp)}</td></tr><tr class="total"><td>Difference</td><td style="color:${Math.abs(z.difference_usd) < 0.01 && Math.abs(z.difference_lbp) < 1 ? 'var(--ok)' : 'var(--bad)'}">${P.fmt(z.difference_usd)} · ${P.fmtL(z.difference_lbp)}</td></tr>` : ''}</table>`;
+    <tr><td>Opening cash</td><td>${P.fmt(z.opening_usd)}${P.hasC2() ? ' + ' + P.fmtL(z.opening_lbp) : ''}</td></tr>
+    <tr class="total"><td>Cash expected in drawer</td><td>${P.fmt(z.expected_usd)}${P.hasC2() ? ' + ' + P.fmtL(z.expected_lbp) : ''}</td></tr>
+    ${z.counted_usd != null ? `<tr><td>Counted</td><td>${P.fmt(z.counted_usd)}${P.hasC2() ? ' + ' + P.fmtL(z.counted_lbp) : ''}</td></tr><tr class="total"><td>Difference</td><td style="color:${Math.abs(z.difference_usd) < 0.01 && Math.abs(z.difference_lbp) < 1 ? 'var(--ok)' : 'var(--bad)'}">${P.fmt(z.difference_usd)} · ${P.fmtL(z.difference_lbp)}</td></tr>` : ''}</table>`;
   P.zHtml = zHtml;
   async function loadShift() {
     if (!P.shift) { $('shiftBox').innerHTML = '<p class="muted">No open shift.</p>'; return; }
@@ -255,17 +255,27 @@
   /* ================= SETTINGS ================= */
   function fillSettings() {
     const s = P.settings || {};
-    $('stRate').value = s.lbp_rate || ''; $('stRound').value = String(s.round_lbp || 1000); $('stTax').value = s.tax_rate || ''; $('stVatMode').value = s.vat_mode || 'off'; $('stVatIncl').checked = !!s.prices_include_vat; $('stVatNo').value = s.vat_number || ''; $('stPrefix').value = s.invoice_prefix || 'INV';
+    $('stCur2').value = P.c2(); stCurUI(); $('stRate').value = s.lbp_rate || ''; $('stRound').value = String(Number(s.round_lbp || 1000)); $('stTax').value = s.tax_rate || ''; $('stVatMode').value = s.vat_mode || 'off'; $('stVatIncl').checked = !!s.prices_include_vat; $('stVatNo').value = s.vat_number || ''; $('stPrefix').value = s.invoice_prefix || 'INV';
     $('stHeader').value = s.receipt_header || ''; $('stFooter').value = s.receipt_footer || ''; $('stPaper').value = P.device.paper || '80'; $('stAutoPrint').checked = !!P.device.autoPrint;
     drawCashiers();
   }
+  // pegged rates we can suggest; others change too often — the owner types today's rate
+  const PEG = { USD: { SAR: 3.75, AED: 3.6725, QAR: 3.64, BHD: 0.376, OMR: 0.3845, JOD: 0.709 } };
+  const ROUND = { LBP: 1000, IQD: 250, SYP: 100, EGP: 1, TRY: 1, DZD: 10, USD: 1, EUR: 1 };
+  function stCurUI() {
+    const c1 = P.c1(), c2 = $('stCur2').value; $('stRateRow').hidden = !c2;
+    $('stRateLbl').textContent = `1 ${c1} = ? ${c2 || '…'}`; $('stRoundLbl').textContent = `Round ${c2 || 'cash'} to`;
+    $('stCurHint').textContent = c2 ? `Prices stay in ${c1}. Customers can also pay cash in ${c2}; change is worked out at your rate.` : `Everything in ${c1} only. Your shop currency is set in Catalogue admin → Business settings.`;
+  }
+  $('stCur2').onchange = () => { const c2 = $('stCur2').value, peg = (PEG[P.c1()] || {})[c2]; if (c2 && c2 !== (P.settings?.second_currency || '')) { $('stRate').value = peg || ''; if (ROUND[c2]) $('stRound').value = String(ROUND[c2]); else $('stRound').value = '0.01'; } stCurUI(); if (c2 && !peg) $('stRate').focus(); };
   $('stSave').onclick = async () => {
+    if ($('stCur2').value && !(P.num($('stRate').value) > 0)) return P.toast(`Type today's rate: 1 ${P.c1()} = how many ${$('stCur2').value}.`, true);
     if ($('stVatMode').value !== 'off' && !(P.num($('stTax').value) > 0)) return P.toast('Enter the VAT rate (for example 11).', true);
-    const row = { business_id: P.biz.id, lbp_rate: P.num($('stRate').value) || 89500, round_lbp: Number($('stRound').value), tax_rate: P.num($('stTax').value), vat_mode: $('stVatMode').value, prices_include_vat: $('stVatIncl').checked, vat_number: $('stVatNo').value.trim(), invoice_prefix: $('stPrefix').value.trim().slice(0, 10) || 'INV', receipt_header: $('stHeader').value.trim(), receipt_footer: $('stFooter').value.trim(), updated_at: new Date().toISOString() };
+    const row = { business_id: P.biz.id, second_currency: $('stCur2').value, lbp_rate: P.num($('stRate').value) || P.rate(), round_lbp: Number($('stRound').value), tax_rate: P.num($('stTax').value), vat_mode: $('stVatMode').value, prices_include_vat: $('stVatIncl').checked, vat_number: $('stVatNo').value.trim(), invoice_prefix: $('stPrefix').value.trim().slice(0, 10) || 'INV', receipt_header: $('stHeader').value.trim(), receipt_footer: $('stFooter').value.trim(), updated_at: new Date().toISOString() };
     P.device = { paper: $('stPaper').value, autoPrint: $('stAutoPrint').checked }; P.save('device', P.device);
     const r = await sb.from('mc_saas_pos_settings').upsert(row, { onConflict: 'business_id' });
     if (r.error) return P.err(r.error);
-    Object.assign(P.settings, row); P.save('settings', P.settings); $('rateVal').textContent = P.rate().toLocaleString('en-US');
+    Object.assign(P.settings, row); P.save('settings', P.settings); P.drawRate();
     P.hooks.renderCart && P.hooks.renderCart(); P.toast('✅ Settings saved.');
   };
   function drawCashiers() {

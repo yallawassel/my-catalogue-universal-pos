@@ -114,7 +114,8 @@
     if (!R) return P.toast('Show a report first.', true);
     try {
       const X = await P.loadXlsx(), wb = X.utils.book_new(), r = R;
-      const add = (name, rows) => X.utils.book_append_sheet(wb, X.utils.aoa_to_sheet(rows), name.slice(0, 31));
+      const cur = v => typeof v === 'string' ? v.replace(/\bUSD\b/g, P.c1()).replace(/\bLBP\b/g, P.c2() || 'LBP') : v;
+      const add = (name, rows) => X.utils.book_append_sheet(wb, X.utils.aoa_to_sheet(rows.map(r => r.map(cur))), name.slice(0, 31));
       add('Summary', [[P.biz.company_name + ' — Financial report'], ['From', r.from, 'To', r.to], [], ['Gross sales', r.gross], ['Discounts', r.disc], ['Returns', r.returns], ['Net sales', r.net], ['Cost of goods sold', r.cost], ['Gross profit', r.gp], ['Expenses', r.expenses], ['Other income', r.income], ['Net profit', r.profit], ['VAT collected USD', r.tax], ['VAT collected LBP', Math.round(r.taxLbp)], ['Number of sales', r.count], ['Average sale', r.avg], ['Debts to collect', r.debtTotal]]);
       add('Sales by day', [['Day', 'Sales', 'Total USD'], ...r.byDay.map(d => [d.k, d.n, P.r2(d.v)])]);
       add('Payments', [['Payment', 'Amount'], ...r.byPay.map(p => [p.k, P.r2(p.v)])]);
