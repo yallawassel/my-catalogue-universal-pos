@@ -8,7 +8,7 @@
 <link rel="manifest" href="./pos.webmanifest">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="pos.css?v=43">
+<link rel="stylesheet" href="pos.css?v=44">
 </head>
 <body>
 <!-- ============ SIGN IN ============ -->
@@ -96,7 +96,7 @@
       <div class="sell">
         <div class="sell-left">
           <div class="scan-row">
-            <input id="scan" type="search" placeholder="Scan barcode or search products…" autocomplete="off" aria-label="Scan barcode or search">
+            <input id="scan" type="search" placeholder="Scan barcode or search products…" autocomplete="off" aria-label="Scan barcode or search"><button type="button" id="scanCam" class="scan-cam" title="Scan with the camera" aria-label="Scan barcode with the camera">📷<span>Scan</span></button>
             <button class="btn" id="customItem" type="button" title="Add an item that is not in the list">＋ Item</button>
           </div>
           <div class="cats" id="cats"></div>
@@ -261,7 +261,7 @@
 <script src="saas.js"></script>
 <script src="pos-core.js"></script>
 <script src="pos-print.js"></script>
-<script src="pos-sell.js"></script>
+<script src="scan.js"></script><script src="pos-sell.js"></script>
 <script src="pos-office.js"></script>
 <script src="pos-reports.js"></script>
 <script src="pos-stock.js"></script>

@@ -38,14 +38,34 @@
   $('cats').onclick = e => { const b = e.target.closest('[data-cat]'); if (!b) return; cat = b.dataset.cat; shown = PAGE; renderCats(); renderGrid(); };
   $('moreProducts').onclick = () => { shown += PAGE; renderGrid(); };
   $('grid').onclick = e => { const t = e.target.closest('[data-pid]'); if (t) addProduct(P.products.find(p => p.id === t.dataset.pid)); };
+  // barcode / SKU match: ignores spaces, letter case and leading zeros (EAN-13 vs UPC-A); a product may hold several codes "123, 456"
+  const normCode = v => String(v ?? '').replace(/\s+/g, '').replace(/^0+(?=\d)/, '').toUpperCase();
+  function byCode(code) {
+    const n = normCode(code); if (!n) return null;
+    const has = v => String(v ?? '').split(/[,;|/]+/).some(x => x.trim() && normCode(x) === n);
+    return P.products.find(x => has(x.barcode)) || P.products.find(x => has(x.sku)) || null;
+  }
+  P.byCode = byCode;
+  $('scanCam').onclick = () => {
+    if (!window.MCScan) return P.toast('Scanner not loaded — check the internet and reload.', true);
+    MCScan.open({
+      title: 'Scan items', hint: 'Each barcode adds one to the bill. Scan the next item, then press ✕ when you finish.',
+      onCode: (code, typed) => {
+        let p = byCode(code);
+        if (!p && typed) { const q = String(code).toLowerCase(); const l = P.products.filter(x => (x.name || '').toLowerCase().includes(q)); if (l.length === 1) p = l[0]; }
+        if (!p) return false;
+        addProduct(p); MCScan.msg('✓ ' + p.name + ' added', 'ok'); return true;
+      },
+      onClose: () => { renderGrid(); P.hooks.focusScan && P.hooks.focusScan(); }
+    });
+  };
   let scanT;
   $('scan').addEventListener('input', () => { clearTimeout(scanT); scanT = setTimeout(() => { shown = PAGE; renderGrid(); }, 120); });
   $('scan').addEventListener('keydown', e => {
     if (e.key !== 'Enter') return;
     e.preventDefault();
     const code = $('scan').value.trim(); if (!code) return;
-    const lc = code.toLowerCase();
-    let p = P.products.find(x => (x.barcode && String(x.barcode).toLowerCase() === lc) || (x.sku && String(x.sku).toLowerCase() === lc));
+    let p = byCode(code);
     if (!p) { const l = filtered(); if (l.length === 1) p = l[0]; }
     if (p) { addProduct(p); $('scan').value = ''; renderGrid(); }
     else P.toast('No product with this barcode: ' + code, true);
