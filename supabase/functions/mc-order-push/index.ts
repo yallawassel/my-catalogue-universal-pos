@@ -54,6 +54,20 @@ Deno.serve(async (req) => {
       return json(r);
     }
     if (req.headers.get("x-raffi-secret") !== c.raffi_order_push_secret) return json({ error: "Forbidden" }, 403);
+    if (body.request_id) {
+      // a shop asked to subscribe: ring the platform owner's devices
+      const q = (await admin.from("mc_saas_subscription_requests").select("id,business_id,plan,contact_phone,contact_way").eq("id", body.request_id).maybeSingle()).data;
+      if (!q) return json({ error: "request not found" }, 404);
+      const b = (await admin.from("mc_saas_businesses").select("company_name").eq("id", q.business_id).maybeSingle()).data;
+      const ids = ((await admin.rpc("mc_saas_platform_admin_ids")).data || []) as string[];
+      const subs = ids.length ? ((await admin.from("mc_saas_push_subscriptions").select("id,endpoint,p256dh,auth,fail_count").in("user_id", ids)).data || []) : [];
+      const seen = new Set<string>(); let sent = 0;
+      for (const s of subs) {
+        if (seen.has(s.endpoint)) continue; seen.add(s.endpoint);
+        try { await webpush.sendNotification({ endpoint: s.endpoint, keys: { p256dh: s.p256dh, auth: s.auth } }, JSON.stringify({ title: `💳 Subscription request — ${b?.company_name || "a shop"}`, body: `${q.plan || "plan?"} · ${q.contact_way || "contact"}: ${q.contact_phone}`, url: "./platform-admin.html", tag: "raffi-subreq-" + q.id }), { TTL: 86400, urgency: "high" }); sent++; } catch (_) { /* ignore */ }
+      }
+      return json({ devices: seen.size, sent });
+    }
     const o = (await admin.from("mc_saas_orders").select("id,business_id,order_number,customer_name,total,currency,items,notes").eq("id", body.order_id).maybeSingle()).data;
     if (!o) return json({ error: "order not found" }, 404);
     const n = Array.isArray(o.items) ? o.items.length : 0;
