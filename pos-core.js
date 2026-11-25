@@ -303,7 +303,10 @@
     try {
       P.biz = await pickBusiness(); if (!P.biz) return;
       localStorage.setItem('mcpos-last-biz', P.biz.id);
-      if (!P.biz.pos_enabled) { show('vInactive'); return; }
+      if (!P.biz.pos_enabled) {
+        try { const sub = (await sb.rpc('mc_saas_my_subscription', { p_business_id: P.biz.id })).data; if (sub && sub.paused) $('inactiveMsg').innerHTML = '⏸️ <b>Your Raffi subscription ended' + (sub.expires ? ' on ' + esc(sub.expires) : '') + '.</b><br>The till is paused, but all your items, sales and customers are safe. Renew and everything comes back exactly as it was.' + (sub.contact && !MC.inPlayApp ? '<br><br><a class="btn primary" target="_blank" rel="noopener" href="https://wa.me/' + esc(sub.contact) + '?text=' + encodeURIComponent('Hello, I want to renew Raffi for ' + P.biz.company_name) + '">💬 Renew on WhatsApp</a>' : ''); } catch (_) {}
+        show('vInactive'); return;
+      }
       if (P.biz.main_system === 'external') {
         $('inactiveMsg').innerHTML = 'This shop uses <b>its own POS</b> (connected to the catalogue) as the main system, so items, prices and stock come from it and this till is switched off.<br><br>To sell with the Raffi POS instead, open <a href="admin.html#connector">Catalogue admin → Live POS connector</a> and choose <b>Raffi POS</b> as the main system.';
         show('vInactive'); return;
