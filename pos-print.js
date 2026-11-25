@@ -14,12 +14,12 @@
   const vatNo = () => P.settings?.vat_number ? `VAT No: ${esc(P.settings.vat_number)}` : '';
   function payLines(s) {
     const out = [];
-    if (s.paid_usd) out.push(['Cash USD', money(s.paid_usd)]);
-    if (s.paid_lbp) out.push(['Cash LBP', lbp(s.paid_lbp)]);
+    if (s.paid_usd) out.push(['Cash ' + P.c1(), money(s.paid_usd)]);
+    if (s.paid_lbp) out.push(['Cash ' + (P.c2() || 'LBP'), lbp(s.paid_lbp)]);
     if (s.paid_card) out.push(['Card', money(s.paid_card)]);
     if (s.credit_amount) out.push(['On account (debt)', money(s.credit_amount)]);
-    if (s.change_usd) out.push(['Change USD', money(s.change_usd)]);
-    if (s.change_lbp) out.push(['Change LBP', lbp(s.change_lbp)]);
+    if (s.change_usd) out.push(['Change ' + P.c1(), money(s.change_usd)]);
+    if (s.change_lbp) out.push(['Change ' + (P.c2() || 'LBP'), lbp(s.change_lbp)]);
     return out;
   }
 
@@ -41,9 +41,9 @@
       ${vatInfo(s).on && !vatInfo(s).incl ? `<tr><td>VAT ${vatInfo(s).rate}%</td><td class="r">${money(s.tax)}</td></tr>` : ''}
       <tr class="big"><td>TOTAL</td><td class="r">${money(s.total)}</td></tr>
       ${vatInfo(s).on && vatInfo(s).incl ? `<tr><td>incl. VAT ${vatInfo(s).rate}%</td><td class="r">${money(s.tax)}</td></tr><tr><td>Total excl. VAT</td><td class="r">${money(vatInfo(s).net)}</td></tr>` : ''}
-      ${vatInfo(s).on ? `<tr><td>VAT in LBP</td><td class="r">${lbp(vatInfo(s).lbpVat)}</td></tr>` : ''}
-      <tr><td>in LBP</td><td class="r">${lbp(rateLbp)}</td></tr>
-      <tr><td colspan="2"><small>Rate: 1$ = ${Number(s.rate || P.rate()).toLocaleString('en-US')} LBP</small></td></tr>
+      ${vatInfo(s).on && P.hasC2() ? `<tr><td>VAT in ${P.c2()}</td><td class="r">${lbp(vatInfo(s).lbpVat)}</td></tr>` : ''}
+      ${P.hasC2() ? `<tr><td>in ${P.c2()}</td><td class="r">${lbp(rateLbp)}</td></tr>
+      <tr><td colspan="2"><small>Rate: 1 ${P.c1()} = ${Number(s.rate || P.rate()).toLocaleString('en-US')} ${P.c2()}</small></td></tr>` : ''}
     </table><hr><table>${payLines(s).map(([a, b]) => `<tr><td>${a}</td><td class="r">${b}</td></tr>`).join('')}</table>
     ${s.customer_balance != null ? `<hr><table><tr><td>Account balance</td><td class="r">${money(s.customer_balance)}</td></tr></table>` : ''}
     <hr><div class="c">${esc(P.settings?.receipt_footer || 'Thank you!')}</div>${s.offline ? '<div class="c"><small>Saved offline — invoice number given when synced</small></div>' : ''}<br></body></html>`;
@@ -66,9 +66,9 @@
       <div class="to"><div><small>BILL TO</small><br><b>${esc(s.customer_name || 'Walk-in customer')}</b>${s.customer_phone ? `<br>${esc(s.customer_phone)}` : ''}</div><div class="meta"><small>CASHIER</small><br>${esc(s.cashier_name || 'Owner')}<br><small>Payment: ${esc(s.payment_method || '')}</small></div></div>
       <table><thead><tr><th>#</th><th>Item</th><th>Unit</th><th class="r">Qty</th><th class="r">Price</th><th class="r">Discount</th><th class="r">Total</th></tr></thead><tbody>${rows}</tbody></table>
       <table class="sum"><tr><td>Subtotal</td><td class="r">${money(s.subtotal)}</td></tr>${s.discount ? `<tr><td>Discount</td><td class="r">−${money(s.discount)}</td></tr>` : ''}${vatInfo(s).on ? `<tr><td>Total excl. VAT</td><td class="r">${money(vatInfo(s).net)}</td></tr><tr><td>VAT ${vatInfo(s).rate}%${vatInfo(s).incl ? ' (included)' : ''}</td><td class="r">${money(s.tax)}</td></tr>` : ''}
-      <tr class="g"><td>Total${vatInfo(s).on ? ' incl. VAT' : ''}</td><td class="r">${money(s.total)}</td></tr>${vatInfo(s).on ? `<tr><td>VAT in LBP</td><td class="r">${lbp(vatInfo(s).lbpVat)}</td></tr>` : ''}<tr><td>in LBP</td><td class="r">${lbp(Math.round(s.total * (s.rate || P.rate())))}</td></tr>
+      <tr class="g"><td>Total${vatInfo(s).on ? ' incl. VAT' : ''}</td><td class="r">${money(s.total)}</td></tr>${vatInfo(s).on && P.hasC2() ? `<tr><td>VAT in ${P.c2()}</td><td class="r">${lbp(vatInfo(s).lbpVat)}</td></tr>` : ''}<tr><td>in LBP</td><td class="r">${lbp(Math.round(s.total * (s.rate || P.rate())))}</td></tr>
       ${payLines(s).map(([a, v]) => `<tr><td class="muted">${a}</td><td class="r muted">${v}</td></tr>`).join('')}</table>
-      <div class="foot">${esc(P.settings?.receipt_footer || '')} · Rate 1$ = ${Number(s.rate || P.rate()).toLocaleString('en-US')} LBP</div></div>`;
+      <div class="foot">${esc(P.settings?.receipt_footer || '')}${P.hasC2() ? ` · Rate 1 ${P.c1()} = ${Number(s.rate || P.rate()).toLocaleString('en-US')} ${P.c2()}` : ''}</div></div>`;
     return forPdf ? `<style>${css}</style>${body}` : `<!doctype html><html><head><meta charset="utf-8"><title>${esc(s.invoice_label)}</title><link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet"><style>@page{size:A4;margin:0}body{margin:0}${css}</style></head><body>${body}</body></html>`;
   };
 

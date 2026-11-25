@@ -17,8 +17,16 @@
   P.roundLbp = v => { const r = Number(P.settings?.round_lbp || 1000); return Math.round(v / r) * r; };
   P.toLbp = usd => P.roundLbp(usd * P.rate());
   P.r2 = v => Math.round((Number(v) + Number.EPSILON) * 100) / 100;
-  P.fmt = v => (Number(v) < 0 ? '−' : '') + '$' + Math.abs(Number(v) || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-  P.fmtL = v => Math.round(Number(v) || 0).toLocaleString('en-US') + ' LBP';
+  // Currencies: c1 = the shop's currency (prices, totals, reports); c2 = an optional second cash currency
+  // (LBP in Lebanon, IQD in Iraq…) with its rate "1 c1 = rate c2". Stored in the old lbp_* columns.
+  const BIG = ['LBP', 'IQD', 'SYP', 'IRR'], THREE = ['KWD', 'BHD', 'OMR', 'JOD', 'LYD', 'TND'];
+  P.c1 = () => String(P.biz?.currency || 'USD').toUpperCase();
+  P.c2 = () => { const s = P.settings || {}; const v = s.second_currency === undefined || s.second_currency === null ? (P.c1() === 'USD' ? 'LBP' : '') : String(s.second_currency || ''); return v.toUpperCase() === P.c1() ? '' : v.toUpperCase(); };
+  P.hasC2 = () => !!P.c2();
+  const dec = c => BIG.includes(c) ? 0 : THREE.includes(c) ? 3 : 2;
+  P.sym = c => ({ USD: '$', EUR: '€' })[c] || '';
+  P.fmt = v => { const c = P.c1(), d = dec(c), sy = P.sym(c); const n = Math.abs(Number(v) || 0).toLocaleString('en-US', { minimumFractionDigits: d, maximumFractionDigits: d }); return (Number(v) < 0 ? '−' : '') + (sy ? sy + n : n + ' ' + c); };
+  P.fmtL = v => { const c = P.c2() || 'LBP', d = dec(c); return Number(v || 0).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: d }) + ' ' + c; };
   P.num = v => { const n = Number(String(v ?? '').replace(/,/g, '').trim()); return Number.isFinite(n) ? n : 0; };
   P.today = () => new Date().toLocaleDateString('en-CA');
   P.dt = v => new Date(v).toLocaleString(undefined, { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
@@ -135,7 +143,7 @@
       MC.fetchAll(() => sb.from('mc_saas_pos_customers').select('*').eq('business_id', id).order('name'))
     ]);
     if (st.error) throw st.error;
-    P.settings = st.data || { lbp_rate: 89500, round_lbp: 1000, tax_rate: 0, invoice_prefix: 'INV' };
+    P.settings = st.data || { lbp_rate: 89500, round_lbp: 1000, tax_rate: 0, invoice_prefix: 'INV' }; try { P.drawRate && P.drawRate(); } catch (_) {}
     P.cashiers = (ca.data || []);
     P.products = (pr.data || []).map(prepProduct);
     const order = new Map((cat.data || []).map((c, i) => [c.name, i]));
@@ -260,7 +268,7 @@
       const r = await q; if (r.error) throw r.error;
       P.shift = r.data?.[0] || null;
     } catch (e) { if (isNetErr(e)) P.shift = P.load('shift', null); else return P.err(e); }
-    if (P.shift) { P.save('shift', P.shift); enterApp(); } else { $('osUsd').value = 0; $('osLbp').value = 0; show('vShift'); }
+    if (P.shift) { P.save('shift', P.shift); enterApp(); } else { $('osUsd').value = 0; $('osLbp').value = 0; P.drawRate(); show('vShift'); }
   }
   $('osGo').onclick = async () => {
     try {
@@ -275,22 +283,32 @@
     show('vApp');
     $('topBiz').textContent = P.biz.company_name;
     $('topLogo').innerHTML = P.biz.logo_url ? `<img src="${esc(P.biz.logo_url)}" alt="">` : esc(P.biz.company_name[0]);
-    $('rateVal').textContent = P.rate().toLocaleString('en-US');
+    P.drawRate();
     P.device = P.load('device', { paper: '80', autoPrint: false });
     netUI();
     (P.hooks.enter || []).forEach(f => { try { f(); } catch (e) { console.error(e); } });
     P.tab('sell');
     P.sync();
   }
+  const RL = /\b(USD|LBP)\b/g;
+  P.relabel = root => {
+    const c1 = P.c1(), c2 = P.c2() || 'LBP'; if (c1 === 'USD' && c2 === 'LBP') return;
+    const swap = t => t.replace(RL, m => m === 'USD' ? c1 : c2).replace(/1\$ = /g, '1 ' + c1 + ' = ');
+    const w = document.createTreeWalker(root, NodeFilter.SHOW_TEXT); let n;
+    while ((n = w.nextNode())) { if (RL.test(n.nodeValue)) { RL.lastIndex = 0; n.nodeValue = swap(n.nodeValue); } RL.lastIndex = 0; }
+    root.querySelectorAll && root.querySelectorAll('[placeholder],[title],[aria-label]').forEach(e => ['placeholder', 'title', 'aria-label'].forEach(a => { const v = e.getAttribute(a); if (v && /\b(USD|LBP)\b/.test(v)) e.setAttribute(a, swap(v)); }));
+  };
+  new MutationObserver(ms => { if (!P.biz) return; ms.forEach(m => m.addedNodes.forEach(x => { if (x.nodeType === 1) P.relabel(x); else if (x.nodeType === 3 && x.parentNode) P.relabel(x.parentNode); })); }).observe(document.body, { childList: true, subtree: true });
   P.enterHooks = f => { (P.hooks.enter = P.hooks.enter || []).push(f); };
 
+  P.drawRate = () => { const b = $('topRate'); if (!b) return; b.hidden = !P.hasC2(); b.innerHTML = `1${P.sym(P.c1()) ? P.sym(P.c1()) : ' ' + P.c1()} = <b id="rateVal">${P.rate().toLocaleString('en-US')}</b> ${P.c2()}`; document.body.classList.toggle('no-c2', !P.hasC2()); P.relabel && P.relabel(document.body); };
   $('topRate').onclick = async () => {
     if (!P.isManager()) return P.toast('Only a manager can change the exchange rate.', true);
-    const v = await P.ask('Exchange rate', '1 USD = how many LBP?', { type: 'number', inputmode: 'numeric', value: P.rate() });
+    const v = await P.ask('Exchange rate', `1 ${P.c1()} = how many ${P.c2()}?`, { type: 'number', inputmode: 'decimal', value: P.rate() });
     const n = P.num(v); if (!n) return;
     const r = await sb.from('mc_saas_pos_settings').update({ lbp_rate: n, updated_at: new Date().toISOString() }).eq('business_id', P.biz.id);
     if (r.error) return P.err(r.error);
-    P.settings.lbp_rate = n; P.save('settings', P.settings); $('rateVal').textContent = n.toLocaleString('en-US');
+    P.settings.lbp_rate = n; P.save('settings', P.settings); P.drawRate();
     P.hooks.renderCart && P.hooks.renderCart(); P.toast('✅ Rate updated.');
   };
 

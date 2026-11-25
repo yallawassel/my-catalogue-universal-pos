@@ -406,7 +406,7 @@
     };
   }
   function paySupplier(s) {
-    const b = P.modal('Pay supplier — ' + s.name, `<div class="pay-top"><div><small>You owe</small><b style="color:var(--bad)">${P.fmt(s.balance)}</b></div><div><small>in LBP</small><b>${P.fmtL(P.toLbp(Math.max(0, s.balance)))}</b></div></div>
+    const b = P.modal('Pay supplier — ' + s.name, `<div class="pay-top"><div><small>You owe</small><b style="color:var(--bad)">${P.fmt(s.balance)}</b></div><div class="c2-only"><small>in LBP</small><b>${P.fmtL(P.toLbp(Math.max(0, s.balance)))}</b></div></div>
       <div class="row4"><div><label for="spUsd">USD</label><input id="spUsd" type="number" min="0" step="0.01" inputmode="decimal"></div><div><label for="spLbp">LBP</label><input id="spLbp" type="number" min="0" step="1000" inputmode="numeric"></div>
       <div><label for="spMethod">Paid by</label><select id="spMethod"><option value="cash">Cash</option><option value="bank">Bank transfer</option><option value="cheque">Cheque</option><option value="card">Card</option></select></div><div><label>&nbsp;</label><button class="btn" type="button" id="spAll">Pay all</button></div></div>
       <label class="check"><input type="checkbox" id="spDrawer" checked> Taken from the cash drawer</label><label for="spNote">Note</label><input id="spNote">
