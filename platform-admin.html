@@ -81,7 +81,7 @@ card.appendChild(div);
 div.querySelector('[data-mod-save]').onclick=async()=>{const st=document.getElementById('status');const c=div.querySelector('[data-mod-cat]').checked,p=div.querySelector('[data-mod-pos]').checked;const q=await sb.rpc('mc_saas_platform_set_modules',{p_business_id:card.dataset.id,p_catalogue:c,p_pos:p});if(st){st.textContent=q.error?q.error.message:'Plan products saved.';st.className='status'+(q.error?' error':'')}div.querySelector('.hint').textContent=p&&c?'Bundle: Catalogue + POS':p?'POS only':c?'Catalogue only':'Nothing active'}})}
 new MutationObserver(()=>{clearTimeout(window.__modT);window.__modT=setTimeout(decorate,300)}).observe(document.body,{childList:true,subtree:true});
 })();
-</script><script src="alerts.js"></script>
+</script><script src="alerts.js?v=2"></script>
 <script>(()=>{if('serviceWorker' in navigator)navigator.serviceWorker.register('./service-worker.js',{scope:'./'}).catch(()=>{});
 const box=document.createElement('div');box.id='hqAlerts';box.style.margin='12px 0';const main=document.querySelector('main');if(main)main.prepend(box);
 let biz=null;const go=async(n)=>{try{const s=(await MC.sb.auth.getSession()).data.session;if(!s){if(n<40)setTimeout(()=>go(n+1),1500);return}const r=await MC.sb.from('mc_saas_members').select('business_id').eq('user_id',s.user.id).limit(1);biz=r.data&&r.data[0]&&r.data[0].business_id;if(biz&&window.MCAlerts)MCAlerts.mount(box,()=>biz)}catch(_){}};go(0);

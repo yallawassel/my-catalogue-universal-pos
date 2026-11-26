@@ -24,7 +24,10 @@
   async function disable() { const s = await current(); if (!s) return; try { await MC.sb.rpc('mc_saas_remove_push_subscription', { p_endpoint: s.endpoint }); } catch (_) {} await s.unsubscribe(); }
   async function test(bizId) {
     const { data } = await MC.sb.auth.getSession(); const tok = data && data.session && data.session.access_token;
-    const r = await fetch(FN, { method: 'POST', headers: { 'content-type': 'application/json', authorization: 'Bearer ' + tok, apikey: MC.publishableKey }, body: JSON.stringify({ action: 'test', business_id: bizId }) });
+    if (!tok) throw Error('Your session expired — sign out and sign in again.');
+    // make sure THIS device is registered for the signed-in account (heals a phone that shows ON but was never saved)
+    try { const s = await current(); if (s && bizId) await MC.sb.rpc('mc_saas_save_push_subscription', { p_business_id: bizId, p_sub: s.toJSON(), p_device: device() }); } catch (_) {}
+    const r = await fetch(FN, { method: 'POST', headers: { 'content-type': 'application/json', authorization: 'Bearer ' + tok, apikey: MC.publishableKey }, body: JSON.stringify({ action: 'test', business_id: bizId, from: /platform-admin/.test(location.pathname) ? 'hq' : 'shop' }) });
     const j = await r.json().catch(() => ({})); if (!r.ok) throw Error(j.error || 'Test failed'); return j;
   }
   // a short "ding-dong" when an order arrives while the page is open
@@ -42,7 +45,7 @@
       try {
         if (b.dataset.al === 'on') { await enable(getBiz()); await draw('✓ Done. Press “Send a test” to hear it.'); }
         else if (b.dataset.al === 'off') { await disable(); await draw('Alerts turned off on this device.'); }
-        else { const r = await test(getBiz()); await draw(r.sent ? '✓ Test sent — you should see it in a few seconds.' : 'No device received it. Turn alerts off and on again.', !r.sent); }
+        else { const r = await test(getBiz()); await draw(r.sent ? '✓ Test sent to ' + r.sent + ' device' + (r.sent === 1 ? '' : 's') + ' — it should ring in a few seconds.' : 'No device received it. Turn alerts off and on again.', !r.sent); }
       } catch (err) { await draw(err.message || String(err), true); }
     };
     await draw();
