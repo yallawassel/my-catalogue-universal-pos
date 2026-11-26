@@ -1,0 +1,17 @@
+name: tmp-assets
+on:
+  push:
+    branches: [tmp-ad-assets]
+permissions:
+  contents: write
+jobs:
+  get:
+    runs-on: ubuntu-latest
+    if: github.actor != 'github-actions[bot]'
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          mkdir -p tmpassets; B=https://mkodburhxdrvfacytovb.supabase.co/storage/v1/object/public/mc-saas-images/629ff13e-f766-4362-a9c5-22adababfcff
+          i=1; for f in b0213368-16a0-4c1f-a60e-00fdd46bf689 443b7c9e-2922-445d-8de8-0a2e3718d907 4529a283-61d9-4df1-87d3-867a46c245d0 4ed69643-9b94-4064-b736-834b717b27ad; do curl -sf -o tmpassets/p$i.webp $B/$f.webp; i=$((i+1)); done
+          ls -la tmpassets
+          git add tmpassets && git -c user.name=bot -c user.email=actions@users.noreply.github.com commit -m "tmp assets" && git push
