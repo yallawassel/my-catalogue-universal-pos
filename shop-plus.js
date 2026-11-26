@@ -193,6 +193,8 @@
     if (b.dataset.open) { open(b.dataset.open, false); history.replaceState({ ...(history.state || {}), mcOverlay: 'pdp', pid: b.dataset.open }, '', productUrl(cur)); $('mcPdp').scrollTop = 0; return; }
     if (b.dataset.pdp === 'share') {
       const url = productUrl(p);
+      if (window.MCShare) { const u = [[p.label1, p.price1], [p.label2, p.price2]].find(x => x[1] != null && String(x[1]).trim() !== '' && Number.isFinite(Number(x[1])));
+        MCShare.open({ biz: S().biz, product: { id: p.id, name: p.name, image: gallery(p)[0] || p.image }, price: u ? (u[0] ? u[0] + ' ' : '') + S().fmt(Number(u[1])) : '', url }); return; }
       if (navigator.share) navigator.share({ title: p.name, url }).catch(() => {});
       else { try { navigator.clipboard.writeText(url); } catch (_) {} S().toast(t('Link copied')); }
       return;
