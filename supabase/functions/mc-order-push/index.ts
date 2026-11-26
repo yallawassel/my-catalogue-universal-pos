@@ -45,13 +45,27 @@ Deno.serve(async (req) => {
     const body = await req.json().catch(() => ({}));
     if (body.action === "test") {
       const token = (req.headers.get("authorization") || "").replace(/^Bearer\s+/i, "");
-      const user = createClient(URL_, Deno.env.get("SUPABASE_ANON_KEY")!, { global: { headers: { Authorization: "Bearer " + token } }, auth: { persistSession: false } });
-      const u = await user.auth.getUser(token);
-      if (!u.data.user) return json({ error: "Sign in first." }, 401);
-      const can = await user.rpc("mc_saas_can_manage", { p_business_id: body.business_id });
-      if (can.error || can.data !== true) return json({ error: "Access denied." }, 403);
-      const r = await send(body.business_id, { title: "🔔 Raffi order alerts are on", body: "You will hear this for every new online order.", url: "./admin.html#orders", tag: "raffi-test" }, u.data.user.id);
-      return json(r);
+      const u = await admin.auth.getUser(token);
+      const uid = u.data.user?.id;
+      if (!uid) return json({ error: "Your session expired — sign out and sign in again." }, 401);
+      const biz = typeof body.business_id === "string" && /^[0-9a-f-]{36}$/i.test(body.business_id) ? body.business_id : null;
+      const pa = (await admin.from("mc_saas_platform_admins").select("user_id").eq("user_id", uid).maybeSingle()).data;
+      let allowed = !!pa;
+      if (!allowed && biz) {
+        const m = (await admin.from("mc_saas_members").select("role").eq("business_id", biz).eq("user_id", uid).maybeSingle()).data;
+        allowed = !!m && ["owner", "admin", "editor"].includes(m.role);
+      }
+      if (!allowed) { console.log("test denied", uid, biz); return json({ error: "This account cannot manage this shop's alerts." }, 403); }
+      // test goes to every device of THIS user (all shops) so the phone you hold rings
+      const subs = (await admin.from("mc_saas_push_subscriptions").select("id,endpoint,p256dh,auth,fail_count").eq("user_id", uid)).data || [];
+      const seen = new Set<string>(); let ok = 0;
+      for (const sb of subs) {
+        if (seen.has(sb.endpoint)) continue; seen.add(sb.endpoint);
+        try { await webpush.sendNotification({ endpoint: sb.endpoint, keys: { p256dh: sb.p256dh, auth: sb.auth } }, JSON.stringify({ title: "🔔 Raffi alerts are on", body: "You will hear this for every new order" + (pa ? " and every subscription request." : "."), url: pa && body.from === "hq" ? "./platform-admin.html" : "./orders.html", tag: "raffi-test" }), { TTL: 3600, urgency: "high" }); ok++;
+          await admin.from("mc_saas_push_subscriptions").update({ last_ok_at: new Date().toISOString(), fail_count: 0 }).eq("id", sb.id); }
+        catch (e) { const code = (e as { statusCode?: number }).statusCode; if (code === 404 || code === 410) await admin.from("mc_saas_push_subscriptions").delete().eq("id", sb.id); }
+      }
+      return json({ devices: seen.size, sent: ok });
     }
     if (req.headers.get("x-raffi-secret") !== c.raffi_order_push_secret) return json({ error: "Forbidden" }, 403);
     if (body.request_id) {
